@@ -994,7 +994,7 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                               headerAlignment:
                                   ExpandablePanelHeaderAlignment.center,
                               hasIcon: true,
-                              expandIcon: FontAwesomeIcons.expandAlt,
+                              expandIcon: FontAwesomeIcons.expandAlt.data,
                               collapseIcon: Icons.close_fullscreen,
                               iconColor: Colors.black,
                             ),
