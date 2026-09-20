@@ -21,3 +21,4 @@ Module 10 encompasses global application navigation, GoRouter path resolution, a
 
 - **[`routing_and_navigation.md`](routing_and_navigation.md)**: Specifications for GoRouter declarations, navigation extension methods, page transitions, and landing/homepage redirection logic.
 - **[`shared_ui_components.md`](shared_ui_components.md)**: Specifications for reusable UI widgets: bottom bar, maintenance alerts, notifications, and informational modals.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, universal pull-to-refresh gestures, and responsive mobile layout wrappers.

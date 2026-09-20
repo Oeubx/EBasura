@@ -23,3 +23,4 @@ Module 4 manages the persistence, browsing, filtering, and moderation of scanned
 
 - **[`image_views_and_history.md`](image_views_and_history.md)**: Specifications for personal scan galleries, public image feeds, verifier audit screens, and modal dialogs.
 - **[`image_filtering_and_moderation.md`](image_filtering_and_moderation.md)**: Specifications for categorized filter queries (AI classified, segregated, unsegregated, flagged, verified), admin review queues, and image deletion cascades.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, dynamic filtering engine, stream lifecycle fixes, infinite pagination, and code deduplication rationales.

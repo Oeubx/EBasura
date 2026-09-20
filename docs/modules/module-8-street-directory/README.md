@@ -21,3 +21,4 @@ Module 8 manages the geographic street and community sector directory of EBasura
 
 - **[`street_registry.md`](street_registry.md)**: Specifications for public street browsing, searching, street detail summaries, and linked schedules.
 - **[`street_management.md`](street_management.md)**: Specifications for administrator street creation, deletion safeguards, and Postgres relational schemas.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, real-time street search, and community relational cross-linking.

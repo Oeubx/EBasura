@@ -21,3 +21,4 @@ Module 7 provides municipal waste collection scheduling services. Community memb
 
 - **[`schedule_directory.md`](schedule_directory.md)**: Specifications for public timetable browsing, street-specific filtering, and detail inspection cards.
 - **[`schedule_management.md`](schedule_management.md)**: Specifications for administrator schedule creation, timing validations, collector assignment, and database schema mappings.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, street-filtered schedules, and live pickup countdown alerts.

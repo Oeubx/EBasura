@@ -21,3 +21,4 @@ Module 5 drives user engagement and civic participation through gamified rewards
 
 - **[`points_and_leaderboard.md`](points_and_leaderboard.md)**: Specifications for point accumulation events, leaderboard sorting queries, rank tiers, and ledger consistency in `user_subtable`.
 - **[`badges_and_achievements.md`](badges_and_achievements.md)**: Specifications for badge criteria, milestone achievement logic, badge schemas in the `badge` table, and display components.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, capped leaderboard queries, sticky self-rank footer, and event-driven badge unlocks.

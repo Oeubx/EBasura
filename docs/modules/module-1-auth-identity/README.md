@@ -23,3 +23,4 @@ Module 1 manages authentication lifecycles, user onboarding, secure email valida
 
 - **[`auth_flows.md`](auth_flows.md)**: Visual screens, form fields, validation logic, and routing transitions for registration, login, password recovery, landing page, and legal terms.
 - **[`identity_and_security.md`](identity_and_security.md)**: Cryptographic session management, Supabase Auth Manager, token handling, email verification mechanisms, and role-based route gating.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, localized error handling, and silent session refresh resilience.

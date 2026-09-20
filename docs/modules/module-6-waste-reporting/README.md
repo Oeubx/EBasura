@@ -21,3 +21,4 @@ Module 6 enables community members to submit waste incident reports (illegal dum
 
 - **[`incident_reporting.md`](incident_reporting.md)**: Specifications for creating incident reports, capturing on-site photos, selecting target streets, and writing incident descriptions.
 - **[`report_management.md`](report_management.md)**: Specifications for browsing active incident reports, viewing detail cards, photo carousels, and executing report resolution or deletion.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, status lifecycle filtering (Pending/Resolved), and interactive photo evidence zoom.

@@ -23,3 +23,4 @@ Module 9 provides administrative command and governance tools for EBasura. Privi
 - **[`admin_dashboard.md`](admin_dashboard.md)**: Specifications for the central admin dashboard, statistical widgets, quick action hubs, and flagged content reviews.
 - **[`user_management.md`](user_management.md)**: Specifications for the user management console, role elevation/revocation, point adjustments, and status moderation.
 - **[`badge_administration.md`](badge_administration.md)**: Specifications for creating new badges, uploading iconography, and deleting obsolete badges.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, bulk image moderation efficiency, and live KPI dashboard metrics.

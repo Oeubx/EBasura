@@ -22,3 +22,4 @@ Module 2 manages authenticated user account self-service, profile configuration,
 
 - **[`account_settings.md`](account_settings.md)**: Specifications for changing credentials, managing active notification preferences, and navigating account security settings.
 - **[`profile_management.md`](profile_management.md)**: Specifications for display name and avatar updates, gamification badge highlights on profile, and project research/about views.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, milestone progression visualizers, and client-side avatar image compression.

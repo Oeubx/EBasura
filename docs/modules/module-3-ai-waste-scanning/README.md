@@ -22,3 +22,4 @@ Module 3 contains the AI computer vision engine of EBasura. By utilizing the Goo
 
 - **[`gemini_api_integration.md`](gemini_api_integration.md)**: Specifications for Google Gemini REST endpoints, base64 payload serialization, API key scoping, and network request life cycles.
 - **[`classification_and_injection_guard.md`](classification_and_injection_guard.md)**: Rules, prompts, and classification parsing for valid waste, recyclability, segregation, biodegradability, and adversarial text injection mitigation.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, deterministic JSON schema outputs, client-side downscaling/compression, and API service unification.

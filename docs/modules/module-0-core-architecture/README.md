@@ -20,3 +20,4 @@ Module 0 forms the foundational substrate of the **EBasura** application. Built 
 
 - **[`flutterflow_engine.md`](flutterflow_engine.md)**: Deep dive into the UI engine, reactive state listeners (`AppStateNotifier`), internationalization/formatting utilities, and theme tokens.
 - **[`supabase_client_and_environment.md`](supabase_client_and_environment.md)**: Specifications for Supabase SDK initialization, Postgres table binding classes, storage bucket connectors, and environment secret protection.
+- **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, arithmetic point deduction fixes, and timezone normalization.
