@@ -59,3 +59,5 @@ The following repository skills are available in `.agents/skills/`:
 | `pr-check-fix` | "fix PR checks", "fix CI errors", "resolve test failures" | Diagnoses and resolves failing CI/PR checks (analyzer, format, tests). |
 | `project-verification` | "verify", "run tests", "check project", "verify build" | Executes standard Flutter quality checks (`flutter analyze`, `flutter test`). |
 | `workspace-onboarding` | "start working on", "work on EBasura", "onboard" | Emits pre-flight environment check (Flutter SDK, env setup). |
+| `apk-release` | "build apk", "release apk", "create apk", "package release" | Packages release APK with env secrets, versions, hashes, and updates release docs. |
+
