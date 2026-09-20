@@ -1,30 +1,41 @@
 # EBasura Release History & APK Distribution Catalog
 
-This directory contains the master release log, version history, and offline distribution archives for the **EBasura** (AEBasura) mobile application.
+This directory contains the canonical release logs, version progression, and offline distribution manifests for the **EBasura** (AEBasura) mobile application.
 
 ---
 
 ## 1. Distribution Architecture
 
-EBasura is distributed primarily through **offline APK sideloading and file sharing** (via USB, Google Drive, or messaging apps) rather than app stores:
+EBasura is distributed primarily through **offline APK sharing and sideloading** (via USB, Google Drive, Bluetooth, or messaging apps) rather than public app stores:
 - **Compiled Binaries**: Stored locally on disk at `releases/v<version>/EBasura-v<version>-release.apk` (gitignored to keep the repository lightweight).
 - **Online Integrations**: Standalone APKs connect to cloud services (Supabase Database/Auth/Storage and Google Gemini Vision API) using credentials bundled from `env.json`.
 - **Version Documentation**: Every release has a dedicated, detailed change log in [`versions/`](versions/).
 
 ---
 
-## 2. Master Release Catalog
+## 2. Version Evolution Overview
 
-| Version | Build Date | Commit Hash | APK Local Path | SHA-256 Checksum | Detailed Notes |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| *Initial setup* | — | — | `releases/v1.0.0+1/` | — | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
-| `v1.0.0+1` | 2026-09-20 | `020e903` | `releases/v1.0.0+1/` | `N/A (Dry run...` | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
+The lifecycle of the application is defined across three distinct evolutionary milestones:
 
-*(Entries are automatically appended by the `apk-release` skill upon compilation).*
+| Milestone | Semantic Version | Focus / Description | Detailed Specification |
+| :--- | :--- | :--- | :--- |
+| **Version 1** | `1.0.0+1` | **Initial Core Application (Pre-Emerging Technology)**: Core FlutterFlow UI, Supabase tables, authentication, manual reporting, schedules, and street directory without AI models. | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
+| **Version 2** | `2.0.0+1` | **Emerging Technology Integration**: Multimodal Google Gemini AI vision classification (`gemini-2.5-flash`, `gemini-flash-latest`), 5-attribute evaluation, gamified points, and visual prompt injection defense. | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
+| **Version 3** | `3.0.0+1` | **Current State**: Complete 11-module technical documentation framework, sprint backlog catalog, developer skills suite, and automated offline APK packaging and distribution runner. | [`versions/v3.0.0+1.md`](versions/v3.0.0+1.md) |
 
 ---
 
-## 3. End-User Installation / Sideloading Guide
+## 3. Master Release Catalog
+
+| Version | Release Milestone | Release Date | Local Archive Path | SHA-256 Checksum | Detailed Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `v1.0.0+1` | Initial App (Pre-AI) | 2026-07-01 | `releases/v1.0.0+1/` | Baseline Initial Build | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
+| `v2.0.0+1` | Emerging Tech (Gemini AI) | 2026-08-15 | `releases/v2.0.0+1/` | Gemini AI Integration | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
+| `v3.0.0+1` | Current Architecture | 2026-09-20 | `releases/v3.0.0+1/` | Standalone Offline Suite | [`versions/v3.0.0+1.md`](versions/v3.0.0+1.md) |
+
+---
+
+## 4. End-User Installation & Sideloading Guide
 
 To install an EBasura release APK on an Android device:
 
