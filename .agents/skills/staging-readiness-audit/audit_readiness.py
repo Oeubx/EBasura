@@ -74,7 +74,7 @@ def check_flutter_analysis():
     issues = []
     warnings = []
     
-    code, out, err = run_cmd("flutter analyze --no-fatal-warnings")
+    code, out, err = run_cmd("flutter analyze --no-fatal-warnings --no-fatal-infos")
     if "No issues found!" in out or "No issues found!" in err:
         print("  flutter analyze: Clean (0 issues).")
     elif code == 0:

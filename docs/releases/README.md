@@ -15,13 +15,12 @@ EBasura is distributed primarily through **offline APK sharing and sideloading**
 
 ## 2. Version Evolution Overview
 
-The lifecycle of the application is defined across three distinct evolutionary milestones:
+The lifecycle of the application is defined across the evolutionary milestones:
 
 | Milestone | Semantic Version | Focus / Description | Detailed Specification |
 | :--- | :--- | :--- | :--- |
 | **Version 1** | `1.0.0+1` | **Initial Core Application (Pre-Emerging Technology)**: Core FlutterFlow UI, Supabase tables, authentication, manual reporting, schedules, and street directory without AI models. | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
-| **Version 2** | `2.0.0+1` | **Emerging Technology Integration**: Multimodal Google Gemini AI vision classification (`gemini-2.5-flash`, `gemini-flash-latest`), 5-attribute evaluation, gamified points, and visual prompt injection defense. | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
-| **Version 3** | `3.0.0+1` | **Current State**: Complete 11-module technical documentation framework, sprint backlog catalog, developer skills suite, and automated offline APK packaging and distribution runner. | [`versions/v3.0.0+1.md`](versions/v3.0.0+1.md) |
+| **Version 2** | `2.0.0+1` | **Emerging Technology Integration (Current Version)**: Multimodal Google Gemini AI vision classification (`gemini-2.5-flash`, `gemini-flash-latest`), 5-attribute evaluation, gamified points, and visual prompt injection defense. | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
 
 ---
 
@@ -30,8 +29,8 @@ The lifecycle of the application is defined across three distinct evolutionary m
 | Version | Release Milestone | Release Date | Local Archive Path | SHA-256 Checksum | Detailed Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `v1.0.0+1` | Initial App (Pre-AI) | 2026-07-01 | `releases/v1.0.0+1/` | Baseline Initial Build | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
-| `v2.0.0+1` | Emerging Tech (Gemini AI) | 2026-08-15 | `releases/v2.0.0+1/` | Gemini AI Integration | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
-| `v3.0.0+1` | Current Architecture | 2026-09-20 | `releases/v3.0.0+1/` | Standalone Offline Suite | [`versions/v3.0.0+1.md`](versions/v3.0.0+1.md) |
+| `v2.0.0+1` | Emerging Tech (Gemini AI) | 2026-09-21 | `releases/v2.0.0+1/EBasura-v2.0.0+1-release.apk` | `92eb2ed4dccc...` | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
+
 
 ---
 

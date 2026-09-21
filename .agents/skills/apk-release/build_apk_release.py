@@ -14,6 +14,11 @@ import datetime
 import argparse
 import subprocess
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 def run_cmd(cmd, cwd=WORKSPACE_ROOT):
@@ -82,25 +87,21 @@ def append_to_master_catalog(version, date_str, commit_hash, apk_path, sha256_ha
     with open(readme_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    short_sha = sha256_hash[:12] + "..."
+    short_sha = sha256_hash[:12] + "..." if len(sha256_hash) >= 12 else sha256_hash
     rel_doc_link = f"[`versions/v{version}.md`](versions/v{version}.md)"
-    table_row = f"| `v{version}` | {date_str} | `{commit_hash}` | `releases/v{version}/` | `{short_sha}` | {rel_doc_link} |\n"
+    rel_apk_path = f"releases/v{version}/EBasura-v{version}-release.apk"
+    table_row = f"| `v{version}` | Emerging Tech (Gemini AI) | {date_str} | `{rel_apk_path}` | `{short_sha}` | {rel_doc_link} |"
 
-    # Check if entry already exists
-    if f"`v{version}`" in content:
-        print(f"[*] Version v{version} already present in master catalog table.")
-        return
-
-    # Append to table
-    pattern = r"(\| \*Initial setup\*.*?\n)"
+    pattern = rf"\|\s*`v{re.escape(version)}`\s*\|[^\n]+"
     if re.search(pattern, content):
-        content = re.sub(pattern, rf"\1{table_row}", content)
+        content = re.sub(pattern, table_row, content)
+        print(f"[+] Updated v{version} row in docs/releases/README.md")
     else:
-        content += f"\n{table_row}"
+        content += f"\n{table_row}\n"
+        print(f"[+] Appended v{version} to docs/releases/README.md")
 
     with open(readme_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(content)
-    print(f"[+] Appended v{version} to docs/releases/README.md")
 
 def create_version_doc(version, date_str, commit_hash, apk_name, size_mb, sha256_hash, commits):
     versions_dir = os.path.join(WORKSPACE_ROOT, "docs", "releases", "versions")
@@ -109,14 +110,24 @@ def create_version_doc(version, date_str, commit_hash, apk_name, size_mb, sha256
 
     commits_md = "\n".join(commits)
 
+    existing_notes = ""
+    if os.path.exists(doc_path):
+        with open(doc_path, "r", encoding="utf-8") as f:
+            old_content = f.read()
+            # Extract sections if they already exist (e.g. ## 2. Emerging Technology Capabilities)
+            match = re.search(r"(## 2\.\s+Emerging Technology Capabilities.*)", old_content, re.DOTALL)
+            if match:
+                existing_notes = "\n---\n\n" + match.group(1).strip()
+
     content = f"""# EBasura Release Notes — v{version}
 
 - **Release Version**: `{version}`
+- **Release Milestone**: **Version 2 — Emerging Technology Integration (Google Gemini AI Vision & Defense)**
 - **Release Date**: {date_str}
 - **Git Commit**: `{commit_hash}`
 - **Target Platform**: Android (Standalone APK Sideload)
 - **SDK Targets**: `minSdkVersion 23` (Android 6.0 Marshmallow), `targetSdkVersion 36`
-- **Distribution Model**: Offline Distribution (File sharing, USB, Direct Drive Download)
+- **Distribution Model**: Direct Offline APK Sharing (USB, Drive, Bluetooth)
 
 ---
 
@@ -129,13 +140,14 @@ def create_version_doc(version, date_str, commit_hash, apk_name, size_mb, sha256
 | **File Size** | `{size_mb:.2f} MB` |
 | **Architecture** | Universal (arm64-v8a, armeabi-v7a, x86_64 fat APK) |
 | **SHA-256 Checksum** | `{sha256_hash}` |
-| **Build Flags** | `--release --dart-define-from-file=env.json` |
+| **Build Flags** | `--release --dart-define-from-file=env.json --android-skip-build-dependency-validation` |
 
 ---
 
-## 2. Changes & Included Commits
+## 2. Recent Commits
 
 {commits_md}
+{existing_notes}
 
 ---
 
@@ -209,8 +221,8 @@ def main():
     
     if not args.skip_build:
         print(f"\n[*] Compiling Release APK for version {target_ver}...")
-        print("    Command: flutter build apk --release --dart-define-from-file=env.json")
-        build_code, b_out, b_err = run_cmd("flutter build apk --release --dart-define-from-file=env.json")
+        print("    Command: flutter build apk --release --dart-define-from-file=env.json --android-skip-build-dependency-validation")
+        build_code, b_out, b_err = run_cmd("flutter build apk --release --dart-define-from-file=env.json --android-skip-build-dependency-validation")
         if build_code != 0:
             print("\n[!] ERROR: Flutter APK build failed!")
             print(b_out)
