@@ -18,7 +18,12 @@ import 'p_images_view_all_model.dart';
 export 'p_images_view_all_model.dart';
 
 class PImagesViewAllWidget extends StatefulWidget {
-  const PImagesViewAllWidget({super.key});
+  const PImagesViewAllWidget({
+    super.key,
+    this.initialStatus,
+  });
+
+  final String? initialStatus;
 
   static String routeName = 'P_Images_ViewAll';
   static String routePath = '/pImagesViewAll';
@@ -36,6 +41,35 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PImagesViewAllModel());
+
+    if (widget.initialStatus != null && widget.initialStatus!.isNotEmpty) {
+      final s = widget.initialStatus!;
+      if (s == 'Categorized by Ai' || s == 'AI Categorized') {
+        _model.activeQuickFilter = 'AI Categorized';
+        _model.dropDownStatusValue = 'Categorized by Ai';
+      } else if (s == 'Uncategorized') {
+        _model.activeQuickFilter = 'Uncategorized';
+        _model.dropDownStatusValue = 'Uncategorized';
+      } else if (s == 'Segregated') {
+        _model.activeQuickFilter = 'Segregated';
+        _model.dropDownStatusValue = 'Segregated';
+      } else if (s == 'Unsegregated') {
+        _model.activeQuickFilter = 'Unsegregated';
+        _model.dropDownStatusValue = 'Unsegregated';
+      } else if (s == 'Verified') {
+        _model.activeQuickFilter = 'Verified';
+        _model.dropDownStatusValue = 'Verified';
+      } else if (s == 'Flagged') {
+        _model.activeQuickFilter = 'Flagged';
+        _model.dropDownStatusValue = 'Flagged';
+      } else if (s == 'Recyclable') {
+        _model.activeQuickFilter = 'Recyclable';
+        _model.dropDownStatusValue = 'All';
+      } else if (s == 'Biodegradable') {
+        _model.activeQuickFilter = 'Biodegradable';
+        _model.dropDownStatusValue = 'All';
+      }
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -705,6 +739,8 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                                             filterName ==
                                                                 'Unsegregated' ||
                                                             filterName ==
+                                                                'Uncategorized' ||
+                                                            filterName ==
                                                                 'Verified' ||
                                                             filterName ==
                                                                 'Flagged') {
@@ -949,6 +985,11 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             'AI Categorized') {
                                           if (img.status !=
                                               'Categorized by Ai') {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Uncategorized') {
+                                          if (img.status != 'Uncategorized') {
                                             return false;
                                           }
                                         }
