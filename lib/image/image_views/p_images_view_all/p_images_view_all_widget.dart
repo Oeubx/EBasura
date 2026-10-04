@@ -868,7 +868,7 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             .order('created_at',
                                                 ascending:
                                                     !_model.sortNewestFirst)
-                                            .limit(50)
+                                            .limit(_model.pageSize)
                                             .map((list) => list
                                                 .map((item) => ImageRow(item))
                                                 .toList()),
@@ -1046,7 +1046,27 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                         );
                                       }
 
-                                      return MasonryGridView.builder(
+                                      return RefreshIndicator(
+                                        color: FlutterFlowTheme.of(context).primary,
+                                        onRefresh: () async {
+                                          safeSetState(() {
+                                            _model.resetStream();
+                                          });
+                                        },
+                                        child: NotificationListener<ScrollNotification>(
+                                          onNotification: (scrollInfo) {
+                                            if (scrollInfo.metrics.pixels >=
+                                                    scrollInfo.metrics.maxScrollExtent - 200 &&
+                                                !_model.isLoadingMore &&
+                                                _model.hasMoreItems) {
+                                              safeSetState(() {
+                                                _model.loadMoreItems(staggeredViewImageRowList.length);
+                                              });
+                                            }
+                                            return false;
+                                          },
+                                          child: MasonryGridView.builder(
+                                            physics: const AlwaysScrollableScrollPhysics(),
                                         gridDelegate:
                                             SliverSimpleGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: 2,
@@ -1248,8 +1268,10 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             ],
                                           );
                                         },
-                                      );
-                                    },
+                                      ),
+                                    ),
+                                  );
+                                },
                                   ),
                                 ),
                               ].divide(SizedBox(height: 5.0)),

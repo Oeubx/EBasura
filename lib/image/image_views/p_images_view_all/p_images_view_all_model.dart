@@ -48,8 +48,15 @@ class PImagesViewAllModel extends FlutterFlowModel<PImagesViewAllWidget> {
     return count;
   }
 
+  // Pagination / Infinite scroll state
+  int pageSize = 20;
+  bool isLoadingMore = false;
+  bool hasMoreItems = true;
+
   void resetStream() {
     staggeredViewSupabaseStream = null;
+    pageSize = 20;
+    hasMoreItems = true;
   }
 
   void resetAllFilters() {
@@ -63,7 +70,22 @@ class PImagesViewAllModel extends FlutterFlowModel<PImagesViewAllWidget> {
     searchController?.clear();
     searchQuery = '';
     sortNewestFirst = true;
+    pageSize = 20;
+    hasMoreItems = true;
     resetStream();
+  }
+
+  void loadMoreItems(int currentItemCount) {
+    if (isLoadingMore || !hasMoreItems) return;
+    if (currentItemCount < pageSize) {
+      // If we currently have fewer items returned than the requested pageSize, there are no more items
+      hasMoreItems = false;
+      return;
+    }
+    isLoadingMore = true;
+    pageSize += 20;
+    resetStream();
+    isLoadingMore = false;
   }
 
   // Search & Sorting state
