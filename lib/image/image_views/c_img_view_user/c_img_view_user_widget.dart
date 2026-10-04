@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/image/c_dispute_decision/c_dispute_decision_widget.dart';
 import 'dart:ui';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
@@ -1002,6 +1003,68 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                         ),
                       ),
                     ),
+                    if (containerImageRow?.status == 'Flagged' ||
+                        containerImageRow?.status == 'Rejected' ||
+                        containerImageRow?.status == 'Unsegregated')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: FFButtonWidget(
+                          onPressed: () async {
+                            await showModalBottomSheet(
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              context: context,
+                              builder: (context) => Padding(
+                                padding: MediaQuery.viewInsetsOf(context),
+                                child: CDisputeDecisionWidget(
+                                  imageRef: containerImageRow!,
+                                ),
+                              ),
+                            );
+                          },
+                          text: 'Dispute Decision',
+                          icon: const Icon(
+                            Icons.gavel_rounded,
+                            size: 18.0,
+                            color: Colors.white,
+                          ),
+                          options: FFButtonOptions(
+                            width: double.infinity,
+                            height: 42.0,
+                            color: const Color(0xFFD32F2F),
+                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                  color: Colors.white,
+                                ),
+                            elevation: 2.0,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                    if (containerImageRow?.status == 'Disputed')
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF8E1),
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: const Color(0xFFFFB300)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.hourglass_top, color: Color(0xFFFF8F00), size: 18.0),
+                            const SizedBox(width: 8.0),
+                            Text(
+                              'Dispute Pending Verifier Review',
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                    color: const Color(0xFFFF8F00),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ].divide(SizedBox(height: 15.0)),
                 ),
               ),

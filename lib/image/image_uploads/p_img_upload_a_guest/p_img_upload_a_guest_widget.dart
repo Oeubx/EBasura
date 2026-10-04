@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/image/c_image_informational_dialog/c_image_informational_dialog_widget.dart';
+import '/image/c_camera_framing_overlay/c_camera_framing_overlay_widget.dart';
 import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -158,6 +159,11 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                                   Uint8List.fromList([]),
                                               width: double.infinity,
                                               fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          const Positioned.fill(
+                                            child: CCameraFramingOverlayWidget(
+                                              height: 220.0,
                                             ),
                                           ),
                                           Opacity(
