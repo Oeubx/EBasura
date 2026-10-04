@@ -26,8 +26,41 @@ class PImagesViewAllModel extends FlutterFlowModel<PImagesViewAllWidget> {
   // Model for C_BottomBar component.
   late CBottomBarModel cBottomBarModel;
 
+  // Multi-attribute dynamic filter state
+  String activeQuickFilter = 'All';
+  String selectedStreet = 'All';
+  bool filterRecyclable = false;
+  bool filterBiodegradable = false;
+  bool filterSegregated = false;
+
+  bool get hasActiveAdvancedFilters =>
+      selectedStreet != 'All' ||
+      filterRecyclable ||
+      filterBiodegradable ||
+      filterSegregated;
+
+  int get activeFilterCount {
+    int count = 0;
+    if (selectedStreet != 'All') count++;
+    if (filterRecyclable) count++;
+    if (filterBiodegradable) count++;
+    if (filterSegregated) count++;
+    return count;
+  }
+
   void resetStream() {
     staggeredViewSupabaseStream = null;
+  }
+
+  void resetAllFilters() {
+    activeQuickFilter = 'All';
+    selectedStreet = 'All';
+    filterRecyclable = false;
+    filterBiodegradable = false;
+    filterSegregated = false;
+    dropDownStatusValue = 'All';
+    dropDownStatusValueController?.value = 'All';
+    resetStream();
   }
 
   @override

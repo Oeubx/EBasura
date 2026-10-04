@@ -47,6 +47,203 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
     super.dispose();
   }
 
+  void _openFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 24.0),
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.0,
+                        height: 4.0,
+                        decoration: BoxDecoration(
+                          color: FlutterFlowTheme.of(context).alternate,
+                          borderRadius: BorderRadius.circular(2.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Advanced Filters',
+                          style: FlutterFlowTheme.of(context).titleLarge,
+                        ),
+                        if (_model.hasActiveAdvancedFilters)
+                          TextButton(
+                            onPressed: () {
+                              setModalState(() {
+                                _model.resetAllFilters();
+                              });
+                              safeSetState(() {});
+                            },
+                            child: Text(
+                              'Reset All',
+                              style: TextStyle(
+                                color: FlutterFlowTheme.of(context).error,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    Divider(),
+                    SizedBox(height: 12.0),
+                    Text(
+                      'Street / Location',
+                      style: FlutterFlowTheme.of(context).labelLarge,
+                    ),
+                    SizedBox(height: 8.0),
+                    FutureBuilder<List<StreetRow>>(
+                      future: StreetTable().queryRows(
+                        queryFn: (q) => q.order('street_name'),
+                      ),
+                      builder: (context, snapshot) {
+                        List<String> streetOptions = ['All'];
+                        if (snapshot.hasData && snapshot.data != null) {
+                          streetOptions.addAll(
+                            snapshot.data!
+                                .map((s) => s.streetName)
+                                .where((s) => s.isNotEmpty)
+                                .toSet()
+                                .toList(),
+                          );
+                        }
+                        return Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              isExpanded: true,
+                              value: streetOptions.contains(_model.selectedStreet)
+                                  ? _model.selectedStreet
+                                  : 'All',
+                              items: streetOptions.map((street) {
+                                return DropdownMenuItem<String>(
+                                  value: street,
+                                  child: Text(
+                                    street == 'All' ? 'All Streets' : street,
+                                    style:
+                                        FlutterFlowTheme.of(context).bodyMedium,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setModalState(() {
+                                    _model.selectedStreet = val;
+                                  });
+                                  safeSetState(() {});
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'Waste Attributes',
+                      style: FlutterFlowTheme.of(context).labelLarge,
+                    ),
+                    SizedBox(height: 8.0),
+                    SwitchListTile.adaptive(
+                      title: Text(
+                        'Recyclable Waste Only',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                      value: _model.filterRecyclable,
+                      activeColor: FlutterFlowTheme.of(context).primary,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        setModalState(() {
+                          _model.filterRecyclable = val;
+                        });
+                        safeSetState(() {});
+                      },
+                    ),
+                    SwitchListTile.adaptive(
+                      title: Text(
+                        'Biodegradable Waste Only',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                      value: _model.filterBiodegradable,
+                      activeColor: FlutterFlowTheme.of(context).primary,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        setModalState(() {
+                          _model.filterBiodegradable = val;
+                        });
+                        safeSetState(() {});
+                      },
+                    ),
+                    SwitchListTile.adaptive(
+                      title: Text(
+                        'Segregated Waste Only',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                      value: _model.filterSegregated,
+                      activeColor: FlutterFlowTheme.of(context).primary,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        setModalState(() {
+                          _model.filterSegregated = val;
+                        });
+                        safeSetState(() {});
+                      },
+                    ),
+                    SizedBox(height: 20.0),
+                    FFButtonWidget(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        safeSetState(() {});
+                      },
+                      text: 'Apply Filters',
+                      options: FFButtonOptions(
+                        width: double.infinity,
+                        height: 44.0,
+                        color: FlutterFlowTheme.of(context).primary,
+                        textStyle: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .override(
+                              font: GoogleFonts.interTight(),
+                              color: Colors.white,
+                            ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -268,69 +465,178 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                   thickness: 2.0,
                                   color: Colors.black,
                                 ),
-                                FlutterFlowDropDown<String>(
-                                  controller:
-                                      _model.dropDownStatusValueController ??=
-                                          FormFieldController<String>(
-                                    _model.dropDownStatusValue ??=
-                                        'All',
-                                  ),
-                                  options: [
-                                    'All',
-                                    'Uncategorized',
-                                    'Unsegregated',
-                                    'Segregated',
-                                    'Flagged',
-                                    'Verified',
-                                    'Categorized by Ai'
-                                  ],
-                                  onChanged: (val) async {
-                                    safeSetState(() {
-                                      _model.dropDownStatusValue = val;
-                                      _model.resetStream();
-                                    });
-                                  },
-                                  width: double.infinity,
-                                  height: 50.0,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                // Quick Filter Chips & Advanced Filter Button
+                                Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 4.0, 0.0, 8.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            children: [
+                                              'All',
+                                              'Segregated',
+                                              'Unsegregated',
+                                              'Recyclable',
+                                              'Biodegradable',
+                                              'Verified',
+                                              'Flagged',
+                                              'AI Categorized',
+                                            ].map((filterName) {
+                                              final isSelected =
+                                                  _model.activeQuickFilter ==
+                                                      filterName;
+                                              return Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        0.0, 0.0, 6.0, 0.0),
+                                                child: ChoiceChip(
+                                                  label: Text(
+                                                    filterName,
+                                                    style: TextStyle(
+                                                      color: isSelected
+                                                          ? Colors.white
+                                                          : FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      fontWeight: isSelected
+                                                          ? FontWeight.w600
+                                                          : FontWeight.normal,
+                                                      fontSize: 12.0,
+                                                    ),
+                                                  ),
+                                                  selected: isSelected,
+                                                  selectedColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primary,
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondaryBackground,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16.0),
+                                                    side: BorderSide(
+                                                      color: isSelected
+                                                          ? FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary
+                                                          : FlutterFlowTheme.of(
+                                                                  context)
+                                                              .alternate,
+                                                    ),
+                                                  ),
+                                                  onSelected: (selected) {
+                                                    if (selected) {
+                                                      safeSetState(() {
+                                                        _model.activeQuickFilter =
+                                                            filterName;
+                                                        if (filterName ==
+                                                            'All') {
+                                                          _model.dropDownStatusValue =
+                                                              'All';
+                                                        } else if (filterName ==
+                                                            'AI Categorized') {
+                                                          _model.dropDownStatusValue =
+                                                              'Categorized by Ai';
+                                                        } else if (filterName ==
+                                                                'Segregated' ||
+                                                            filterName ==
+                                                                'Unsegregated' ||
+                                                            filterName ==
+                                                                'Verified' ||
+                                                            filterName ==
+                                                                'Flagged') {
+                                                          _model.dropDownStatusValue =
+                                                              filterName;
+                                                        } else {
+                                                          _model.dropDownStatusValue =
+                                                              'All';
+                                                        }
+                                                        _model.resetStream();
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
                                         ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
                                       ),
-                                  hintText: 'Choose filtering option',
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
+                                      InkWell(
+                                        onTap: () =>
+                                            _openFilterBottomSheet(context),
+                                        child: Container(
+                                          padding: EdgeInsets.all(8.0),
+                                          decoration: BoxDecoration(
+                                            color: _model
+                                                    .hasActiveAdvancedFilters
+                                                ? FlutterFlowTheme.of(context)
+                                                    .primary
+                                                    .withOpacity(0.15)
+                                                : FlutterFlowTheme.of(context)
+                                                    .secondaryBackground,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            border: Border.all(
+                                              color: _model
+                                                      .hasActiveAdvancedFilters
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .primary
+                                                  : FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.tune_rounded,
+                                                size: 20.0,
+                                                color: _model
+                                                        .hasActiveAdvancedFilters
+                                                    ? FlutterFlowTheme.of(
+                                                            context)
+                                                        .primary
+                                                    : FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText,
+                                              ),
+                                              if (_model.activeFilterCount > 0) ...[
+                                                SizedBox(width: 4.0),
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 5.0,
+                                                      vertical: 1.0),
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primary,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.0),
+                                                  ),
+                                                  child: Text(
+                                                    '${_model.activeFilterCount}',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 10.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  elevation: 2.0,
-                                  borderColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  borderWidth: 0.0,
-                                  borderRadius: 8.0,
-                                  margin: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 0.0, 12.0, 0.0),
-                                  hidesUnderline: true,
-                                  isOverButton: false,
-                                  isSearchable: false,
-                                  isMultiSelect: false,
                                 ),
                                 Container(
                                   width: double.infinity,
@@ -350,7 +656,7 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             )
                                             .order('created_at',
                                                 ascending: false)
-                                            .limit(10)
+                                            .limit(50)
                                             .map((list) => list
                                                 .map((item) => ImageRow(item))
                                                 .toList()),
@@ -374,6 +680,140 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                       List<ImageRow> staggeredViewImageRowList =
                                           snapshot.data!;
 
+                                      List<ImageRow> displayedImages =
+                                          staggeredViewImageRowList.where((img) {
+                                        // Quick filter
+                                        if (_model.activeQuickFilter ==
+                                            'Segregated') {
+                                          if (!(img.isSegregated == true ||
+                                              img.status == 'Segregated')) {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Unsegregated') {
+                                          if (!(img.isSegregated == false ||
+                                              img.status == 'Unsegregated')) {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Recyclable') {
+                                          if (img.categoryRecycling != true) {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Biodegradable') {
+                                          if (img.categoryBiode != true) {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Verified') {
+                                          if (img.status != 'Verified') {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'Flagged') {
+                                          if (img.status != 'Flagged') {
+                                            return false;
+                                          }
+                                        } else if (_model.activeQuickFilter ==
+                                            'AI Categorized') {
+                                          if (img.status !=
+                                              'Categorized by Ai') {
+                                            return false;
+                                          }
+                                        }
+
+                                        // Street filter
+                                        if (_model.selectedStreet != 'All' &&
+                                            _model.selectedStreet.isNotEmpty) {
+                                          if (img.imgStreetNameRef
+                                                  .toLowerCase() !=
+                                              _model.selectedStreet
+                                                  .toLowerCase()) {
+                                            return false;
+                                          }
+                                        }
+
+                                        // Fine-grained attribute toggles
+                                        if (_model.filterRecyclable &&
+                                            img.categoryRecycling != true) {
+                                          return false;
+                                        }
+                                        if (_model.filterBiodegradable &&
+                                            img.categoryBiode != true) {
+                                          return false;
+                                        }
+                                        if (_model.filterSegregated &&
+                                            img.isSegregated != true) {
+                                          return false;
+                                        }
+
+                                        return true;
+                                      }).toList();
+
+                                      if (displayedImages.isEmpty) {
+                                        return Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(24.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.filter_alt_off_rounded,
+                                                  size: 48.0,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryText,
+                                                ),
+                                                SizedBox(height: 12.0),
+                                                Text(
+                                                  'No matching waste records found',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .titleMedium,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                                SizedBox(height: 6.0),
+                                                Text(
+                                                  'Try adjusting your filter options or clearing selected filters.',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .labelMedium,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                                SizedBox(height: 16.0),
+                                                FFButtonWidget(
+                                                  onPressed: () {
+                                                    safeSetState(() {
+                                                      _model.resetAllFilters();
+                                                    });
+                                                  },
+                                                  text: 'Clear Filters',
+                                                  options: FFButtonOptions(
+                                                    height: 36.0,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primary,
+                                                    textStyle: FlutterFlowTheme
+                                                            .of(context)
+                                                        .titleSmall
+                                                        .override(
+                                                          font: GoogleFonts
+                                                              .interTight(),
+                                                          color: Colors.white,
+                                                          fontSize: 13.0,
+                                                        ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+
                                       return MasonryGridView.builder(
                                         gridDelegate:
                                             SliverSimpleGridDelegateWithFixedCrossAxisCount(
@@ -381,12 +821,11 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                         ),
                                         crossAxisSpacing: 10.0,
                                         mainAxisSpacing: 10.0,
-                                        itemCount:
-                                            staggeredViewImageRowList.length,
+                                        itemCount: displayedImages.length,
                                         itemBuilder:
                                             (context, staggeredViewIndex) {
                                           final staggeredViewImageRow =
-                                              staggeredViewImageRowList[
+                                              displayedImages[
                                                   staggeredViewIndex];
                                           return Stack(
                                             alignment:
