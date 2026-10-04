@@ -214,6 +214,95 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                         safeSetState(() {});
                       },
                     ),
+                    SizedBox(height: 14.0),
+                    Text(
+                      'Sort Direction',
+                      style: FlutterFlowTheme.of(context).labelLarge,
+                    ),
+                    SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: Center(
+                              child: Text(
+                                'Newest First',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: _model.sortNewestFirst
+                                      ? Colors.white
+                                      : FlutterFlowTheme.of(context).primaryText,
+                                  fontWeight: _model.sortNewestFirst
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                            selected: _model.sortNewestFirst,
+                            selectedColor: FlutterFlowTheme.of(context).primary,
+                            backgroundColor: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: BorderSide(
+                                color: _model.sortNewestFirst
+                                    ? FlutterFlowTheme.of(context).primary
+                                    : FlutterFlowTheme.of(context).alternate,
+                              ),
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() {
+                                  _model.sortNewestFirst = true;
+                                  _model.resetStream();
+                                });
+                                safeSetState(() {});
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8.0),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: Center(
+                              child: Text(
+                                'Oldest First',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: !_model.sortNewestFirst
+                                      ? Colors.white
+                                      : FlutterFlowTheme.of(context).primaryText,
+                                  fontWeight: !_model.sortNewestFirst
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                            selected: !_model.sortNewestFirst,
+                            selectedColor: FlutterFlowTheme.of(context).primary,
+                            backgroundColor: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: BorderSide(
+                                color: !_model.sortNewestFirst
+                                    ? FlutterFlowTheme.of(context).primary
+                                    : FlutterFlowTheme.of(context).alternate,
+                              ),
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() {
+                                  _model.sortNewestFirst = false;
+                                  _model.resetStream();
+                                });
+                                safeSetState(() {});
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 20.0),
                     FFButtonWidget(
                       onPressed: () {
@@ -461,6 +550,76 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             .fontStyle,
                                       ),
                                 ),
+                                // Real-Time Search Bar
+                                Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 6.0, 0.0, 6.0),
+                                  child: TextFormField(
+                                    controller: _model.searchController,
+                                    focusNode: _model.searchFocusNode,
+                                    onChanged: (val) {
+                                      safeSetState(() {
+                                        _model.searchQuery =
+                                            val.trim().toLowerCase();
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'Search street, status, or tags...',
+                                      hintStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .alternate,
+                                          width: 1.0,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          width: 1.5,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                      filled: true,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      contentPadding:
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 8.0, 12.0, 8.0),
+                                      prefixIcon: Icon(
+                                        Icons.search_rounded,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        size: 20.0,
+                                      ),
+                                      suffixIcon: _model.searchQuery.isNotEmpty
+                                          ? IconButton(
+                                              icon: Icon(
+                                                Icons.clear_rounded,
+                                                size: 18.0,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryText,
+                                              ),
+                                              onPressed: () {
+                                                _model.searchController?.clear();
+                                                safeSetState(() {
+                                                  _model.searchQuery = '';
+                                                });
+                                              },
+                                            )
+                                          : null,
+                                    ),
+                                    style:
+                                        FlutterFlowTheme.of(context).bodyMedium,
+                                  ),
+                                ),
                                 Divider(
                                   thickness: 2.0,
                                   color: Colors.black,
@@ -635,6 +794,58 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                           ),
                                         ),
                                       ),
+                                      SizedBox(width: 6.0),
+                                      InkWell(
+                                        onTap: () {
+                                          safeSetState(() {
+                                            _model.sortNewestFirst =
+                                                !_model.sortNewestFirst;
+                                            _model.resetStream();
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 8.0),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context)
+                                                .secondaryBackground,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            border: Border.all(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                _model.sortNewestFirst
+                                                    ? Icons.south_rounded
+                                                    : Icons.north_rounded,
+                                                size: 16.0,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primary,
+                                              ),
+                                              SizedBox(width: 2.0),
+                                              Text(
+                                                _model.sortNewestFirst
+                                                    ? 'New'
+                                                    : 'Old',
+                                                style: TextStyle(
+                                                  fontSize: 11.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -655,7 +866,8 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                                   : _model.dropDownStatusValue,
                                             )
                                             .order('created_at',
-                                                ascending: false)
+                                                ascending:
+                                                    !_model.sortNewestFirst)
                                             .limit(50)
                                             .map((list) => list
                                                 .map((item) => ImageRow(item))
@@ -682,6 +894,26 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
 
                                       List<ImageRow> displayedImages =
                                           staggeredViewImageRowList.where((img) {
+                                        // Search query filter
+                                        if (_model.searchQuery.isNotEmpty) {
+                                          final q = _model.searchQuery;
+                                          final streetMatches = img
+                                              .imgStreetNameRef
+                                              .toLowerCase()
+                                              .contains(q);
+                                          final statusMatches = (img.status ?? '')
+                                              .toLowerCase()
+                                              .contains(q);
+                                          final remarkMatches = (img.remark ?? '')
+                                              .toLowerCase()
+                                              .contains(q);
+                                          if (!streetMatches &&
+                                              !statusMatches &&
+                                              !remarkMatches) {
+                                            return false;
+                                          }
+                                        }
+
                                         // Quick filter
                                         if (_model.activeQuickFilter ==
                                             'Segregated') {

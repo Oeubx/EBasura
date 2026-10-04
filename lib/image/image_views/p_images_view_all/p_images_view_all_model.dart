@@ -60,16 +60,29 @@ class PImagesViewAllModel extends FlutterFlowModel<PImagesViewAllWidget> {
     filterSegregated = false;
     dropDownStatusValue = 'All';
     dropDownStatusValueController?.value = 'All';
+    searchController?.clear();
+    searchQuery = '';
+    sortNewestFirst = true;
     resetStream();
   }
+
+  // Search & Sorting state
+  TextEditingController? searchController;
+  FocusNode? searchFocusNode;
+  String searchQuery = '';
+  bool sortNewestFirst = true;
 
   @override
   void initState(BuildContext context) {
     cBottomBarModel = createModel(context, () => CBottomBarModel());
+    searchController ??= TextEditingController();
+    searchFocusNode ??= FocusNode();
   }
 
   @override
   void dispose() {
     cBottomBarModel.dispose();
+    searchController?.dispose();
+    searchFocusNode?.dispose();
   }
 }
