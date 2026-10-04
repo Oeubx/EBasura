@@ -26,6 +26,10 @@ class PImagesViewAllModel extends FlutterFlowModel<PImagesViewAllWidget> {
   // Model for C_BottomBar component.
   late CBottomBarModel cBottomBarModel;
 
+  void resetStream() {
+    staggeredViewSupabaseStream = null;
+  }
+
   @override
   void initState(BuildContext context) {
     cBottomBarModel = createModel(context, () => CBottomBarModel());

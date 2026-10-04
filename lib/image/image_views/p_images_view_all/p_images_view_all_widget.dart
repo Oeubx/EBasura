@@ -273,9 +273,10 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                       _model.dropDownStatusValueController ??=
                                           FormFieldController<String>(
                                     _model.dropDownStatusValue ??=
-                                        'Uncategorized',
+                                        'All',
                                   ),
                                   options: [
+                                    'All',
                                     'Uncategorized',
                                     'Unsegregated',
                                     'Segregated',
@@ -284,9 +285,10 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                     'Categorized by Ai'
                                   ],
                                   onChanged: (val) async {
-                                    safeSetState(
-                                        () => _model.dropDownStatusValue = val);
-                                    safeSetState(() {});
+                                    safeSetState(() {
+                                      _model.dropDownStatusValue = val;
+                                      _model.resetStream();
+                                    });
                                   },
                                   width: double.infinity,
                                   height: 50.0,
@@ -342,9 +344,12 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                             .stream(primaryKey: ['image_id'])
                                             .eqOrNull(
                                               'status',
-                                              _model.dropDownStatusValue,
+                                              _model.dropDownStatusValue == 'All'
+                                                  ? null
+                                                  : _model.dropDownStatusValue,
                                             )
-                                            .order('created_at')
+                                            .order('created_at',
+                                                ascending: false)
                                             .limit(10)
                                             .map((list) => list
                                                 .map((item) => ImageRow(item))
