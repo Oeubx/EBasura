@@ -352,7 +352,7 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                   color: Color(0xFFE8EDF2),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
+                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 80.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -361,21 +361,19 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                         child: Image.asset(
                           'assets/images/Horizontal_Logo.png',
                           width: double.infinity,
-                          height: 150.0,
-                          fit: BoxFit.fitWidth,
+                          height: 90.0,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        height: 525.0,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDFF1F1),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: SingleChildScrollView(
-                            primary: false,
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFDFF1F1),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -849,11 +847,11 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 425.0,
-                                  decoration: BoxDecoration(),
-                                  child: StreamBuilder<List<ImageRow>>(
+                                Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(),
+                                    child: StreamBuilder<List<ImageRow>>(
                                     stream: _model
                                             .staggeredViewSupabaseStream ??=
                                         SupaFlow.client
@@ -1272,6 +1270,7 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                     ),
                                   );
                                 },
+                                    ),
                                   ),
                                 ),
                               ].divide(SizedBox(height: 5.0)),
