@@ -26,19 +26,7 @@ bool? userRateLimiter(
 ) {
   /// MODIFY CODE ONLY BELOW THIS LINE
 
-  // If user has never used the feature before → allow
-  if (prevUsedTime == null) {
-    return true;
-  }
-
-  // Compute time difference
-  final difference = currentTime.difference(prevUsedTime);
-
-  // Check if 24 hours have passed
-  if (difference.inHours >= 1) {
-    return true; // ALLOW
-  }
-
-  return false; // BLOCK
+  // Rate limiter disabled: Always allow AI scanning
+  return true;
   /// MODIFY CODE ONLY ABOVE THIS LINE
 }
