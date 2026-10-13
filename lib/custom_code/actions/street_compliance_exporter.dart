@@ -223,7 +223,7 @@ class StreetComplianceExporter {
                 ),
                 const SizedBox(height: 6.0),
                 Container(
-                  maxHeight: 180.0,
+                  constraints: const BoxConstraints(maxHeight: 180.0),
                   width: double.infinity,
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(

@@ -66,6 +66,19 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
       final updatedRemark =
           '[DISPUTE - ${_model.selectedDisputeCategory}]: $reasonText';
 
+      final imageId = widget.imageRef.imageId;
+      if (imageId == null || imageId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cannot dispute an image without a valid image ID.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
       await ImageTable().update(
         data: {
           'status': 'Disputed',
@@ -75,7 +88,7 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
         },
         matchingRows: (rows) => rows.eq(
           'image_id',
-          widget.imageRef.imageId,
+          imageId,
         ),
       );
 
