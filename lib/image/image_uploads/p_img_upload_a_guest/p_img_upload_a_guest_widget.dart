@@ -344,9 +344,12 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                                         onPressed: () async {
                                                           final selectedMedia =
                                                               await selectMediaWithSourceBottomSheet(
-                                                            context: context,
-                                                            allowPhoto: true,
-                                                          );
+                                                                context: context,
+                                                                maxWidth: 1024.0,
+                                                                maxHeight: 1024.0,
+                                                                imageQuality: 80,
+                                                                allowPhoto: true,
+                                                              );
                                                           if (selectedMedia !=
                                                                   null &&
                                                               selectedMedia.every((m) =>
@@ -460,6 +463,7 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                   Column(
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
+                                      if (_model.apiResponseHolder.isEmpty)
                                       FFButtonWidget(
                                         onPressed: () async {
                                           _model.guestRateLimiterValue =
@@ -1063,6 +1067,46 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                                       ),
                                                     ],
                                                   ),
+                                    FFButtonWidget(
+                                      onPressed: () async {
+                                        safeSetState(() {
+                                          _model.apiResponseHolder = [];
+                                          _model.checkboxValidityValue = null;
+                                          _model.checkboxRecyclableValue = null;
+                                          _model.checkboxSegregatedValue = null;
+                                          _model.checkboxBiodegradableValue = null;
+                                          _model.checkboxNonbiodeValue = null;
+                                        });
+                                      },
+                                      text: 'Clear / Rescan',
+                                      icon: Icon(
+                                        Icons.refresh_rounded,
+                                        size: 20.0,
+                                      ),
+                                      options: FFButtonOptions(
+                                        width: double.infinity,
+                                        height: 44.0,
+                                        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                        iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                        color: Colors.transparent,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              font: GoogleFonts.interTight(
+                                                fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                                              ),
+                                              color: FlutterFlowTheme.of(context).primary,
+                                              letterSpacing: 0.0,
+                                            ),
+                                        elevation: 0.0,
+                                        borderSide: BorderSide(
+                                          color: FlutterFlowTheme.of(context).primary,
+                                          width: 1.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8.0),
+                                      ),
+                                    ),
                                                 ].divide(SizedBox(height: 5.0)),
                                               ),
                                           ],
