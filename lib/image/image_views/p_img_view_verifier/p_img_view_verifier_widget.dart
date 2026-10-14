@@ -1,4 +1,5 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/auth/role_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
@@ -121,7 +122,26 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                     ? containerImageRowList.first
                                     : null;
 
-                            return Container(
+                            if (containerImageRow == null) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(24.0),
+                                  child: Text('Waste record not found or has been deleted.'),
+                                ),
+                              );
+                            }
+
+                            return FutureBuilder<List<UserRow>>(
+                              future: UserTable().querySingleRow(
+                                queryFn: (q) => q.eqOrNull('user_id', currentUserUid),
+                              ),
+                              builder: (context, userSnapshot) {
+                                final currentUserRow = userSnapshot.data?.isNotEmpty == true
+                                    ? userSnapshot.data!.first
+                                    : null;
+                                final isAdmin = RoleService.isAdmin(currentUserRow?.userType);
+
+                                return Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Color(0xFFDFF1F1),
@@ -408,6 +428,101 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                           ),
                                         ],
                                       ),
+                                      // AI Classification Feedback Card
+                                      Builder(
+                                        builder: (context) {
+                                          final currentSegregated = _model.switchIsSegregatedValue ??
+                                              containerImageRow.isSegregated ??
+                                              false;
+                                          final currentRecycling = _model.checkboxRecyclingValue ??
+                                              containerImageRow.categoryRecycling ??
+                                              false;
+                                          final currentBiode = _model.checkboxBiodeValue ??
+                                              containerImageRow.categoryBiode ??
+                                              false;
+                                          final currentNonBiode = _model.checkboxNonbiodeValue1 ??
+                                              containerImageRow.categoryNonbiode ??
+                                              false;
+
+                                          final feedbackText = functions.formatWasteClassificationFeedback(
+                                            isSegregated: currentSegregated,
+                                            isRecyclable: currentRecycling,
+                                            isBiodegradable: currentBiode,
+                                            isNonBiodegradable: currentNonBiode,
+                                          );
+
+                                          return Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(12.0),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF1F8E9),
+                                              borderRadius: BorderRadius.circular(10.0),
+                                              border: Border.all(
+                                                color: const Color(0xFF81C784),
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.auto_awesome,
+                                                          color: Color(0xFF2E7D32),
+                                                          size: 20.0,
+                                                        ),
+                                                        const SizedBox(width: 8.0),
+                                                        Text(
+                                                          'AI Waste Classification',
+                                                          style: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 14.0,
+                                                            color: const Color(0xFF1B5E20),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 8.0, vertical: 3.0),
+                                                      decoration: BoxDecoration(
+                                                        color: containerImageRow.status == 'Verified'
+                                                            ? const Color(0xFF2E7D32)
+                                                            : const Color(0xFFE65100),
+                                                        borderRadius: BorderRadius.circular(6.0),
+                                                      ),
+                                                      child: Text(
+                                                        containerImageRow.status == 'Verified'
+                                                            ? '✓ Verified'
+                                                            : '⏳ Non-Verified',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 11.0,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 8.0),
+                                                Text(
+                                                  feedbackText,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 13.0,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: const Color(0xFF2E7D32),
+                                                    height: 1.35,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
                                       if (containerImageRow?.updatedBy !=
                                               null &&
                                           containerImageRow?.updatedBy != '')
@@ -574,6 +689,117 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                             ),
                                           ].divide(SizedBox(height: 5.0)),
                                         ),
+                                      if (!isAdmin)
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(12.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(10.0),
+                                            border: Border.all(
+                                              color: FlutterFlowTheme.of(context).alternate,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Classification Summary',
+                                                    style: FlutterFlowTheme.of(context).titleSmall.override(
+                                                      font: GoogleFonts.interTight(fontWeight: FontWeight.bold),
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                                                    decoration: BoxDecoration(
+                                                      color: containerImageRow.isSegregated == true
+                                                          ? const Color(0xFF2E7D32)
+                                                          : const Color(0xFFC62828),
+                                                      borderRadius: BorderRadius.circular(6.0),
+                                                    ),
+                                                    child: Text(
+                                                      containerImageRow.isSegregated == true ? '✓ Segregated' : '✗ Not Segregated',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 11.0,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Wrap(
+                                                spacing: 6.0,
+                                                runSpacing: 4.0,
+                                                children: [
+                                                  if (containerImageRow.categoryRecycling == true)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFF1976D2),
+                                                        borderRadius: BorderRadius.circular(4.0),
+                                                      ),
+                                                      child: const Text('Recyclable', style: TextStyle(color: Colors.white, fontSize: 11.0, fontWeight: FontWeight.w600)),
+                                                    ),
+                                                  if (containerImageRow.categoryBiode == true)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFF388E3C),
+                                                        borderRadius: BorderRadius.circular(4.0),
+                                                      ),
+                                                      child: const Text('Biodegradable', style: TextStyle(color: Colors.white, fontSize: 11.0, fontWeight: FontWeight.w600)),
+                                                    ),
+                                                  if (containerImageRow.categoryNonbiode == true)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFE65100),
+                                                        borderRadius: BorderRadius.circular(4.0),
+                                                      ),
+                                                      child: const Text('Non-Biodegradable', style: TextStyle(color: Colors.white, fontSize: 11.0, fontWeight: FontWeight.w600)),
+                                                    ),
+                                                ],
+                                              ),
+                                              if (containerImageRow.remark != null && containerImageRow.remark!.isNotEmpty) ...[
+                                                const SizedBox(height: 10.0),
+                                                Text(
+                                                  'Official Remarks:',
+                                                  style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 3.0),
+                                                Text(
+                                                  containerImageRow.remark!,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.inter(fontStyle: FontStyle.italic),
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      if (isAdmin)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                          child: Text(
+                                            'Official Double-Check & Adjustments',
+                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                              font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                              color: FlutterFlowTheme.of(context).primaryText,
+                                              letterSpacing: 0.0,
+                                            ),
+                                          ),
+                                        ),
+                                      if (isAdmin)
                                       Row(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -625,14 +851,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                               ),
                                                     ),
                                                     Switch.adaptive(
-                                                      value: _model
-                                                              .switchIsSegregatedValue ??=
-                                                          (containerImageRow
-                                                                      ?.isSegregated ==
-                                                                  true) ||
-                                                              (containerImageRow
-                                                                      ?.isSegregated ==
-                                                                  false),
+                                                      value: _model.switchIsSegregatedValue ??= containerImageRow?.isSegregated ?? false,
                                                       onChanged:
                                                           (newValue) async {
                                                         safeSetState(() => _model
@@ -686,14 +905,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                           Colors.black,
                                                     ),
                                                     child: Checkbox(
-                                                      value: _model
-                                                              .checkboxRecyclingValue ??=
-                                                          (containerImageRow
-                                                                      ?.categoryRecycling ==
-                                                                  true) ||
-                                                              (containerImageRow
-                                                                      ?.categoryRecycling ==
-                                                                  false),
+                                                      value: _model.checkboxRecyclingValue ??= containerImageRow?.categoryRecycling ?? false,
                                                       onChanged:
                                                           (newValue) async {
                                                         safeSetState(() => _model
@@ -780,14 +992,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                           Colors.black,
                                                     ),
                                                     child: Checkbox(
-                                                      value: _model
-                                                              .checkboxBiodeValue ??=
-                                                          (containerImageRow
-                                                                      ?.categoryBiode ==
-                                                                  true) ||
-                                                              (containerImageRow
-                                                                      ?.categoryBiode ==
-                                                                  false),
+                                                      value: _model.checkboxBiodeValue ??= containerImageRow?.categoryBiode ?? false,
                                                       onChanged:
                                                           (newValue) async {
                                                         safeSetState(() => _model
@@ -874,14 +1079,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                           Colors.black,
                                                     ),
                                                     child: Checkbox(
-                                                      value: _model
-                                                              .checkboxNonbiodeValue1 ??=
-                                                          (containerImageRow
-                                                                      ?.categoryNonbiode ==
-                                                                  true) ||
-                                                              (containerImageRow
-                                                                      ?.categoryNonbiode ==
-                                                                  false),
+                                                      value: _model.checkboxNonbiodeValue1 ??= containerImageRow?.categoryNonbiode ?? false,
                                                       onChanged:
                                                           (newValue) async {
                                                         safeSetState(() => _model
@@ -1480,7 +1678,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                               focusNode: _model
                                                   .textFieldRemarksFocusNode,
                                               autofocus: false,
-                                              enabled: true,
+                                              enabled: isAdmin,
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -1691,7 +1889,8 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                               CrossAxisAlignment
                                                                   .start,
                                                           children: [
-                                                            Align(
+                                                            if (isAdmin || (containerImageRow.imgUploader == currentUserUid && containerImageRow.status != 'Verified'))
+                                                              Align(
                                                               alignment:
                                                                   AlignmentDirectional(
                                                                       -1.0,
@@ -1885,288 +2084,120 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                               CrossAxisAlignment
                                                                   .end,
                                                           children: [
-                                                            FFButtonWidget(
-                                                              onPressed:
-                                                                  () async {
-                                                                if (_model
-                                                                        .checkboxRecyclingValue ==
-                                                                    true) {
-                                                                  _model.categoryCount =
-                                                                      _model.categoryCount +
-                                                                          1;
-                                                                }
-                                                                if (_model
-                                                                        .checkboxBiodeValue ==
-                                                                    true) {
-                                                                  _model.categoryCount =
-                                                                      _model.categoryCount +
-                                                                          1;
-                                                                }
-                                                                if (_model
-                                                                        .checkboxNonbiodeValue1 ==
-                                                                    true) {
-                                                                  _model.categoryCount =
-                                                                      _model.categoryCount +
-                                                                          1;
-                                                                }
-                                                                if (_model
-                                                                        .switchIsSegregatedValue ==
-                                                                    true) {
-                                                                  if (containerImageRow
-                                                                          ?.status !=
-                                                                      'Flagged') {
-                                                                    await ImageTable()
-                                                                        .update(
+                                                            if (isAdmin)
+                                                                FFButtonWidget(
+                                                                  onPressed: () async {
+                                                                    final finalSegregated = _model.switchIsSegregatedValue ??
+                                                                        containerImageRow.isSegregated ??
+                                                                        false;
+                                                                    final finalRecycling = _model.checkboxRecyclingValue ??
+                                                                        containerImageRow.categoryRecycling ??
+                                                                        false;
+                                                                    final finalBiode = _model.checkboxBiodeValue ??
+                                                                        containerImageRow.categoryBiode ??
+                                                                        false;
+                                                                    final finalNonBiode = _model.checkboxNonbiodeValue1 ??
+                                                                        containerImageRow.categoryNonbiode ??
+                                                                        false;
+                                                                    final finalRemark = _model.textFieldRemarksTextController?.text.isNotEmpty == true
+                                                                        ? _model.textFieldRemarksTextController!.text
+                                                                        : 'Verified by official';
+
+                                                                    // 1. Update Image record to Verified
+                                                                    await ImageTable().update(
                                                                       data: {
-                                                                        'status':
-                                                                            'Segregated',
-                                                                        'remark': _model
-                                                                            .textFieldRemarksTextController
-                                                                            .text,
-                                                                        'updated_by':
-                                                                            currentUserUid,
-                                                                        'allowFlagging':
-                                                                            true,
-                                                                        'isSegregated':
-                                                                            _model.switchIsSegregatedValue,
-                                                                        'category_recycling':
-                                                                            _model.checkboxRecyclingValue,
-                                                                        'category_biode':
-                                                                            _model.checkboxBiodeValue,
-                                                                        'category_nonbiode':
-                                                                            _model.checkboxNonbiodeValue1,
+                                                                        'status': 'Verified',
+                                                                        'remark': finalRemark,
+                                                                        'updated_by': currentUserUid,
+                                                                        'updated_at': DateTime.now().toIso8601String(),
+                                                                        'allowFlagging': false,
+                                                                        'isSegregated': finalSegregated,
+                                                                        'category_recycling': finalRecycling,
+                                                                        'category_biode': finalBiode,
+                                                                        'category_nonbiode': finalNonBiode,
                                                                       },
-                                                                      matchingRows:
-                                                                          (rows) =>
-                                                                              rows.eqOrNull(
+                                                                      matchingRows: (rows) => rows.eqOrNull(
                                                                         'image_id',
-                                                                        containerImageRow
-                                                                            ?.imageId,
+                                                                        containerImageRow.imageId,
                                                                       ),
                                                                     );
-                                                                    if (_model
-                                                                            .categoryCount ==
-                                                                        3) {
-                                                                      await UserSubtableTable()
-                                                                          .update(
+
+                                                                    // 2. Gamification points handling
+                                                                    if (finalSegregated && rowUserSubtableRow != null) {
+                                                                      int activeCount = 0;
+                                                                      if (finalRecycling) activeCount++;
+                                                                      if (finalBiode) activeCount++;
+                                                                      if (finalNonBiode) activeCount++;
+
+                                                                      int pts = 25;
+                                                                      if (activeCount >= 3) {
+                                                                        pts = 100;
+                                                                      } else if (activeCount == 2) {
+                                                                        pts = 50;
+                                                                      }
+
+                                                                      await UserSubtableTable().update(
                                                                         data: {
                                                                           'user_points': functions.plusPoints(
-                                                                              rowUserSubtableRow!.userPoints!,
-                                                                              100),
-                                                                          'notification':
-                                                                              false,
+                                                                            rowUserSubtableRow.userPoints ?? 0,
+                                                                            pts,
+                                                                          ),
+                                                                          'notification': false,
+                                                                          'updated_at': DateTime.now().toIso8601String(),
                                                                         },
-                                                                        matchingRows:
-                                                                            (rows) =>
-                                                                                rows.eqOrNull(
+                                                                        matchingRows: (rows) => rows.eqOrNull(
                                                                           'user_idRef',
-                                                                          containerImageRow
-                                                                              ?.imgUploader,
+                                                                          containerImageRow.imgUploader,
                                                                         ),
                                                                       );
-                                                                    } else if (_model
-                                                                            .categoryCount ==
-                                                                        2) {
-                                                                      await UserSubtableTable()
-                                                                          .update(
+                                                                    } else if (!finalSegregated && rowUserSubtableRow != null) {
+                                                                      await UserSubtableTable().update(
                                                                         data: {
-                                                                          'user_points': functions.plusPoints(
-                                                                              rowUserSubtableRow!.userPoints!,
-                                                                              50),
-                                                                          'notification':
-                                                                              false,
+                                                                          'notification': true,
+                                                                          'updated_at': DateTime.now().toIso8601String(),
                                                                         },
-                                                                        matchingRows:
-                                                                            (rows) =>
-                                                                                rows.eqOrNull(
+                                                                        matchingRows: (rows) => rows.eqOrNull(
                                                                           'user_idRef',
-                                                                          containerImageRow
-                                                                              ?.imgUploader,
-                                                                        ),
-                                                                      );
-                                                                    } else if (_model
-                                                                            .categoryCount ==
-                                                                        1) {
-                                                                      await UserSubtableTable()
-                                                                          .update(
-                                                                        data: {
-                                                                          'user_points': functions.plusPoints(
-                                                                              rowUserSubtableRow!.userPoints!,
-                                                                              25),
-                                                                          'notification':
-                                                                              false,
-                                                                        },
-                                                                        matchingRows:
-                                                                            (rows) =>
-                                                                                rows.eqOrNull(
-                                                                          'user_idRef',
-                                                                          containerImageRow
-                                                                              ?.imgUploader,
+                                                                          containerImageRow.imgUploader,
                                                                         ),
                                                                       );
                                                                     }
-                                                                  } else {
-                                                                    await ImageTable()
-                                                                        .update(
-                                                                      data: {
-                                                                        'status':
-                                                                            'Verified',
-                                                                        'remark': _model
-                                                                            .textFieldRemarksTextController
-                                                                            .text,
-                                                                        'updated_by':
-                                                                            currentUserUid,
-                                                                        'allowFlagging':
-                                                                            false,
-                                                                        'isSegregated':
-                                                                            _model.switchIsSegregatedValue,
-                                                                        'category_recycling':
-                                                                            _model.checkboxRecyclingValue,
-                                                                        'category_biode':
-                                                                            _model.checkboxBiodeValue,
-                                                                        'category_nonbiode':
-                                                                            _model.checkboxNonbiodeValue1,
-                                                                      },
-                                                                      matchingRows:
-                                                                          (rows) =>
-                                                                              rows.eqOrNull(
-                                                                        'image_id',
-                                                                        containerImageRow
-                                                                            ?.imageId,
-                                                                      ),
-                                                                    );
-                                                                    await UserSubtableTable()
-                                                                        .update(
-                                                                      data: {
-                                                                        'user_points': functions.plusPoints(
-                                                                            rowUserSubtableRow!.userPoints!,
-                                                                            100),
-                                                                        'notification':
-                                                                            false,
-                                                                      },
-                                                                      matchingRows:
-                                                                          (rows) =>
-                                                                              rows.eqOrNull(
-                                                                        'user_idRef',
-                                                                        containerImageRow
-                                                                            ?.imgUploader,
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                                } else {
-                                                                  await ImageTable()
-                                                                      .update(
-                                                                    data: {
-                                                                      'status':
-                                                                          'Unsegregated',
-                                                                      'remark': _model
-                                                                          .textFieldRemarksTextController
-                                                                          .text,
-                                                                      'updated_by':
-                                                                          currentUserUid,
-                                                                      'allowFlagging':
-                                                                          true,
-                                                                      'isSegregated':
-                                                                          _model
-                                                                              .switchIsSegregatedValue,
-                                                                      'category_recycling':
-                                                                          _model
-                                                                              .checkboxRecyclingValue,
-                                                                      'category_biode':
-                                                                          _model
-                                                                              .checkboxBiodeValue,
-                                                                      'category_nonbiode':
-                                                                          _model
-                                                                              .checkboxNonbiodeValue1,
-                                                                    },
-                                                                    matchingRows:
-                                                                        (rows) =>
-                                                                            rows.eqOrNull(
-                                                                      'image_id',
-                                                                      containerImageRow
-                                                                          ?.imageId,
-                                                                    ),
-                                                                  );
-                                                                  await UserSubtableTable()
-                                                                      .update(
-                                                                    data: {
-                                                                      'notification':
-                                                                          true,
-                                                                    },
-                                                                    matchingRows:
-                                                                        (rows) =>
-                                                                            rows.eqOrNull(
-                                                                      'user_idRef',
-                                                                      containerImageRow
-                                                                          ?.imgUploader,
-                                                                    ),
-                                                                  );
-                                                                }
 
-                                                                _model.categoryCount =
-                                                                    0;
-                                                                safeSetState(
-                                                                    () {});
-                                                              },
-                                                              text: 'Save',
-                                                              icon: Icon(
-                                                                Icons
-                                                                    .verified_outlined,
-                                                                size: 25.0,
-                                                              ),
-                                                              options:
-                                                                  FFButtonOptions(
-                                                                height: 50.0,
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16.0,
-                                                                        0.0,
-                                                                        16.0,
-                                                                        0.0),
-                                                                iconPadding:
-                                                                    EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primary,
-                                                                textStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .interTight(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .titleSmall
-                                                                            .fontStyle,
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      const SnackBar(
+                                                                        content: Text('Waste verified successfully! Moved to Verified list.'),
+                                                                        backgroundColor: Color(0xFF2E7D32),
+                                                                        duration: Duration(seconds: 2),
                                                                       ),
-                                                                      color: Colors
-                                                                          .white,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
+                                                                    );
+
+                                                                    context.safePop();
+                                                                  },
+                                                                  text: containerImageRow.status == 'Verified' ? 'Update' : 'Verify',
+                                                                  icon: Icon(
+                                                                    containerImageRow.status == 'Verified'
+                                                                        ? Icons.check_circle_outline
+                                                                        : Icons.verified_rounded,
+                                                                    size: 22.0,
+                                                                  ),
+                                                                  options: FFButtonOptions(
+                                                                    height: 50.0,
+                                                                    padding: const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                                                                    color: const Color(0xFF2E7D32),
+                                                                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                                      font: GoogleFonts.interTight(
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                      color: Colors.white,
+                                                                      letterSpacing: 0.0,
                                                                     ),
-                                                                elevation: 0.0,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8.0),
-                                                              ),
-                                                            ),
-                                                            FFButtonWidget(
+                                                                    elevation: 2.0,
+                                                                    borderRadius: BorderRadius.circular(8.0),
+                                                                  ),
+                                                                )
+,
+                                                            if (isAdmin)
+                                                              FFButtonWidget(
                                                               onPressed:
                                                                   () async {
                                                                 _model.uploadedImgFromDBConverted =
@@ -2285,6 +2316,48 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                             8.0),
                                                               ),
                                                             ),
+                                                            if (!isAdmin)
+                                                              Container(
+                                                                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                                                decoration: BoxDecoration(
+                                                                  color: containerImageRow.status == 'Verified'
+                                                                      ? const Color(0xFFE8F5E9)
+                                                                      : const Color(0xFFFFF3E0),
+                                                                  borderRadius: BorderRadius.circular(8.0),
+                                                                  border: Border.all(
+                                                                    color: containerImageRow.status == 'Verified'
+                                                                        ? const Color(0xFF81C784)
+                                                                        : const Color(0xFFFFB74D),
+                                                                  ),
+                                                                ),
+                                                                child: Row(
+                                                                  mainAxisSize: MainAxisSize.min,
+                                                                  children: [
+                                                                    Icon(
+                                                                      containerImageRow.status == 'Verified'
+                                                                          ? Icons.verified
+                                                                          : Icons.hourglass_top,
+                                                                      size: 16.0,
+                                                                      color: containerImageRow.status == 'Verified'
+                                                                          ? const Color(0xFF2E7D32)
+                                                                          : const Color(0xFFE65100),
+                                                                    ),
+                                                                    const SizedBox(width: 4.0),
+                                                                    Text(
+                                                                      containerImageRow.status == 'Verified'
+                                                                          ? 'Status: Verified'
+                                                                          : 'Status: Pending Verification',
+                                                                      style: TextStyle(
+                                                                        fontSize: 12.0,
+                                                                        fontWeight: FontWeight.bold,
+                                                                        color: containerImageRow.status == 'Verified'
+                                                                            ? const Color(0xFF2E7D32)
+                                                                            : const Color(0xFFE65100),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
                                                           ].divide(SizedBox(
                                                               height: 10.0)),
                                                         ),
@@ -2300,6 +2373,8 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                   ),
                                 ),
                               ),
+                            );
+                              },
                             );
                           },
                         ),
