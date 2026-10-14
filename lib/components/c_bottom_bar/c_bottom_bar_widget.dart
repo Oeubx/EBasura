@@ -325,7 +325,15 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
                         size: 75.0,
                       ),
                       onPressed: () async {
-                        context.pushNamed(PImgUploadAAuthWidget.routeName);
+                        final isResident = stackUserRow?.userType != 'Admin';
+                        context.pushNamed(
+                          PImgUploadAAuthWidget.routeName,
+                          queryParameters: {
+                            if (isResident)
+                              'autoTriggerCamera':
+                                  serializeParam(true, ParamType.bool),
+                          }.withoutNulls,
+                        );
                       },
                     ),
                   ),

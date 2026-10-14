@@ -290,7 +290,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: PImgUploadAAuthWidget.routeName,
           path: PImgUploadAAuthWidget.routePath,
-          builder: (context, params) => PImgUploadAAuthWidget(),
+          builder: (context, params) => PImgUploadAAuthWidget(
+            autoTriggerCamera: params.getParam<bool>(
+              'autoTriggerCamera',
+              ParamType.bool,
+            ) ?? false,
+          ),
         ),
         FFRoute(
           name: PImgUploadAGuestWidget.routeName,

@@ -63,6 +63,13 @@ class PImgUploadAAuthModel extends FlutterFlowModel<PImgUploadAAuthWidget> {
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
   String uploadedFileUrl_uploadImgToDbAdetHasAI = '';
 
+  // Automated resident pipeline fields
+  bool isAutoScanning = false;
+  String autoScanStatus = '';
+  bool residentSubmissionSuccess = false;
+  String residentFeedbackMessage = '';
+  bool autoTriggeredOnce = false;
+
   // Model for C_BottomBar component.
   late CBottomBarModel cBottomBarModel;
 

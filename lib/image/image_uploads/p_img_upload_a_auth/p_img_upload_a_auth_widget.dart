@@ -17,11 +17,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'p_img_upload_a_auth_model.dart';
+import '/image/image_views/p_images_view_all/p_images_view_all_widget.dart';
 export 'p_img_upload_a_auth_model.dart';
 
 class PImgUploadAAuthWidget extends StatefulWidget {
-  const PImgUploadAAuthWidget({super.key});
+  const PImgUploadAAuthWidget({
+    super.key,
+    this.autoTriggerCamera = false,
+  });
 
+  final bool autoTriggerCamera;
   static String routeName = 'P_ImgUpload_A_Auth';
   static String routePath = '/pImgUploadAAuth';
 
@@ -39,7 +44,190 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
     super.initState();
     _model = createModel(context, () => PImgUploadAAuthModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.autoTriggerCamera && !_model.autoTriggeredOnce) {
+        _model.autoTriggeredOnce = true;
+        await _triggerDirectCameraCapture();
+      } else {
+        safeSetState(() {});
+      }
+    });
+  }
+
+  Future<void> _triggerDirectCameraCapture([UserRow? userRow]) async {
+    try {
+      final selectedMedia = await selectMedia(
+        maxWidth: 1024.0,
+        maxHeight: 1024.0,
+        imageQuality: 80,
+        mediaSource: MediaSource.camera,
+      );
+
+      if (selectedMedia == null || selectedMedia.isEmpty) {
+        return;
+      }
+
+      final media = selectedMedia.first;
+      final uploadedFile = FFUploadedFile(
+        name: media.storagePath.split('/').last,
+        bytes: media.bytes,
+        height: media.dimensions?.height,
+        width: media.dimensions?.width,
+        blurHash: media.blurHash,
+        originalFilename: media.originalFilename,
+      );
+
+      safeSetState(() {
+        _model.uploadedLocalFile_uploadedImgAdet = uploadedFile;
+        _model.residentSubmissionSuccess = false;
+        _model.residentFeedbackMessage = '';
+        _model.apiResponseHolder = [];
+      });
+
+      UserRow? resolvedUser = userRow;
+      if (resolvedUser == null && currentUserUid.isNotEmpty) {
+        final rows = await UserTable().querySingleRow(
+          queryFn: (q) => q.eqOrNull('user_id', currentUserUid),
+        );
+        if (rows.isNotEmpty) {
+          resolvedUser = rows.first;
+        }
+      }
+
+      if (resolvedUser?.userType != 'Admin') {
+        await _executeResidentAutoPipeline(uploadedFile, resolvedUser);
+      }
+    } catch (e) {
+      debugPrint('Error capturing photo from camera: $e');
+    }
+  }
+
+  Future<void> _executeResidentAutoPipeline(
+    FFUploadedFile uploadedFile,
+    UserRow? userRow,
+  ) async {
+    safeSetState(() {
+      _model.isAutoScanning = true;
+      _model.autoScanStatus = 'Analyzing waste with Gemini AI...';
+    });
+
+    try {
+      final base64Image =
+          await actions.imageConversionToBase64String(uploadedFile);
+
+      final apiResult = await AuthScanCall.call(base64image: base64Image);
+
+      if (!(apiResult.succeeded ?? false)) {
+        safeSetState(() {
+          _model.isAutoScanning = false;
+        });
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Scanning Failed'),
+              content: const Text(
+                  'Could not scan the waste. Please ensure good lighting and try again.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      final rawResponse =
+          AuthScanCall.apiResponse(apiResult.jsonBody ?? '') ?? '';
+      final parsed = functions.parseWasteResponse(rawResponse);
+      _model.apiResponseHolder = parsed;
+
+      final isRecyclable =
+          functions.stringToBool(parsed.elementAtOrNull(1) ?? 'false');
+      final isSegregated =
+          functions.stringToBool(parsed.elementAtOrNull(2) ?? 'false');
+      final isBiode =
+          functions.stringToBool(parsed.elementAtOrNull(3) ?? 'false');
+      final isNonBiode =
+          functions.stringToBool(parsed.elementAtOrNull(4) ?? 'false');
+
+      _model.checkboxValidityValue =
+          functions.stringToBool(parsed.elementAtOrNull(0) ?? 'true');
+      _model.checkboxRecyclableValue = isRecyclable;
+      _model.checkboxSegregatedValue = isSegregated;
+      _model.checkboxBiodegradableValue = isBiode;
+      _model.checkboxNonbiodeValue = isNonBiode;
+
+      final feedback = functions.formatWasteClassificationFeedback(
+        isSegregated: isSegregated,
+        isRecyclable: isRecyclable,
+        isBiodegradable: isBiode,
+        isNonBiodegradable: isNonBiode,
+      );
+
+      safeSetState(() {
+        _model.autoScanStatus =
+            'Uploading to Barangay Non-Verified waste list...';
+      });
+
+      final street = userRow?.userStreetNameRef ?? 'general';
+      final selectedMedia = selectedFilesFromUploadedFiles(
+        [uploadedFile],
+        storageFolderPath: street,
+      );
+      final downloadUrls = await uploadSupabaseStorageFiles(
+        bucketName: 'Image_Bucket',
+        selectedFiles: selectedMedia,
+      );
+
+      if (downloadUrls.isEmpty) {
+        throw Exception('Failed to upload image to storage.');
+      }
+      final publicUrl = downloadUrls.first;
+
+      await ImageTable().insert({
+        'img_uploader': userRow?.userId ?? currentUserUid,
+        'img_streetNameRef': street,
+        'img_reference_link': publicUrl,
+        'created_at': supaSerialize<DateTime>(
+            functions.getCurrentTime(getCurrentTimestamp)),
+        'status': 'Categorized by Ai', // Non-Verified
+        'created_atDate': supaSerialize<DateTime>(
+            functions.getCurrentTime(getCurrentTimestamp)),
+        'isSegregated': isSegregated,
+        'category_recycling': isRecyclable,
+        'category_biode': isBiode,
+        'category_nonbiode': isNonBiode,
+      });
+
+      safeSetState(() {
+        _model.isAutoScanning = false;
+        _model.residentSubmissionSuccess = true;
+        _model.residentFeedbackMessage = feedback;
+      });
+    } catch (e) {
+      safeSetState(() {
+        _model.isAutoScanning = false;
+      });
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to complete upload: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -481,6 +669,10 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                             ),
                                                             onPressed:
                                                                 () async {
+                                                              if (containerUserRow?.userType != 'Admin') {
+                                                                await _triggerDirectCameraCapture(containerUserRow);
+                                                                return;
+                                                              }
                                                               final selectedMedia =
                                                                   await selectMediaWithSourceBottomSheet(
                                                                     context:
@@ -551,7 +743,8 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                                   false)) &&
                                                           !(_model
                                                               .apiResponseHolder
-                                                              .isNotEmpty))
+                                                              .isNotEmpty) &&
+                                                          containerUserRow?.userType == 'Admin')
                                                         FlutterFlowIconButton(
                                                           borderColor:
                                                               Colors.black,
@@ -731,6 +924,233 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                         ),
                                       ],
                                     ),
+                                    if (_model.isAutoScanning)
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(20.0),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context).secondaryBackground,
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            border: Border.all(
+                                              color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.3),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              CircularProgressIndicator(
+                                                valueColor: AlwaysStoppedAnimation<Color>(
+                                                  FlutterFlowTheme.of(context).primary,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16.0),
+                                              Text(
+                                                _model.autoScanStatus.isNotEmpty
+                                                    ? _model.autoScanStatus
+                                                    : 'Processing waste image...',
+                                                textAlign: TextAlign.center,
+                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                      font: GoogleFonts.inter(
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 6.0),
+                                              Text(
+                                                'Analyzing with Gemini AI & saving to Barangay queue',
+                                                textAlign: TextAlign.center,
+                                                style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                      font: GoogleFonts.inter(),
+                                                      color: FlutterFlowTheme.of(context).secondaryText,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    if (_model.residentSubmissionSuccess)
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(20.0),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context).secondaryBackground,
+                                            borderRadius: BorderRadius.circular(12.0),
+                                            border: Border.all(
+                                              color: const Color(0xFF2E7D32),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.check_circle_rounded,
+                                                    color: Color(0xFF2E7D32),
+                                                    size: 28.0,
+                                                  ),
+                                                  const SizedBox(width: 10.0),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Waste Recorded & Scanned',
+                                                      style: FlutterFlowTheme.of(context).titleMedium.override(
+                                                            font: GoogleFonts.interTight(
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                            color: const Color(0xFF2E7D32),
+                                                            letterSpacing: 0.0,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 12.0),
+                                              Container(
+                                                padding: const EdgeInsets.all(12.0),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFE8F5E9),
+                                                  borderRadius: BorderRadius.circular(8.0),
+                                                ),
+                                                child: Text(
+                                                  _model.residentFeedbackMessage,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                        color: const Color(0xFF1B5E20),
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10.0),
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.hourglass_top_rounded,
+                                                    color: Colors.orange,
+                                                    size: 16.0,
+                                                  ),
+                                                  const SizedBox(width: 6.0),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Status: Pushed to Non-Verified List for Barangay review',
+                                                      style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                            font: GoogleFonts.inter(),
+                                                            color: FlutterFlowTheme.of(context).secondaryText,
+                                                            letterSpacing: 0.0,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 16.0),
+                                              FFButtonWidget(
+                                                onPressed: () async {
+                                                  context.pushNamed(PImagesViewAllWidget.routeName);
+                                                },
+                                                text: 'View in Waste List',
+                                                icon: const Icon(
+                                                  Icons.list_alt_rounded,
+                                                  size: 20.0,
+                                                ),
+                                                options: FFButtonOptions(
+                                                  width: double.infinity,
+                                                  height: 44.0,
+                                                  color: FlutterFlowTheme.of(context).primary,
+                                                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                        font: GoogleFonts.interTight(
+                                                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                        ),
+                                                        color: Colors.white,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                  elevation: 0.0,
+                                                  borderRadius: BorderRadius.circular(8.0),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              FFButtonWidget(
+                                                onPressed: () async {
+                                                  safeSetState(() {
+                                                    _model.residentSubmissionSuccess = false;
+                                                    _model.residentFeedbackMessage = '';
+                                                    _model.uploadedLocalFile_uploadedImgAdet = FFUploadedFile(
+                                                      bytes: Uint8List.fromList([]),
+                                                      originalFilename: '',
+                                                    );
+                                                    _model.apiResponseHolder = [];
+                                                  });
+                                                  await _triggerDirectCameraCapture(containerUserRow);
+                                                },
+                                                text: 'Scan Another Waste',
+                                                icon: const Icon(
+                                                  Icons.camera_alt_outlined,
+                                                  size: 20.0,
+                                                ),
+                                                options: FFButtonOptions(
+                                                  width: double.infinity,
+                                                  height: 44.0,
+                                                  color: Colors.transparent,
+                                                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                        font: GoogleFonts.interTight(
+                                                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                        ),
+                                                        color: FlutterFlowTheme.of(context).primary,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                  elevation: 0.0,
+                                                  borderSide: BorderSide(
+                                                    color: FlutterFlowTheme.of(context).primary,
+                                                    width: 1.5,
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(8.0),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    if (containerUserRow?.userType != 'Admin' &&
+                                        !_model.isAutoScanning &&
+                                        !_model.residentSubmissionSuccess &&
+                                        (_model.uploadedLocalFile_uploadedImgAdet == null ||
+                                            (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isEmpty ?? true)))
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            await _triggerDirectCameraCapture(containerUserRow);
+                                          },
+                                          text: 'Open Camera to Scan Waste',
+                                          icon: const Icon(
+                                            Icons.camera_alt_rounded,
+                                            size: 24.0,
+                                          ),
+                                          options: FFButtonOptions(
+                                            width: double.infinity,
+                                            height: 52.0,
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                  font: GoogleFonts.interTight(
+                                                    fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                  ),
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                            elevation: 0.0,
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
                                     if (_model.uploadedLocalFile_uploadedImgAdet !=
                                             null &&
                                         (_model.uploadedLocalFile_uploadedImgAdet
@@ -739,7 +1159,8 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                       Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          if (_model.apiResponseHolder.isEmpty)
+                                          if (_model.apiResponseHolder.isEmpty &&
+                                              containerUserRow?.userType == 'Admin')
                                           FFButtonWidget(
                                             onPressed: () async {
                                               FFAppState()
@@ -890,7 +1311,8 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                             ),
                                           ),
                                           if (_model
-                                              .apiResponseHolder.isNotEmpty)
+                                              .apiResponseHolder.isNotEmpty &&
+                                              containerUserRow?.userType == 'Admin')
                                             Column(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
