@@ -70,6 +70,10 @@ class PImgUploadAAuthModel extends FlutterFlowModel<PImgUploadAAuthWidget> {
   String residentFeedbackMessage = '';
   bool autoTriggeredOnce = false;
 
+  // Admin double-check remarks controller
+  TextEditingController? adminRemarkTextController;
+  String? Function(BuildContext, String?)? adminRemarkTextControllerValidator;
+
   // Model for C_BottomBar component.
   late CBottomBarModel cBottomBarModel;
 
@@ -81,5 +85,6 @@ class PImgUploadAAuthModel extends FlutterFlowModel<PImgUploadAAuthWidget> {
   @override
   void dispose() {
     cBottomBarModel.dispose();
+    adminRemarkTextController?.dispose();
   }
 }

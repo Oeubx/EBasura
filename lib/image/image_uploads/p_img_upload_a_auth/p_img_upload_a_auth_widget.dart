@@ -43,6 +43,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PImgUploadAAuthModel());
+    _model.adminRemarkTextController ??= TextEditingController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (widget.autoTriggerCamera && !_model.autoTriggeredOnce) {
@@ -1191,8 +1192,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                 if ((_model.successApi
                                                         ?.succeeded ??
                                                     true)) {
-                                                  _model.apiResponseHolder =
-                                                      functions
+                                                  final parsed = functions
                                                           .parseWasteResponse(
                                                               AuthScanCall
                                                                   .apiResponse(
@@ -1202,6 +1202,28 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                           )!)
                                                           .toList()
                                                           .cast<String>();
+                                                  _model.apiResponseHolder =
+                                                      parsed;
+                                                  _model.checkboxValidityValue =
+                                                      functions.stringToBool(
+                                                          parsed.elementAtOrNull(0) ??
+                                                              'true');
+                                                  _model.checkboxRecyclableValue =
+                                                      functions.stringToBool(
+                                                          parsed.elementAtOrNull(1) ??
+                                                              'false');
+                                                  _model.checkboxSegregatedValue =
+                                                      functions.stringToBool(
+                                                          parsed.elementAtOrNull(2) ??
+                                                              'false');
+                                                  _model.checkboxBiodegradableValue =
+                                                      functions.stringToBool(
+                                                          parsed.elementAtOrNull(3) ??
+                                                              'false');
+                                                  _model.checkboxNonbiodeValue =
+                                                      functions.stringToBool(
+                                                          parsed.elementAtOrNull(4) ??
+                                                              'false');
                                                   FFAppState()
                                                           .dateTimeScanOfUser =
                                                       functions.getCurrentTime(
@@ -1318,6 +1340,120 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,
                                               children: [
+                                                // AI Classification Feedback Card
+                                                Padding(
+                                                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 15.0),
+                                                  child: Container(
+                                                    width: double.infinity,
+                                                    padding: const EdgeInsets.all(16.0),
+                                                    decoration: BoxDecoration(
+                                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                      borderRadius: BorderRadius.circular(12.0),
+                                                      border: Border.all(
+                                                        color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.3),
+                                                        width: 1.5,
+                                                      ),
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.psychology_rounded,
+                                                              color: FlutterFlowTheme.of(context).primary,
+                                                              size: 26.0,
+                                                            ),
+                                                            const SizedBox(width: 8.0),
+                                                            Expanded(
+                                                              child: Text(
+                                                                'AI Classification Feedback',
+                                                                style: FlutterFlowTheme.of(context).titleMedium.override(
+                                                                      font: GoogleFonts.interTight(
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                      color: FlutterFlowTheme.of(context).primaryText,
+                                                                      letterSpacing: 0.0,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                                              decoration: BoxDecoration(
+                                                                color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15),
+                                                                borderRadius: BorderRadius.circular(6.0),
+                                                              ),
+                                                              child: Text(
+                                                                'Gemini AI',
+                                                                style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                                      font: GoogleFonts.inter(
+                                                                        fontWeight: FontWeight.w600,
+                                                                      ),
+                                                                      color: FlutterFlowTheme.of(context).primary,
+                                                                      letterSpacing: 0.0,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(height: 12.0),
+                                                        Container(
+                                                          padding: const EdgeInsets.all(12.0),
+                                                          decoration: BoxDecoration(
+                                                            color: const Color(0xFFE8F5E9),
+                                                            borderRadius: BorderRadius.circular(8.0),
+                                                            border: Border.all(
+                                                              color: const Color(0xFF81C784),
+                                                              width: 1.0,
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            functions.formatWasteClassificationFeedback(
+                                                              isSegregated: _model.checkboxSegregatedValue ??
+                                                                  functions.stringToBool(_model.apiResponseHolder.elementAtOrNull(2) ?? 'false'),
+                                                              isRecyclable: _model.checkboxRecyclableValue ??
+                                                                  functions.stringToBool(_model.apiResponseHolder.elementAtOrNull(1) ?? 'false'),
+                                                              isBiodegradable: _model.checkboxBiodegradableValue ??
+                                                                  functions.stringToBool(_model.apiResponseHolder.elementAtOrNull(3) ?? 'false'),
+                                                              isNonBiodegradable: _model.checkboxNonbiodeValue ??
+                                                                  functions.stringToBool(_model.apiResponseHolder.elementAtOrNull(4) ?? 'false'),
+                                                            ),
+                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                  font: GoogleFonts.inter(
+                                                                    fontWeight: FontWeight.w600,
+                                                                  ),
+                                                                  color: const Color(0xFF1B5E20),
+                                                                  letterSpacing: 0.0,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 14.0),
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.fact_check_outlined,
+                                                              color: FlutterFlowTheme.of(context).secondaryText,
+                                                              size: 20.0,
+                                                            ),
+                                                            const SizedBox(width: 6.0),
+                                                            Expanded(
+                                                              child: Text(
+                                                                'Official Double-Check: Review & adjust attributes below',
+                                                                style: FlutterFlowTheme.of(context).labelMedium.override(
+                                                                      font: GoogleFonts.inter(
+                                                                        fontWeight: FontWeight.w600,
+                                                                      ),
+                                                                      color: FlutterFlowTheme.of(context).secondaryText,
+                                                                      letterSpacing: 0.0,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
                                                 Row(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
@@ -1782,6 +1918,82 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                         ),
                                                       ],
                                                     ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  0.0,
+                                                                  10.0,
+                                                                  0.0,
+                                                                  10.0),
+                                                      child: TextFormField(
+                                                        controller: _model
+                                                            .adminRemarkTextController,
+                                                        autofocus: false,
+                                                        obscureText: false,
+                                                        decoration:
+                                                            InputDecoration(
+                                                          labelText:
+                                                              'Official Double-Check Remarks (Optional)',
+                                                          labelStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelMedium,
+                                                          hintText:
+                                                              'e.g. Double-checked & verified segregation',
+                                                          hintStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .labelSmall,
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .alternate,
+                                                              width: 1.0,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide(
+                                                              color:
+                                                                  FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primary,
+                                                              width: 1.5,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                          ),
+                                                          filled: true,
+                                                          fillColor:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .secondaryBackground,
+                                                          contentPadding:
+                                                              const EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                      16.0,
+                                                                      12.0,
+                                                                      16.0,
+                                                                      12.0),
+                                                        ),
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium,
+                                                      ),
+                                                    ),
                                                     FFButtonWidget(
                                                         onPressed: () async {
                                                           {
@@ -1862,7 +2074,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                                     .getCurrentTime(
                                                                         getCurrentTimestamp)),
                                                             'status':
-                                                                'Categorized by Ai',
+                                                                'Verified',
                                                             'created_atDate':
                                                                 supaSerialize<
                                                                         DateTime>(
@@ -1870,15 +2082,32 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                                         .getCurrentTime(
                                                                             getCurrentTimestamp)),
                                                             'isSegregated': _model
-                                                                .checkboxSegregatedValue,
+                                                                .checkboxSegregatedValue ?? false,
                                                             'category_recycling':
                                                                 _model
-                                                                    .checkboxRecyclableValue,
+                                                                    .checkboxRecyclableValue ?? false,
                                                             'category_biode': _model
-                                                                .checkboxBiodegradableValue,
+                                                                .checkboxBiodegradableValue ?? false,
                                                             'category_nonbiode':
                                                                 _model
-                                                                    .checkboxNonbiodeValue,
+                                                                    .checkboxNonbiodeValue ?? false,
+                                                            'remark': _model
+                                                                    .adminRemarkTextController
+                                                                    ?.text
+                                                                    .isNotEmpty ==
+                                                                true
+                                                                ? _model
+                                                                    .adminRemarkTextController
+                                                                    ?.text
+                                                                : 'Verified by official',
+                                                            'updated_by':
+                                                                containerUserRow
+                                                                    ?.userId ?? currentUserUid,
+                                                            'updated_at': supaSerialize<
+                                                                    DateTime>(
+                                                                functions
+                                                                    .getCurrentTime(
+                                                                        getCurrentTimestamp)),
                                                           });
                                                           safeSetState(() {
                                                             _model.isDataUploading_uploadedImgAdet =
@@ -1908,13 +2137,14 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
 
                                                           _model.apiResponseHolder =
                                                               [];
+                                                          _model.adminRemarkTextController?.clear();
                                                           safeSetState(() {});
                                                           ScaffoldMessenger.of(
                                                                   context)
                                                               .showSnackBar(
                                                             SnackBar(
                                                               content: Text(
-                                                                'Image is successfully uploaded.',
+                                                                'Waste verified and uploaded to verified list successfully.',
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .titleLarge
@@ -1951,10 +2181,10 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                           );
                                                         },
                                                         text:
-                                                            'Upload Scanned Image',
+                                                            'Verify & Upload Waste',
                                                         icon: Icon(
-                                                          Icons.upload_outlined,
-                                                          size: 25.0,
+                                                          Icons.verified_outlined,
+                                                          size: 24.0,
                                                         ),
                                                         options:
                                                             FFButtonOptions(
@@ -2023,6 +2253,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                           _model.checkboxSegregatedValue = null;
                                                           _model.checkboxBiodegradableValue = null;
                                                           _model.checkboxNonbiodeValue = null;
+                                                          _model.adminRemarkTextController?.clear();
                                                         });
                                                       },
                                                       text: 'Clear / Rescan',
