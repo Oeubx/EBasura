@@ -62,9 +62,10 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
                 ),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
                         child: Image.asset(
@@ -559,29 +560,21 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
                           ),
                         ),
                       ),
-                      Container(
-                        width: 100.0,
-                        height: 350.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
+                      SizedBox(height: 90.0),
                     ].divide(SizedBox(height: 5.0)),
                   ),
                 ),
               ),
-              Align(
-                alignment: AlignmentDirectional(0.0, 0.0),
-                child: wrapWithModel(
-                  model: _model.cBottomBarModel,
-                  updateCallback: () => safeSetState(() {}),
-                  child: CBottomBarWidget(),
-                ),
-              ),
-            ],
-          ),
+            ),
+            wrapWithModel(
+              model: _model.cBottomBarModel,
+              updateCallback: () => safeSetState(() {}),
+              child: CBottomBarWidget(),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
