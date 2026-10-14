@@ -1,19 +1,12 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_images_view_all_model.dart';
 export 'p_images_view_all_model.dart';
 
@@ -62,11 +55,11 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
           child: Stack(
             children: [
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Color(0xFFE8EDF2),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -79,21 +72,21 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                           fit: BoxFit.fitWidth,
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        height: 525.0,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDFF1F1),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: SingleChildScrollView(
-                            primary: false,
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDFF1F1),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                12.0, 12.0, 12.0, 85.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                // User info + Role header
                                 FutureBuilder<List<UserRow>>(
                                   future: UserTable().querySingleRow(
                                     queryFn: (q) => q.eqOrNull(
@@ -102,260 +95,243 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                     ),
                                   ),
                                   builder: (context, snapshot) {
-                                    // Customize what your widget looks like when it's loading.
                                     if (!snapshot.hasData) {
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 50.0,
-                                          height: 50.0,
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
+                                      return const SizedBox(height: 28.0);
+                                    }
+                                    final rowUser = snapshot.data!.isNotEmpty
+                                        ? snapshot.data!.first
+                                        : null;
+                                    final isAdmin =
+                                        rowUser?.userType == 'Admin';
+
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              isAdmin
+                                                  ? Icons.admin_panel_settings
+                                                  : Icons.person,
+                                              color: FlutterFlowTheme.of(context)
+                                                  .primaryText,
+                                              size: 22.0,
+                                            ),
+                                            const SizedBox(width: 6.0),
+                                            Text(
+                                              rowUser?.userName ?? 'User',
+                                              style: FlutterFlowTheme.of(context)
+                                                  .titleSmall
+                                                  .override(
+                                                    font: GoogleFonts.interTight(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                    color: Colors.black,
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0, vertical: 3.0),
+                                          decoration: BoxDecoration(
+                                            color: isAdmin
+                                                ? const Color(0xFF1B3B6F)
+                                                : const Color(0xFF2E7D32),
+                                            borderRadius:
+                                                BorderRadius.circular(6.0),
+                                          ),
+                                          child: Text(
+                                            isAdmin
+                                                ? 'Official / Admin'
+                                                : 'Resident',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }
-                                    List<UserRow> rowUserRowList =
-                                        snapshot.data!;
-
-                                    final rowUserRow = rowUserRowList.isNotEmpty
-                                        ? rowUserRowList.first
-                                        : null;
-
-                                    return Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.person,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        RichText(
-                                          textScaler:
-                                              MediaQuery.of(context).textScaler,
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: 'Welcome user, ',
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .interTight(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: Colors.black,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                              ),
-                                              TextSpan(
-                                                text: rowUserRow!.userName!,
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleMedium
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .interTight(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleMedium
-                                                                  .fontStyle,
-                                                        ),
-                                              )
-                                            ],
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleLarge
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                          ),
-                                        ),
-                                      ].divide(SizedBox(width: 5.0)),
+                                      ],
                                     );
                                   },
                                 ),
-                                Text(
-                                  'Click on the image to view their description.',
-                                  style: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .fontStyle,
-                                      ),
-                                ),
-                                Divider(
-                                  thickness: 2.0,
-                                  color: Colors.black,
-                                ),
-                                FlutterFlowDropDown<String>(
-                                  controller:
-                                      _model.dropDownStatusValueController ??=
-                                          FormFieldController<String>(
-                                    _model.dropDownStatusValue ??=
-                                        'Uncategorized',
-                                  ),
-                                  options: [
-                                    'Uncategorized',
-                                    'Unsegregated',
-                                    'Segregated',
-                                    'Flagged',
-                                    'Verified',
-                                    'Categorized by Ai'
-                                  ],
-                                  onChanged: (val) async {
-                                    safeSetState(
-                                        () => _model.dropDownStatusValue = val);
-                                    safeSetState(() {});
-                                  },
-                                  width: double.infinity,
-                                  height: 50.0,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                  hintText: 'Choose filtering option',
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  elevation: 2.0,
-                                  borderColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  borderWidth: 0.0,
-                                  borderRadius: 8.0,
-                                  margin: EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 0.0, 12.0, 0.0),
-                                  hidesUnderline: true,
-                                  isOverButton: false,
-                                  isSearchable: false,
-                                  isMultiSelect: false,
-                                ),
+                                const SizedBox(height: 8.0),
+
+                                // Dual Tab Filter: Non-Verified vs Verified
                                 Container(
-                                  width: double.infinity,
-                                  height: 425.0,
-                                  decoration: BoxDecoration(),
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    border: Border.all(
+                                      color: FlutterFlowTheme.of(context)
+                                          .alternate,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Tab 0: Non-Verified
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () {
+                                            safeSetState(() {
+                                              _model.selectedTabIndex = 0;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            decoration: BoxDecoration(
+                                              color: _model.selectedTabIndex == 0
+                                                  ? const Color(0xFFE65100)
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(9.0),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.hourglass_top_rounded,
+                                                  size: 16.0,
+                                                  color: _model.selectedTabIndex ==
+                                                          0
+                                                      ? Colors.white
+                                                      : FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondaryText,
+                                                ),
+                                                const SizedBox(width: 6.0),
+                                                Text(
+                                                  'Non-Verified',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                        color: _model
+                                                                    .selectedTabIndex ==
+                                                                0
+                                                            ? Colors.white
+                                                            : FlutterFlowTheme
+                                                                    .of(context)
+                                                                .secondaryText,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Tab 1: Verified
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () {
+                                            safeSetState(() {
+                                              _model.selectedTabIndex = 1;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            decoration: BoxDecoration(
+                                              color: _model.selectedTabIndex == 1
+                                                  ? const Color(0xFF2E7D32)
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(9.0),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.verified_rounded,
+                                                  size: 16.0,
+                                                  color: _model.selectedTabIndex ==
+                                                          1
+                                                      ? Colors.white
+                                                      : FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondaryText,
+                                                ),
+                                                const SizedBox(width: 6.0),
+                                                Text(
+                                                  'Verified',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                        color: _model
+                                                                    .selectedTabIndex ==
+                                                                1
+                                                            ? Colors.white
+                                                            : FlutterFlowTheme
+                                                                    .of(context)
+                                                                .secondaryText,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 6.0),
+
+                                // Subtitle
+                                Text(
+                                  _model.selectedTabIndex == 0
+                                      ? 'Scanned by AI • Tap any item to inspect & verify'
+                                      : 'Verified waste records reviewed by officials',
+                                  style: FlutterFlowTheme.of(context)
+                                      .labelSmall
+                                      .override(
+                                        font: GoogleFonts.inter(),
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
+                                const SizedBox(height: 6.0),
+
+                                // Stream of Images with client-side reactive filtering
+                                Expanded(
                                   child: StreamBuilder<List<ImageRow>>(
                                     stream: _model
                                             .staggeredViewSupabaseStream ??=
                                         SupaFlow.client
                                             .from("Image")
                                             .stream(primaryKey: ['image_id'])
-                                            .eqOrNull(
-                                              'status',
-                                              _model.dropDownStatusValue,
-                                            )
-                                            .order('created_at')
-                                            .limit(10)
+                                            .order('created_at',
+                                                ascending: false)
+                                            .limit(100)
                                             .map((list) => list
                                                 .map((item) => ImageRow(item))
                                                 .toList()),
                                     builder: (context, snapshot) {
-                                      // Customize what your widget looks like when it's loading.
                                       if (!snapshot.hasData) {
                                         return Center(
                                           child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
+                                            width: 40.0,
+                                            height: 40.0,
                                             child: CircularProgressIndicator(
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
@@ -366,229 +342,443 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                           ),
                                         );
                                       }
-                                      List<ImageRow> staggeredViewImageRowList =
-                                          snapshot.data!;
+
+                                      final allImages = snapshot.data!;
+                                      final isVerifiedTab =
+                                          _model.selectedTabIndex == 1;
+                                      final filteredImages = isVerifiedTab
+                                          ? allImages
+                                              .where((img) =>
+                                                  img.status == 'Verified')
+                                              .toList()
+                                          : allImages
+                                              .where((img) =>
+                                                  img.status != 'Verified')
+                                              .toList();
+
+                                      if (filteredImages.isEmpty) {
+                                        return Center(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                isVerifiedTab
+                                                    ? Icons.inventory_2_outlined
+                                                    : Icons.done_all_rounded,
+                                                color: isVerifiedTab
+                                                    ? Colors.grey
+                                                    : const Color(0xFF2E7D32),
+                                                size: 42.0,
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Text(
+                                                isVerifiedTab
+                                                    ? 'No verified waste records yet.'
+                                                    : 'No pending non-verified waste!',
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .titleSmall
+                                                    .override(
+                                                      font: GoogleFonts
+                                                          .interTight(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 4.0),
+                                              Text(
+                                                isVerifiedTab
+                                                    ? 'Inspect non-verified items and verify them.'
+                                                    : 'All scanned items have been reviewed.',
+                                                style: FlutterFlowTheme.of(
+                                                        context)
+                                                    .labelSmall
+                                                    .override(
+                                                      font: GoogleFonts.inter(),
+                                                      color: FlutterFlowTheme
+                                                              .of(context)
+                                                          .secondaryText,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
 
                                       return MasonryGridView.builder(
                                         gridDelegate:
-                                            SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                            const SliverSimpleGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: 2,
                                         ),
-                                        crossAxisSpacing: 10.0,
-                                        mainAxisSpacing: 10.0,
-                                        itemCount:
-                                            staggeredViewImageRowList.length,
-                                        itemBuilder:
-                                            (context, staggeredViewIndex) {
-                                          final staggeredViewImageRow =
-                                              staggeredViewImageRowList[
-                                                  staggeredViewIndex];
-                                          return Stack(
-                                            alignment:
-                                                AlignmentDirectional(1.0, 1.0),
-                                            children: [
-                                              Stack(
-                                                alignment: AlignmentDirectional(
-                                                    0.0, 1.0),
-                                                children: [
-                                                  InkWell(
-                                                    splashColor:
-                                                        Colors.transparent,
-                                                    focusColor:
-                                                        Colors.transparent,
-                                                    hoverColor:
-                                                        Colors.transparent,
-                                                    highlightColor:
-                                                        Colors.transparent,
-                                                    onTap: () async {
-                                                      context.pushNamed(
-                                                        PImgViewVerifierWidget
-                                                            .routeName,
-                                                        queryParameters: {
-                                                          'imageIDref':
-                                                              serializeParam(
-                                                            staggeredViewImageRow,
-                                                            ParamType
-                                                                .SupabaseRow,
-                                                          ),
-                                                        }.withoutNulls,
-                                                      );
-                                                    },
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8.0),
-                                                      child: Image.network(
-                                                        staggeredViewImageRow
-                                                            .imgReferenceLink,
-                                                        width: double.infinity,
-                                                        fit: BoxFit.cover,
-                                                      ),
+                                        crossAxisSpacing: 8.0,
+                                        mainAxisSpacing: 8.0,
+                                        itemCount: filteredImages.length,
+                                        itemBuilder: (context, index) {
+                                          final item = filteredImages[index];
+                                          final isVerified =
+                                              item.status == 'Verified';
+
+                                          return Card(
+                                            clipBehavior:
+                                                Clip.antiAliasWithSaveLayer,
+                                            color: FlutterFlowTheme.of(context)
+                                                .secondaryBackground,
+                                            elevation: 2.0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                context.pushNamed(
+                                                  PImgViewVerifierWidget
+                                                      .routeName,
+                                                  queryParameters: {
+                                                    'imageIDref':
+                                                        serializeParam(
+                                                      item,
+                                                      ParamType.SupabaseRow,
                                                     ),
-                                                  ),
-                                                  Opacity(
-                                                    opacity: 0.5,
-                                                    child: Container(
-                                                      width: double.infinity,
-                                                      height: 35.0,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            Color(0xFF263B6A),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
+                                                  }.withoutNulls,
+                                                );
+                                              },
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                children: [
+                                                  // Image with status badge overlay
+                                                  Stack(
+                                                    children: [
+                                                      Image.network(
+                                                        item.imgReferenceLink,
+                                                        width: double.infinity,
+                                                        height: 120.0,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (_, __, ___) =>
+                                                                Container(
+                                                          height: 120.0,
+                                                          color: Colors
+                                                              .grey.shade300,
+                                                          child: const Icon(
+                                                              Icons.broken_image,
+                                                              color:
+                                                                  Colors.grey),
+                                                        ),
                                                       ),
+                                                      Positioned(
+                                                        top: 6.0,
+                                                        left: 6.0,
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      6.0,
+                                                                  vertical: 2.0),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: isVerified
+                                                                ? const Color(
+                                                                    0xFF2E7D32)
+                                                                : const Color(
+                                                                    0xFFE65100),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4.0),
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Icon(
+                                                                isVerified
+                                                                    ? Icons
+                                                                        .check_circle
+                                                                    : Icons
+                                                                        .hourglass_top,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 11.0,
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 3.0),
+                                                              Text(
+                                                                isVerified
+                                                                    ? 'Verified'
+                                                                    : 'Non-Verified',
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 10.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  // Details padding
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        // Segregated badge
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      6.0,
+                                                                  vertical: 2.0),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: item
+                                                                        .isSegregated ==
+                                                                    true
+                                                                ? const Color(
+                                                                    0xFFE8F5E9)
+                                                                : const Color(
+                                                                    0xFFFFEBEE),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4.0),
+                                                            border: Border.all(
+                                                              color: item
+                                                                          .isSegregated ==
+                                                                      true
+                                                                  ? const Color(
+                                                                      0xFF81C784)
+                                                                  : const Color(
+                                                                      0xFFE57373),
+                                                              width: 0.5,
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            item.isSegregated ==
+                                                                    true
+                                                                ? '✓ Segregated'
+                                                                : '✗ Not Segregated',
+                                                            style: TextStyle(
+                                                              fontSize: 10.0,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: item
+                                                                          .isSegregated ==
+                                                                      true
+                                                                  ? const Color(
+                                                                      0xFF2E7D32)
+                                                                  : const Color(
+                                                                      0xFFC62828),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4.0),
+                                                        // Category chips wrap
+                                                        Wrap(
+                                                          spacing: 4.0,
+                                                          runSpacing: 2.0,
+                                                          children: [
+                                                            if (item
+                                                                    .categoryRecycling ==
+                                                                true)
+                                                              Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        5.0,
+                                                                    vertical:
+                                                                        1.0),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .blue
+                                                                      .shade50,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3.0),
+                                                                ),
+                                                                child: Text(
+                                                                  'Recyclable',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        9.0,
+                                                                    color: Colors
+                                                                        .blue
+                                                                        .shade800,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            if (item
+                                                                    .categoryBiode ==
+                                                                true)
+                                                              Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        5.0,
+                                                                    vertical:
+                                                                        1.0),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .green
+                                                                      .shade50,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3.0),
+                                                                ),
+                                                                child: Text(
+                                                                  'Bio',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        9.0,
+                                                                    color: Colors
+                                                                        .green
+                                                                        .shade800,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            if (item
+                                                                    .categoryNonbiode ==
+                                                                true)
+                                                              Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        5.0,
+                                                                    vertical:
+                                                                        1.0),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .orange
+                                                                      .shade50,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3.0),
+                                                                ),
+                                                                child: Text(
+                                                                  'Non-Bio',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        9.0,
+                                                                    color: Colors
+                                                                        .orange
+                                                                        .shade900,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4.0),
+                                                        // Street & date row
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                item
+                                                                    .imgStreetNameRef,
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: FlutterFlowTheme
+                                                                        .of(context)
+                                                                    .labelSmall
+                                                                    .override(
+                                                                      font:
+                                                                          GoogleFonts
+                                                                              .inter(),
+                                                                      fontSize:
+                                                                          10.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              dateTimeFormat(
+                                                                  "Md",
+                                                                  item
+                                                                      .createdAt),
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .labelSmall
+                                                                  .override(
+                                                                    font:
+                                                                        GoogleFonts
+                                                                            .inter(),
+                                                                    fontSize:
+                                                                        10.0,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                              Padding(
-                                                padding: EdgeInsets.all(10.0),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        FaIcon(
-                                                          FontAwesomeIcons
-                                                              .clock,
-                                                          color: Colors.white,
-                                                          size: 20.0,
-                                                        ),
-                                                        Text(
-                                                          dateTimeFormat(
-                                                              "Md",
-                                                              staggeredViewImageRow
-                                                                  .createdAt),
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                                color: Colors
-                                                                    .white,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(width: 5.0)),
-                                                    ),
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Uncategorized')
-                                                          Icon(
-                                                            Icons
-                                                                .question_mark_rounded,
-                                                            color: Color(
-                                                                0xFFC44545),
-                                                            size: 20.0,
-                                                          ),
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Categorized by Ai')
-                                                          Icon(
-                                                            Icons.android,
-                                                            color: Color(
-                                                                0xFFC44545),
-                                                            size: 20.0,
-                                                          ),
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Unsegregated')
-                                                          Icon(
-                                                            Icons
-                                                                .delete_forever,
-                                                            color: Color(
-                                                                0xFFC44545),
-                                                            size: 20.0,
-                                                          ),
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Segregated')
-                                                          Icon(
-                                                            Icons
-                                                                .check_circle_outline_sharp,
-                                                            color: Color(
-                                                                0xFF468432),
-                                                            size: 20.0,
-                                                          ),
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Flagged')
-                                                          Icon(
-                                                            Icons.flag_outlined,
-                                                            color: Color(
-                                                                0xFFC44545),
-                                                            size: 20.0,
-                                                          ),
-                                                        if (staggeredViewImageRow
-                                                                .status ==
-                                                            'Verified')
-                                                          FaIcon(
-                                                            FontAwesomeIcons
-                                                                .checkDouble,
-                                                            color: Color(
-                                                                0xFF468432),
-                                                            size: 20.0,
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                            ),
                                           );
                                         },
                                       );
                                     },
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 5.0)),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 5.0)),
+                    ].divide(const SizedBox(height: 5.0)),
                   ),
                 ),
               ),
               wrapWithModel(
                 model: _model.cBottomBarModel,
                 updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+                child: const CBottomBarWidget(),
               ),
             ],
           ),
