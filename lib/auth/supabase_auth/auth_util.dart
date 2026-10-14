@@ -3,6 +3,7 @@ import 'supabase_auth_manager.dart';
 import 'supabase_user_provider.dart';
 
 export 'supabase_auth_manager.dart';
+export '../role_util.dart';
 
 final _authManager = SupabaseAuthManager();
 SupabaseAuthManager get authManager => _authManager;

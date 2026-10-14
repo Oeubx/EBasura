@@ -55,3 +55,59 @@ bool stringToBool(String textValue) {
 // Returns true if the string is exactly 'true', otherwise returns false
   return textValue.trim().toLowerCase() == 'true';
 }
+
+String formatWasteClassificationFeedback({
+  required bool isSegregated,
+  required bool isRecyclable,
+  required bool isBiodegradable,
+  required bool isNonBiodegradable,
+}) {
+  final segregationText = isSegregated ? "segregated" : "not segregated";
+
+  final categories = <String>[];
+  if (isRecyclable) categories.add("recyclable");
+  if (isBiodegradable) categories.add("biodegradable");
+  if (isNonBiodegradable) categories.add("non-biodegradable");
+
+  String combinationText;
+  if (categories.isEmpty) {
+    combinationText = "unidentified waste";
+  } else if (categories.length == 1) {
+    combinationText = categories.first;
+  } else if (categories.length == 2) {
+    combinationText = "${categories[0]} and ${categories[1]}";
+  } else {
+    combinationText = "${categories[0]}, ${categories[1]}, and ${categories[2]}";
+  }
+
+  return "The waste seems $segregationText with combination of $combinationText.";
+}
+
+String formatWasteClassificationFromList(List<String>? responseList) {
+  if (responseList == null || responseList.length < 5) {
+    return "The waste could not be classified accurately.";
+  }
+  // 5 attributes in order:
+  // 0: valid_waste_image
+  // 1: recyclable
+  // 2: segregated
+  // 3: biodegradable
+  // 4: non_biodegradable
+  final isValidWaste = stringToBool(responseList[0]);
+  if (!isValidWaste) {
+    return "The uploaded image does not appear to contain valid identifiable waste.";
+  }
+
+  final isRecyclable = stringToBool(responseList[1]);
+  final isSegregated = stringToBool(responseList[2]);
+  final isBiodegradable = stringToBool(responseList[3]);
+  final isNonBiodegradable = stringToBool(responseList[4]);
+
+  return formatWasteClassificationFeedback(
+    isSegregated: isSegregated,
+    isRecyclable: isRecyclable,
+    isBiodegradable: isBiodegradable,
+    isNonBiodegradable: isNonBiodegradable,
+  );
+}
+
