@@ -35,13 +35,20 @@ class AppStateNotifier extends ChangeNotifier {
 
 ## 3. Theming & Design System Tokens (`FlutterFlowTheme`)
 Located at `lib/flutter_flow/flutter_flow_theme.dart`:
-- Master Design System & Swatches: see [`../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
-- Provides dark/light theme switching with strict tokenized color palettes:
-  - `primary`: Core application branding color (Eco Green).
-  - `secondary`: Secondary accent (Dark Green / Forest).
-  - `tertiary`: Gamification and highlight accents.
-  - `alternate`: Subdued borders, separators, and background tints.
-  - `error`: Warning states and validation failure indicators.
+- Master Design System & Swatches: see [`../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md) and [`../../brand_docs.md`](../../brand_docs.md).
+- Provides tokenized theme engine with the 6 canonical color tokens:
+  - `accent3` / `brandBlue`: `#2E78A6` (Deep Slate Ocean Blue).
+  - `accent4` / `skyTint`: `#A3C9D9` (Soft Sky Blue Tint).
+  - `secondaryBackground` / `mintTint`: `#D5F2E2` (Pale Mint Sage).
+  - `ecoPrimary`: `#31A11F` (Vibrant Eco Green for recyclable badges and verified actions).
+  - `ecoSecondary`: `#70BF5A` (Fresh Leaf Green for streaks and gamification points).
+  - `primaryBackground` / `surfaceCanvas`: `#F2F2F2` (Clean Canvas Neutral).
+  - `primaryText`: `#013448` (Deep Slate Charcoal for WCAG AAA compliance).
+  - `success`: `#31A11F` (Aligned with canonical Eco Green).
+- Design Tokens (`FFDesignTokens`):
+  - `FFRadius`: `sm: 8.0`, `md: 16.0`, `pill: 22.0` (standard pill geometry for Buttons 1–4), `lg: 24.0`, `full: 9999.0`.
+  - `FFSpacing`: `xs: 4.0`, `sm: 8.0`, `md: 16.0`, `lg: 24.0`, `xl: 32.0`.
+  - `FFShadows`: Standardized 10% black shadows (`Color(0x1A000000)`).
 - Typography presets: `displayLarge`, `displayMedium`, `headlineLarge`, `titleMedium`, `labelMedium`, and `bodyMedium`.
 
 ---

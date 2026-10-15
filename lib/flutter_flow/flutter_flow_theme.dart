@@ -32,6 +32,16 @@ abstract class FlutterFlowTheme {
   late Color error;
   late Color info;
 
+  /// Canonical Eco & Brand tokens from docs/brand_docs.md
+  late Color ecoPrimary;
+  late Color ecoSecondary;
+
+  /// Semantic convenience getters mapped to brand swatches
+  Color get brandBlue => accent3;
+  Color get skyTint => accent4;
+  Color get mintTint => secondaryBackground;
+  Color get surfaceCanvas => primaryBackground;
+
   FFDesignTokens get designToken => FFDesignTokens(this);
 
   @Deprecated('Use displaySmallFamily instead')
@@ -126,13 +136,15 @@ class LightModeTheme extends FlutterFlowTheme {
   late Color alternate = const Color(0xFFEDE9E6);
   late Color primaryText = const Color(0xFF013448);
   late Color secondaryText = const Color(0xFF4E4E4E);
-  late Color primaryBackground = const Color(0xFFF2F2F2);
-  late Color secondaryBackground = const Color(0xFFD5F2E2);
+  late Color primaryBackground = const Color(0xFFF2F2F2);    // Board Col 6: Neutral Canvas
+  late Color secondaryBackground = const Color(0xFFD5F2E2);  // Board Col 3: Mint Tint
   late Color accent1 = const Color(0x4C3984EF);
   late Color accent2 = const Color(0xFF2A4861);
-  late Color accent3 = const Color(0xFF2E78A6);
-  late Color accent4 = const Color(0xFFA3C9D9);
-  late Color success = const Color(0xFF249689);
+  late Color accent3 = const Color(0xFF2E78A6);              // Board Col 1: Deep Ocean Blue
+  late Color accent4 = const Color(0xFFA3C9D9);              // Board Col 2: Sky Blue Tint
+  late Color ecoPrimary = const Color(0xFF31A11F);            // Board Col 4: Vibrant Eco Green
+  late Color ecoSecondary = const Color(0xFF70BF5A);          // Board Col 5: Fresh Leaf Green
+  late Color success = const Color(0xFF31A11F);              // Aligned with Board Eco Green
   late Color warning = const Color(0xFFF9CF58);
   late Color error = const Color(0xFFFF5963);
   late Color info = const Color(0xFFFFFFFF);
@@ -319,6 +331,7 @@ class FFRadius {
   const FFRadius();
   double get sm => 8.0;
   double get md => 16.0;
+  double get pill => 22.0;
   double get lg => 24.0;
   double get full => 9999.0;
 }
@@ -328,23 +341,23 @@ class FFShadows {
   final FlutterFlowTheme theme;
   BoxShadow get sm => const BoxShadow(
       blurRadius: 3.0,
-      color: const Color(0x1A000000),
-      offset: const Offset(0.0, 1.0),
+      color: Color(0x1A000000),
+      offset: Offset(0.0, 1.0),
       spreadRadius: 0.0);
   BoxShadow get md => const BoxShadow(
       blurRadius: 6.0,
-      color: const Color(0x1A000000),
-      offset: const Offset(0.0, 3.0),
+      color: Color(0x1A000000),
+      offset: Offset(0.0, 3.0),
       spreadRadius: 0.0);
   BoxShadow get lg => const BoxShadow(
       blurRadius: 15.0,
-      color: const Color(0x1A000000),
-      offset: const Offset(0.0, 8.0),
+      color: Color(0x1A000000),
+      offset: Offset(0.0, 8.0),
       spreadRadius: 0.0);
   BoxShadow get xl => const BoxShadow(
       blurRadius: 25.0,
-      color: const Color(0x1A000000),
-      offset: const Offset(0.0, 16.0),
+      color: Color(0x1A000000),
+      offset: Offset(0.0, 16.0),
       spreadRadius: 0.0);
 }
 
