@@ -80,5 +80,7 @@ export '/image/image_filtered/p_images_view_all_verified/p_images_view_all_verif
 export '/components/c_brand_logo/c_brand_logo_widget.dart'
     show CBrandLogoWidget;
 export '/components/ebasura_buttons.dart';
+export '/crew/page_crew_dashboard/page_crew_dashboard_widget.dart'
+    show PageCrewDashboardWidget;
 
 

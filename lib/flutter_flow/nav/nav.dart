@@ -341,7 +341,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: PImagesViewAllVerifiedWidget.routeName,
           path: PImagesViewAllVerifiedWidget.routePath,
           builder: (context, params) => PImagesViewAllVerifiedWidget(),
-        )
+        ),
+        FFRoute(
+          name: PageCrewDashboardWidget.routeName,
+          path: PageCrewDashboardWidget.routePath,
+          builder: (context, params) => const PageCrewDashboardWidget(),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
