@@ -1,14 +1,11 @@
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'page_admin_dashboard_model.dart';
 export 'page_admin_dashboard_model.dart';
 
@@ -25,22 +22,366 @@ class PageAdminDashboardWidget extends StatefulWidget {
 
 class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
   late PageAdminDashboardModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PageAdminDashboardModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  Widget _buildKpiCard({
+    required BuildContext context,
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color badgeBg,
+  }) {
+    return Expanded(
+      child: EBasuraCard(
+        padding: const EdgeInsets.all(14.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 34.0,
+                  height: 34.0,
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 18.0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10.0),
+            Text(
+              value,
+              style: GoogleFonts.interTight(
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: FlutterFlowTheme.of(context).primaryText,
+              ),
+            ),
+            const SizedBox(height: 2.0),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 11.0,
+                fontWeight: FontWeight.w600,
+                color: FlutterFlowTheme.of(context).primaryText,
+              ),
+            ),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 10.0,
+                color: FlutterFlowTheme.of(context).secondaryText,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKpiGrid(BuildContext context) {
+    return FutureBuilder<List<ImageRow>>(
+      future: ImageTable().queryRows(queryFn: (q) => q),
+      builder: (context, imageSnap) {
+        final allImages = imageSnap.data ?? [];
+        final totalScans = allImages.length;
+        final verifiedCount =
+            allImages.where((i) => i.status == 'Verified').length;
+        final pendingCount =
+            allImages.where((i) => i.status != 'Verified').length;
+
+        return Column(
+          children: [
+            Row(
+              children: [
+                _buildKpiCard(
+                  context: context,
+                  title: 'Total Scans',
+                  value: '$totalScans',
+                  subtitle: 'Citizen submissions',
+                  icon: Icons.photo_library_rounded,
+                  iconColor: FlutterFlowTheme.of(context).accent3,
+                  badgeBg: FlutterFlowTheme.of(context).accent4.withValues(alpha: 0.25),
+                ),
+                const SizedBox(width: 12.0),
+                _buildKpiCard(
+                  context: context,
+                  title: 'Verified Recyclables',
+                  value: '$verifiedCount',
+                  subtitle: 'Confirmed classifications',
+                  icon: Icons.check_circle_rounded,
+                  iconColor: FlutterFlowTheme.of(context).ecoPrimary,
+                  badgeBg: FlutterFlowTheme.of(context).mintTint,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12.0),
+            Row(
+              children: [
+                _buildKpiCard(
+                  context: context,
+                  title: 'Pending Moderation',
+                  value: '$pendingCount',
+                  subtitle: pendingCount > 0 ? 'Requires inspection' : 'Queue clear',
+                  icon: Icons.pending_actions_rounded,
+                  iconColor: pendingCount > 0
+                      ? const Color(0xFFE65100)
+                      : FlutterFlowTheme.of(context).ecoPrimary,
+                  badgeBg: pendingCount > 0
+                      ? const Color(0xFFFFE0B2)
+                      : FlutterFlowTheme.of(context).mintTint,
+                ),
+                const SizedBox(width: 12.0),
+                FutureBuilder<List<StreetRow>>(
+                  future: StreetTable().queryRows(
+                    queryFn: (q) => q.eqOrNull('has_storage', true),
+                  ),
+                  builder: (context, streetSnap) {
+                    final streetCount = streetSnap.data?.length ?? 0;
+                    return _buildKpiCard(
+                      context: context,
+                      title: 'Monitored Streets',
+                      value: '$streetCount',
+                      subtitle: 'Active waste zones',
+                      icon: Icons.signpost_rounded,
+                      iconColor: FlutterFlowTheme.of(context).ecoSecondary,
+                      badgeBg: FlutterFlowTheme.of(context).mintTint,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAdminActionTile({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+    Widget? trailingBadge,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16.0),
+      child: EBasuraCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+        child: Row(
+          children: [
+            Container(
+              width: 40.0,
+              height: 40.0,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 22.0,
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                      color: FlutterFlowTheme.of(context).primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.0,
+                      color: FlutterFlowTheme.of(context).secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (trailingBadge != null) ...[
+              const SizedBox(width: 8.0),
+              trailingBadge,
+            ],
+            const SizedBox(width: 6.0),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: FlutterFlowTheme.of(context).accent4,
+              size: 14.0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOperationsHub(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Management & Operations',
+          style: GoogleFonts.interTight(
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold,
+            color: FlutterFlowTheme.of(context).primaryText,
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        // Moderation Queue
+        FutureBuilder<List<ImageRow>>(
+          future: ImageTable().queryRows(
+            queryFn: (q) => q.neqOrNull('status', 'Verified'),
+          ),
+          builder: (context, snap) {
+            final count = snap.data?.length ?? 0;
+            return _buildAdminActionTile(
+              context: context,
+              title: 'Waste Verification Queue',
+              subtitle: 'Review & verify community waste scan submissions',
+              icon: Icons.fact_check_rounded,
+              iconColor: FlutterFlowTheme.of(context).accent3,
+              trailingBadge: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                decoration: BoxDecoration(
+                  color: count > 0
+                      ? const Color(0xFFE65100)
+                      : FlutterFlowTheme.of(context).ecoPrimary,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Text(
+                  count > 0 ? '$count Pending' : 'Clear',
+                  style: GoogleFonts.inter(
+                    fontSize: 10.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              onTap: () async {
+                context.pushNamed(
+                  PImagesViewAllWidget.routeName,
+                  queryParameters: {
+                    'initialTabIndex': serializeParam(0, ParamType.int),
+                  }.withoutNulls,
+                );
+              },
+            );
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // Schedules Manager
+        _buildAdminActionTile(
+          context: context,
+          title: 'Collection Schedules',
+          subtitle: 'Manage pickup timing, routes, and assigned collectors',
+          icon: Icons.calendar_month_rounded,
+          iconColor: FlutterFlowTheme.of(context).ecoPrimary,
+          onTap: () async {
+            context.pushNamed(PDatesViewAllWidget.routeName);
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // Incident Reports
+        _buildAdminActionTile(
+          context: context,
+          title: 'Waste Incident Reports',
+          subtitle: 'Citizen complaints, hazardous spills & overflow alerts',
+          icon: Icons.report_problem_rounded,
+          iconColor: const Color(0xFFE65100),
+          onTap: () async {
+            context.pushNamed(PReportViewAllWidget.routeName);
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // User & Crew Directory
+        _buildAdminActionTile(
+          context: context,
+          title: 'User & Crew Management',
+          subtitle: 'Assign roles, inspect resident profiles & crew accounts',
+          icon: Icons.groups_rounded,
+          iconColor: FlutterFlowTheme.of(context).accent3,
+          onTap: () async {
+            context.pushNamed(PageUserManagementWidget.routeName);
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // Street Directory
+        _buildAdminActionTile(
+          context: context,
+          title: 'Street & Zone Directory',
+          subtitle: 'Configure barangay street boundaries & storage bins',
+          icon: Icons.signpost_rounded,
+          iconColor: FlutterFlowTheme.of(context).ecoSecondary,
+          onTap: () async {
+            context.pushNamed(PStreetViewAllWidget.routeName);
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // Gamification Badges
+        _buildAdminActionTile(
+          context: context,
+          title: 'Badges & Achievement Rules',
+          subtitle: 'Configure eco milestones, point rules & badge rewards',
+          icon: Icons.military_tech_rounded,
+          iconColor: const Color(0xFFD97706),
+          onTap: () async {
+            context.pushNamed(PBadgeViewAllWidget.routeName);
+          },
+        ),
+        const SizedBox(height: 10.0),
+        // Filtered Image Records
+        _buildAdminActionTile(
+          context: context,
+          title: 'All Image Records Archive',
+          subtitle: 'Filter historical waste submissions by category & AI flag',
+          icon: Icons.image_search_rounded,
+          iconColor: FlutterFlowTheme.of(context).accent4,
+          onTap: () async {
+            context.pushNamed(PageFilteredImagesWidget.routeName);
+          },
+        ),
+      ],
+    );
   }
 
   @override
@@ -57,661 +398,32 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
-                ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Horizontal_Logo.png',
-                          width: double.infinity,
-                          height: 150.0,
-                          fit: BoxFit.fitWidth,
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDFF1F1),
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Admin Navigation Page',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleLarge
-                                        .override(
-                                          font: GoogleFonts.interTight(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .titleLarge
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleLarge
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .titleLarge
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                  Text(
-                                    'click to navigate to their respective pages',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                indent: 25.0,
-                                endIndent: 25.0,
-                                color: Colors.black,
-                              ),
-                              // Waste Verification Queue Tile with Pending Count Badge
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1B3B6F),
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 4.0,
-                                      color: Colors.black.withValues(alpha: 0.15),
-                                      offset: const Offset(0.0, 2.0),
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    onTap: () async {
-                                      context.pushNamed(
-                                        PImagesViewAllWidget.routeName,
-                                        queryParameters: {
-                                          'initialTabIndex':
-                                              serializeParam(0, ParamType.int),
-                                        }.withoutNulls,
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 14.0, vertical: 12.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.2),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8.0),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.fact_check_rounded,
-                                                  color: Colors.white,
-                                                  size: 24.0,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10.0),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Waste Verification Queue',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .titleSmall
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .interTight(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(height: 2.0),
-                                                  Text(
-                                                    'Review non-verified community scans',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .labelSmall
-                                                        .override(
-                                                          font: GoogleFonts.inter(),
-                                                          color: Colors.white
-                                                              .withValues(
-                                                                  alpha: 0.8),
-                                                          fontSize: 10.0,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          FutureBuilder<List<ImageRow>>(
-                                            future: ImageTable().queryRows(
-                                              queryFn: (q) => q.neqOrNull(
-                                                  'status', 'Verified'),
-                                            ),
-                                            builder: (context, snapshot) {
-                                              final pendingCount =
-                                                  snapshot.hasData
-                                                      ? snapshot.data!.length
-                                                      : 0;
-                                              return Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8.0,
-                                                        vertical: 4.0),
-                                                decoration: BoxDecoration(
-                                                  color: pendingCount > 0
-                                                      ? const Color(0xFFE65100)
-                                                      : Colors.white.withValues(
-                                                          alpha: 0.25),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                ),
-                                                child: Text(
-                                                  pendingCount > 0
-                                                      ? '$pendingCount Pending'
-                                                      : 'Queue Clear',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 10.0,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(
-                                      PageLeaderboardWidget.routeName);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Icon(
-                                      Icons.show_chart,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 25.0,
-                                    ),
-                                    Text(
-                                      'Leaderboard',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 15.0)),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(
-                                      PageUserManagementWidget.routeName);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Icon(
-                                      Icons.groups_rounded,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 25.0,
-                                    ),
-                                    Text(
-                                      'User Management',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 15.0)),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(
-                                      PageFilteredImagesWidget.routeName);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.image_outlined,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 25.0,
-                                    ),
-                                    Text(
-                                      'Image Records',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 15.0)),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context.pushNamed(
-                                      PStreetViewAllWidget.routeName);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    FaIcon(
-                                      FontAwesomeIcons.streetView,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 25.0,
-                                    ),
-                                    Text(
-                                      'Street Records',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 15.0)),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  context
-                                      .pushNamed(PBadgeViewAllWidget.routeName);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    FaIcon(
-                                      FontAwesomeIcons.medal,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 25.0,
-                                    ),
-                                    Text(
-                                      'Badges',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .override(
-                                            font: GoogleFonts.interTight(
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                            letterSpacing: 0.0,
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .headlineSmall
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                  ].divide(SizedBox(width: 15.0)),
-                                ),
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          PDatesViewAllWidget.routeName);
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Stack(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 0.0),
-                                          children: [
-                                            Icon(
-                                              Icons.calendar_today,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              size: 35.0,
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 5.0, 0.0, 0.0),
-                                              child: Icon(
-                                                Icons.timer_outlined,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                size: 17.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Text(
-                                          'Dates',
-                                          style: FlutterFlowTheme.of(context)
-                                              .headlineSmall
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .headlineSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .headlineSmall
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 15.0)),
-                                    ),
-                                  ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          PReportViewAllWidget.routeName);
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.file_copy_outlined,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        Text(
-                                          'Reports',
-                                          style: FlutterFlowTheme.of(context)
-                                              .headlineSmall
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .headlineSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .headlineSmall
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 15.0)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Divider(
-                                thickness: 2.0,
-                                color: Colors.black,
-                              ),
-                              Container(
-                                height: 15.0,
-                                decoration: BoxDecoration(),
-                              ),
-                            ].divide(SizedBox(height: 10.0)),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 90.0),
-                    ].divide(SizedBox(height: 5.0)),
-                  ),
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 100.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CPageHeaderWidget(
+                      title: 'Admin Command Center',
+                      subtitle: 'Barangay waste management, moderation queue & field operations',
+                      icon: Icons.admin_panel_settings_rounded,
+                    ),
+                    const SizedBox(height: 16.0),
+                    _buildKpiGrid(context),
+                    const SizedBox(height: 20.0),
+                    _buildOperationsHub(context),
+                    const SizedBox(height: 16.0),
+                  ],
                 ),
               ),
-            ),
-            wrapWithModel(
-              model: _model.cBottomBarModel,
-              updateCallback: () => safeSetState(() {}),
-              child: CBottomBarWidget(),
-            ),
-          ],
+              const Align(
+                alignment: AlignmentDirectional(0.0, 1.0),
+                child: CBottomBarWidget(activeRoute: 'Page_AdminDashboard'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
