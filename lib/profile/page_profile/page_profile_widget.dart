@@ -1,6 +1,7 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/components/c_notification/c_notification_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -90,6 +91,11 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const CPageHeaderWidget(
+                                title: 'Profile',
+                                subtitle: 'Manage your account, view earned points, and unlocked badges',
+                                icon: Icons.person_rounded,
+                              ),
                               FutureBuilder<List<UserRow>>(
                                 future: UserTable().querySingleRow(
                                   queryFn: (q) => q.eqOrNull(

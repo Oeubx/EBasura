@@ -1,6 +1,7 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -161,6 +162,12 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                 ),
                                 const SizedBox(height: 8.0),
 
+                                const CPageHeaderWidget(
+                                  title: 'Waste Feed & Records',
+                                  subtitle: 'Browse pending community submissions and verified waste records',
+                                  icon: Icons.auto_awesome_motion_rounded,
+                                ),
+                                const SizedBox(height: 8.0),
                                 // Dual Tab Filter: Non-Verified vs Verified
                                 Container(
                                   decoration: BoxDecoration(

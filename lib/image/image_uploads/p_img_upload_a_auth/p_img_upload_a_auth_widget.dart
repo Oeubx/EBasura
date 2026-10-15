@@ -2,6 +2,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -358,6 +359,21 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    CPageHeaderWidget(
+                                      title: containerUserRow?.userType == 'Admin'
+                                          ? 'Waste Classification & Audit'
+                                          : 'Waste Scanner',
+                                      subtitle: containerUserRow?.userType == 'Admin'
+                                          ? 'Scan and audit waste categorization with official verification'
+                                          : 'Capture waste for AI classification and community verification',
+                                      icon: Icons.camera_alt_rounded,
+                                      badgeText: containerUserRow?.userType == 'Admin'
+                                          ? 'Admin'
+                                          : 'Resident',
+                                      badgeColor: containerUserRow?.userType == 'Admin'
+                                          ? const Color(0xFF1B3B6F)
+                                          : const Color(0xFF2E7D32),
+                                    ),
                                     Stack(
                                       alignment: AlignmentDirectional(1.0, 1.0),
                                       children: [

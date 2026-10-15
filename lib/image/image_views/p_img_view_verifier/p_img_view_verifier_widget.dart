@@ -1,5 +1,6 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/auth/role_util.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
@@ -154,6 +155,28 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
+                                      Builder(
+                                        builder: (context) {
+                                          final cats = <String>[];
+                                          if (containerImageRow.categoryRecycling == true) cats.add('Recyclable');
+                                          if (containerImageRow.categoryBiode == true) cats.add('Biodegradable');
+                                          if (containerImageRow.categoryNonbiode == true) cats.add('Non-Biodegradable');
+                                          final catStr = cats.isEmpty
+                                              ? 'Waste'
+                                              : (cats.length == 1 ? '${cats.first} Waste' : '${cats.join(" & ")} Waste');
+                                          final isVerified = containerImageRow.status == 'Verified';
+
+                                          return CPageHeaderWidget(
+                                            title: 'Verification of $catStr',
+                                            subtitle: isAdmin
+                                                ? 'Review AI scan findings, audit categorization, and award community points'
+                                                : 'View waste classification results and verification status',
+                                            icon: Icons.verified_user_rounded,
+                                            badgeText: isVerified ? 'Verified' : 'Pending',
+                                            badgeColor: isVerified ? const Color(0xFF2E7D32) : const Color(0xFFE65100),
+                                          );
+                                        },
+                                      ),
                                       Stack(
                                         alignment:
                                             AlignmentDirectional(1.0, 1.0),
@@ -2259,10 +2282,10 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                 safeSetState(
                                                                     () {});
                                                               },
-                                                              text: 'Re-Verify',
+                                                              text: 'Re-scan',
                                                               icon: Icon(
-                                                                Icons.android,
-                                                                size: 25.0,
+                                                                Icons.document_scanner_outlined,
+                                                                size: 22.0,
                                                               ),
                                                               options:
                                                                   FFButtonOptions(

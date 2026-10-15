@@ -1,6 +1,7 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/components/c_user_pts_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -207,6 +208,12 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
                               ].divide(SizedBox(width: 5.0)),
                             );
                           },
+                        ),
+                        const SizedBox(height: 10.0),
+                        const CPageHeaderWidget(
+                          title: 'Home',
+                          subtitle: 'Smart waste monitoring, schedules, and community reporting',
+                          icon: Icons.home_rounded,
                         ),
                         Container(
                           width: double.infinity,
