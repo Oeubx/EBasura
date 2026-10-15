@@ -77,3 +77,6 @@ export '/image/image_filtered/p_images_view_all_flagged/p_images_view_all_flagge
     show PImagesViewAllFlaggedWidget;
 export '/image/image_filtered/p_images_view_all_verified/p_images_view_all_verified_widget.dart'
     show PImagesViewAllVerifiedWidget;
+export '/components/c_brand_logo/c_brand_logo_widget.dart'
+    show CBrandLogoWidget;
+

@@ -44,6 +44,20 @@ abstract class FlutterFlowTheme {
 
   FFDesignTokens get designToken => FFDesignTokens(this);
 
+  /// Canonical Brand Display Typography (Comfortaa from docs/brand_docs.md)
+  TextStyle get brandWordmark => GoogleFonts.comfortaa(
+        color: primaryText,
+        fontWeight: FontWeight.w700,
+        fontSize: 32.0,
+        letterSpacing: -0.5,
+      );
+  TextStyle get brandHeroTitle => GoogleFonts.comfortaa(
+        color: primaryText,
+        fontWeight: FontWeight.w700,
+        fontSize: 24.0,
+        letterSpacing: -0.5,
+      );
+
   @Deprecated('Use displaySmallFamily instead')
   String get title1Family => displaySmallFamily;
   @Deprecated('Use displaySmall instead')

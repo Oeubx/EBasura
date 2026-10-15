@@ -1,11 +1,9 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'landing_page_model.dart';
 export 'landing_page_model.dart';
 
@@ -54,23 +52,21 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Color(0xFFE8EDF2),
+              color: FlutterFlowTheme.of(context).primaryBackground,
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(25.0, 0.0, 25.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 125.0, 0.0, 75.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Horizontal_Logo.png',
-                          fit: BoxFit.fitWidth,
-                        ),
+                          EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 0.0, 60.0),
+                      child: CBrandLogoWidget(
+                        fontSize: 38.0,
+                        showSubtitle: true,
+                        subtitle: 'Smart Community Waste Management',
                       ),
                     ),
                     Padding(

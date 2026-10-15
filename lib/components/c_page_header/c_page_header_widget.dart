@@ -22,23 +22,21 @@ class CPageHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12.0),
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
       decoration: BoxDecoration(
-        color: const Color(0xEBFFFFFF),
-        borderRadius: BorderRadius.circular(12.0),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
         border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
+          color: theme.accent4.withValues(alpha: 0.4),
           width: 1.0,
         ),
-        boxShadow: const [
-          BoxShadow(
-            blurRadius: 4.0,
-            color: Color(0x14000000),
-            offset: Offset(0.0, 2.0),
-          )
+        boxShadow: [
+          theme.designToken.shadow.sm,
         ],
       ),
       child: Row(
@@ -46,15 +44,15 @@ class CPageHeaderWidget extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Container(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
-                color: const Color(0x1F1B3B6F),
-                borderRadius: BorderRadius.circular(8.0),
+                color: theme.accent3,
+                borderRadius: BorderRadius.circular(12.0),
               ),
               child: Icon(
                 icon,
                 size: 22.0,
-                color: FlutterFlowTheme.of(context).primary,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 12.0),
@@ -69,11 +67,10 @@ class CPageHeaderWidget extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: FlutterFlowTheme.of(context).titleMedium.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          color: FlutterFlowTheme.of(context).primaryText,
+                        style: GoogleFonts.interTight(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
+                          color: theme.primaryText,
                           letterSpacing: 0.0,
                         ),
                         maxLines: 1,
@@ -84,15 +81,15 @@ class CPageHeaderWidget extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                         decoration: BoxDecoration(
-                          color: badgeColor ?? FlutterFlowTheme.of(context).primary,
-                          borderRadius: BorderRadius.circular(6.0),
+                          color: badgeColor ?? theme.ecoPrimary,
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: Text(
                           badgeText!,
-                          style: const TextStyle(
+                          style: GoogleFonts.inter(
                             color: Colors.white,
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -101,9 +98,10 @@ class CPageHeaderWidget extends StatelessWidget {
                 const SizedBox(height: 3.0),
                 Text(
                   subtitle,
-                  style: FlutterFlowTheme.of(context).labelSmall.override(
-                    font: GoogleFonts.inter(),
-                    color: FlutterFlowTheme.of(context).secondaryText,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.normal,
+                    color: theme.secondaryText,
                     letterSpacing: 0.0,
                   ),
                   maxLines: 2,
