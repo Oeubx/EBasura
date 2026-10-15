@@ -374,9 +374,117 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                           ? const Color(0xFF1B3B6F)
                                           : const Color(0xFF2E7D32),
                                     ),
+                                    if (containerUserRow?.userType != 'Admin')
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 10.0),
+                                        child: Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE8F5E9),
+                                            borderRadius: BorderRadius.circular(8.0),
+                                            border: Border.all(
+                                              color: const Color(0xFF81C784),
+                                              width: 1.0,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.lock_clock_rounded,
+                                                color: Color(0xFF2E7D32),
+                                                size: 18.0,
+                                              ),
+                                              const SizedBox(width: 8.0),
+                                              Expanded(
+                                                child: Text(
+                                                  'Live camera capture only. Gallery uploads are disabled to ensure real-time waste verification.',
+                                                  style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                        font: GoogleFonts.inter(
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                        color: const Color(0xFF1B5E20),
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     Stack(
                                       alignment: AlignmentDirectional(1.0, 1.0),
                                       children: [
+                                        if (_model.uploadedLocalFile_uploadedImgAdet ==
+                                                null ||
+                                            (_model.uploadedLocalFile_uploadedImgAdet
+                                                    .bytes?.isEmpty ??
+                                                true))
+                                          InkWell(
+                                            splashColor: Colors.transparent,
+                                            focusColor: Colors.transparent,
+                                            hoverColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+                                            onTap: () async {
+                                              if (containerUserRow?.userType != 'Admin') {
+                                                await _triggerDirectCameraCapture(containerUserRow);
+                                              }
+                                            },
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 180.0,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.65),
+                                                borderRadius: BorderRadius.circular(10.0),
+                                                border: Border.all(
+                                                  color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.3),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    width: 56.0,
+                                                    height: 56.0,
+                                                    decoration: BoxDecoration(
+                                                      color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.12),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.camera_alt_rounded,
+                                                      color: FlutterFlowTheme.of(context).primary,
+                                                      size: 28.0,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8.0),
+                                                  Text(
+                                                    containerUserRow?.userType == 'Admin'
+                                                        ? 'Select or capture waste image'
+                                                        : 'Tap to take a live photo of waste',
+                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                          font: GoogleFonts.inter(
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          color: FlutterFlowTheme.of(context).primaryText,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 2.0),
+                                                  Text(
+                                                    containerUserRow?.userType == 'Admin'
+                                                        ? 'Supports camera or gallery upload'
+                                                        : 'Live camera required • Gallery disabled',
+                                                    style: FlutterFlowTheme.of(context).labelSmall.override(
+                                                          font: GoogleFonts.inter(),
+                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         if (_model.uploadedLocalFile_uploadedImgAdet !=
                                                 null &&
                                             (_model.uploadedLocalFile_uploadedImgAdet
@@ -680,7 +788,9 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                             fillColor:
                                                                 Colors.white,
                                                             icon: Icon(
-                                                              Icons.camera,
+                                                              containerUserRow?.userType != 'Admin'
+                                                                  ? Icons.camera_alt_rounded
+                                                                  : Icons.camera,
                                                               color:
                                                                   Colors.black,
                                                             ),
@@ -1151,6 +1261,117 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                           icon: const Icon(
                                             Icons.camera_alt_rounded,
                                             size: 24.0,
+                                          ),
+                                          options: FFButtonOptions(
+                                            width: double.infinity,
+                                            height: 52.0,
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                  font: GoogleFonts.interTight(
+                                                    fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                  ),
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                            elevation: 0.0,
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    if (containerUserRow?.userType != 'Admin' &&
+                                        !_model.isAutoScanning &&
+                                        !_model.residentSubmissionSuccess &&
+                                        (_model.uploadedLocalFile_uploadedImgAdet != null &&
+                                            (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ?? false)))
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            safeSetState(() {
+                                              _model.uploadedLocalFile_uploadedImgAdet = FFUploadedFile(
+                                                bytes: Uint8List.fromList([]),
+                                                originalFilename: '',
+                                              );
+                                              _model.apiResponseHolder = [];
+                                            });
+                                            await _triggerDirectCameraCapture(containerUserRow);
+                                          },
+                                          text: 'Retake Photo with Camera',
+                                          icon: const Icon(
+                                            Icons.camera_alt_rounded,
+                                            size: 22.0,
+                                          ),
+                                          options: FFButtonOptions(
+                                            width: double.infinity,
+                                            height: 50.0,
+                                            color: FlutterFlowTheme.of(context).primary,
+                                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                  font: GoogleFonts.interTight(
+                                                    fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                  ),
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.0,
+                                                ),
+                                            elevation: 0.0,
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    if (containerUserRow?.userType == 'Admin' &&
+                                        (_model.uploadedLocalFile_uploadedImgAdet == null ||
+                                            (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isEmpty ?? true)))
+                                      Padding(
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            final selectedMedia =
+                                                await selectMediaWithSourceBottomSheet(
+                                              context: context,
+                                              maxWidth: 1024.0,
+                                              maxHeight: 1024.0,
+                                              imageQuality: 80,
+                                              allowPhoto: true,
+                                            );
+                                            if (selectedMedia != null &&
+                                                selectedMedia.every((m) =>
+                                                    validateFileFormat(
+                                                        m.storagePath, context))) {
+                                              safeSetState(() =>
+                                                  _model.isDataUploading_uploadedImgAdet =
+                                                      true);
+                                              var selectedUploadedFiles =
+                                                  <FFUploadedFile>[];
+                                              try {
+                                                selectedUploadedFiles = selectedMedia
+                                                    .map((m) => FFUploadedFile(
+                                                          name: m.storagePath
+                                                              .split('/')
+                                                              .last,
+                                                          bytes: m.bytes,
+                                                          height: m.dimensions?.height,
+                                                          width: m.dimensions?.width,
+                                                          blurHash: m.blurHash,
+                                                          originalFilename:
+                                                              m.originalFilename,
+                                                        ))
+                                                    .toList();
+                                              } finally {
+                                                _model.isDataUploading_uploadedImgAdet =
+                                                    false;
+                                              }
+                                              if (selectedUploadedFiles.length ==
+                                                  selectedMedia.length) {
+                                                safeSetState(() {
+                                                  _model.uploadedLocalFile_uploadedImgAdet =
+                                                      selectedUploadedFiles.first;
+                                                });
+                                              }
+                                            }
+                                          },
+                                          text: 'Select or Take Photo to Audit',
+                                          icon: const Icon(
+                                            Icons.add_photo_alternate_rounded,
+                                            size: 22.0,
                                           ),
                                           options: FFButtonOptions(
                                             width: double.infinity,
