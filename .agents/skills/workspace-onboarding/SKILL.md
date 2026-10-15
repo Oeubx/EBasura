@@ -10,16 +10,18 @@ Use this skill when starting a new session or beginning work on EBasura.
 ## Pre-flight Checklist
 
 1. Read `AGENTS.md` at the root of the workspace.
-2. Verify Flutter SDK availability:
+2. For any UI or frontend tasks, review `docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`.
+3. Verify Flutter SDK availability:
    ```powershell
    flutter --version
    ```
-3. Check `env.json` existence:
+4. Check `env.json` existence:
    - Confirm `env.json` exists locally. If missing, advise copying from `env.json.example`.
-4. Check Git status:
+5. Check Git status:
    ```powershell
    git status --short --branch
    ```
+6. Remember: For any code changes produced during the session, invoke `.agents/skills/git-commits/SKILL.md` to draft backlog-linked commits.
 
 ## Pre-flight Output Block
 
@@ -29,6 +31,8 @@ Emit this concise status block before writing code or running large workflows:
 Loaded:
   project:       EBasura (Flutter + Supabase + Gemini AI)
   guidelines:    AGENTS.md
+  brand docs:    docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md (for UI/Frontend)
+  commit skill:  .agents/skills/git-commits/SKILL.md (for all code changes)
   branch:        <current_branch>
   env status:    <configured_or_missing_env.json>
   verify cmd:    flutter analyze && flutter test

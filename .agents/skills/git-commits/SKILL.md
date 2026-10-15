@@ -5,13 +5,14 @@ description: Drafts or executes backlog-linked conventional git commit messages 
 
 # EBasura Git Commit Skill
 
-Use this skill whenever asked to draft, generate, review, or execute a git commit for the `EBasura` repository.
+> **MANDATORY INVOCATION**: Use this skill **EVERY TIME there are code or configuration changes in the repository** to inspect modified/untracked files and draft/propose backlog-linked conventional commit messages.
 
 ## Required References
 
 1. Read `AGENTS.md` at the root of the repository.
 2. Search and consult `docs/backlogs/EBASURA_Sprint_Backlogs_Commit_Reference.md` to map changes to the appropriate `[EBASURA-M#-F#]` feature code.
 3. Review corresponding module documentation under `docs/modules/` for context if needed.
+4. **Brand Design Alignment**: If changes touch any UI components, views, widgets, or theme tokens, verify compliance with [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
 
 ---
 
