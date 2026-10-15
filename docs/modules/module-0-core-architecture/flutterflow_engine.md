@@ -35,6 +35,7 @@ class AppStateNotifier extends ChangeNotifier {
 
 ## 3. Theming & Design System Tokens (`FlutterFlowTheme`)
 Located at `lib/flutter_flow/flutter_flow_theme.dart`:
+- Master Design System & Swatches: see [`../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
 - Provides dark/light theme switching with strict tokenized color palettes:
   - `primary`: Core application branding color (Eco Green).
   - `secondary`: Secondary accent (Dark Green / Forest).
