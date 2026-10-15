@@ -79,4 +79,6 @@ export '/image/image_filtered/p_images_view_all_verified/p_images_view_all_verif
     show PImagesViewAllVerifiedWidget;
 export '/components/c_brand_logo/c_brand_logo_widget.dart'
     show CBrandLogoWidget;
+export '/components/ebasura_buttons.dart';
+
 

@@ -1,9 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'landing_page_model.dart';
 export 'landing_page_model.dart';
 
@@ -55,14 +53,13 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
               color: FlutterFlowTheme.of(context).primaryBackground,
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 0.0, 60.0),
+                    const Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 0.0, 60.0),
                       child: CBrandLogoWidget(
                         fontSize: 38.0,
                         showSubtitle: true,
@@ -70,126 +67,32 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                       ),
                     ),
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 125.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 80.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          FFButtonWidget(
+                          EBasuraButton.button2(
+                            text: 'Sign Up',
                             onPressed: () async {
                               context.pushNamed(PageSignUpWidget.routeName);
                             },
-                            text: 'Sign Up',
-                            options: FFButtonOptions(
-                              width: 275.0,
-                              height: 50.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFF263B6A),
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                              elevation: 15.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
                           ),
-                          FFButtonWidget(
+                          EBasuraButton.button1(
+                            text: 'Sign In',
                             onPressed: () async {
                               context.pushNamed(PageSignInWidget.routeName);
                             },
-                            text: 'Sign In',
-                            options: FFButtonOptions(
-                              width: 275.0,
-                              height: 50.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFF6984A9),
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                              elevation: 15.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
                           ),
-                          FFButtonWidget(
+                          EBasuraButton.button4(
+                            text: 'View as Guest',
                             onPressed: () async {
                               context.pushNamed(PageHomepageWidget.routeName);
                             },
-                            text: 'View as Guest',
-                            options: FFButtonOptions(
-                              width: 275.0,
-                              height: 50.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFFA0D585),
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .fontStyle,
-                                    ),
-                                    color: Color(0xFF263B6A),
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                              elevation: 15.0,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
                           ),
-                        ].divide(SizedBox(height: 50.0)),
+                        ].divide(const SizedBox(height: 18.0)),
                       ),
                     ),
-                  ].divide(SizedBox(height: 25.0)),
+                  ],
                 ),
               ),
             ),
