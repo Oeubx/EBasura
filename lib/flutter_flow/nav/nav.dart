@@ -102,7 +102,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: PImagesViewAllWidget.routeName,
           path: PImagesViewAllWidget.routePath,
-          builder: (context, params) => PImagesViewAllWidget(),
+          builder: (context, params) => PImagesViewAllWidget(
+            initialTabIndex: params.getParam(
+              'initialTabIndex',
+              ParamType.int,
+            ) ?? 0,
+          ),
         ),
         FFRoute(
           name: PageUserManagementWidget.routeName,

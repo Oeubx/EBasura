@@ -12,8 +12,12 @@ import 'p_images_view_all_model.dart';
 export 'p_images_view_all_model.dart';
 
 class PImagesViewAllWidget extends StatefulWidget {
-  const PImagesViewAllWidget({super.key});
+  const PImagesViewAllWidget({
+    super.key,
+    this.initialTabIndex = 0,
+  });
 
+  final int initialTabIndex;
   static String routeName = 'P_Images_ViewAll';
   static String routePath = '/pImagesViewAll';
 
@@ -30,6 +34,7 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PImagesViewAllModel());
+    _model.selectedTabIndex = widget.initialTabIndex;
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -479,58 +484,93 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                                       Positioned(
                                                         top: 6.0,
                                                         left: 6.0,
-                                                        child: Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      6.0,
-                                                                  vertical: 2.0),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: isVerified
-                                                                ? const Color(
-                                                                    0xFF2E7D32)
-                                                                : const Color(
-                                                                    0xFFE65100),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        4.0),
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              Icon(
-                                                                isVerified
-                                                                    ? Icons
-                                                                        .check_circle
-                                                                    : Icons
-                                                                        .hourglass_top,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 11.0,
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          6.0,
+                                                                      vertical: 2.0),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: isVerified
+                                                                    ? const Color(
+                                                                        0xFF2E7D32)
+                                                                    : const Color(
+                                                                        0xFFE65100),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            4.0),
                                                               ),
-                                                              const SizedBox(
-                                                                  width: 3.0),
-                                                              Text(
-                                                                isVerified
-                                                                    ? 'Verified'
-                                                                    : 'Non-Verified',
-                                                                style:
-                                                                    const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 10.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                              child: Row(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
+                                                                children: [
+                                                                  Icon(
+                                                                    isVerified
+                                                                        ? Icons
+                                                                            .check_circle
+                                                                        : Icons
+                                                                            .hourglass_top,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 11.0,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      width: 3.0),
+                                                                  Text(
+                                                                    isVerified
+                                                                        ? 'Verified'
+                                                                        : 'Non-Verified',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontSize: 10.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            if (!isVerified && item.status == 'Categorized by Ai') ...[
+                                                              const SizedBox(width: 4.0),
+                                                              Container(
+                                                                padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
+                                                                decoration: BoxDecoration(
+                                                                  color: Colors.black.withValues(alpha: 0.65),
+                                                                  borderRadius: BorderRadius.circular(4.0),
+                                                                ),
+                                                                child: const Row(
+                                                                  mainAxisSize: MainAxisSize.min,
+                                                                  children: [
+                                                                    Icon(
+                                                                      Icons.auto_awesome,
+                                                                      color: Color(0xFF80D8FF),
+                                                                      size: 10.0,
+                                                                    ),
+                                                                    SizedBox(width: 2.0),
+                                                                    Text(
+                                                                      'AI Scanned',
+                                                                      style: TextStyle(
+                                                                        color: Colors.white,
+                                                                        fontSize: 9.0,
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                               ),
                                                             ],
-                                                          ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ],

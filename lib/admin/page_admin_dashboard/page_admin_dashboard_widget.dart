@@ -1,3 +1,4 @@
+import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -77,7 +78,6 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
                       ),
                       Container(
                         width: double.infinity,
-                        height: 525.0,
                         decoration: BoxDecoration(
                           color: Color(0xFFDFF1F1),
                           borderRadius: BorderRadius.circular(15.0),
@@ -151,6 +151,143 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
                                 thickness: 2.0,
                                 indent: 25.0,
                                 endIndent: 25.0,
+                                color: Colors.black,
+                              ),
+                              // Waste Verification Queue Tile with Pending Count Badge
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1B3B6F),
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 4.0,
+                                      color: Colors.black.withValues(alpha: 0.15),
+                                      offset: const Offset(0.0, 2.0),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    onTap: () async {
+                                      context.pushNamed(
+                                        PImagesViewAllWidget.routeName,
+                                        queryParameters: {
+                                          'initialTabIndex':
+                                              serializeParam(0, ParamType.int),
+                                        }.withoutNulls,
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14.0, vertical: 12.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8.0),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.fact_check_rounded,
+                                                  color: Colors.white,
+                                                  size: 24.0,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10.0),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Waste Verification Queue',
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .titleSmall
+                                                        .override(
+                                                          font: GoogleFonts
+                                                              .interTight(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                          color: Colors.white,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 2.0),
+                                                  Text(
+                                                    'Review non-verified community scans',
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .labelSmall
+                                                        .override(
+                                                          font: GoogleFonts.inter(),
+                                                          color: Colors.white
+                                                              .withValues(
+                                                                  alpha: 0.8),
+                                                          fontSize: 10.0,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          FutureBuilder<List<ImageRow>>(
+                                            future: ImageTable().queryRows(
+                                              queryFn: (q) => q.neqOrNull(
+                                                  'status', 'Verified'),
+                                            ),
+                                            builder: (context, snapshot) {
+                                              final pendingCount =
+                                                  snapshot.hasData
+                                                      ? snapshot.data!.length
+                                                      : 0;
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8.0,
+                                                        vertical: 4.0),
+                                                decoration: BoxDecoration(
+                                                  color: pendingCount > 0
+                                                      ? const Color(0xFFE65100)
+                                                      : Colors.white.withValues(
+                                                          alpha: 0.25),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10.0),
+                                                ),
+                                                child: Text(
+                                                  pendingCount > 0
+                                                      ? '$pendingCount Pending'
+                                                      : 'Queue Clear',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Divider(
+                                thickness: 2.0,
                                 color: Colors.black,
                               ),
                               InkWell(
