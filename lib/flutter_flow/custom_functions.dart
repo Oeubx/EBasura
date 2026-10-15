@@ -26,7 +26,7 @@ int minusPoints(
   int initialValue,
   int amountOfPoints,
 ) {
-  return initialValue + amountOfPoints;
+  return math.max(0, initialValue - amountOfPoints);
 }
 
 int decrementationFunction(int initialValue) {
