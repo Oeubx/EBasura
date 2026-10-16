@@ -2,18 +2,15 @@ import '/admin/report/c_report_deletion/c_report_deletion_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
-import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_report_view_one_model.dart';
 export 'p_report_view_one_model.dart';
 
@@ -34,30 +31,27 @@ class PReportViewOneWidget extends StatefulWidget {
 
 class _PReportViewOneWidgetState extends State<PReportViewOneWidget> {
   late PReportViewOneModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PReportViewOneModel());
-
     _model.forEditDescFocusNode ??= FocusNode();
-
     _model.forEditRemarksFocusNode ??= FocusNode();
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -65,947 +59,566 @@ class _PReportViewOneWidgetState extends State<PReportViewOneWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
-                ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.asset(
-                              'assets/images/Horizontal_Logo.png',
-                              width: double.infinity,
-                              height: 150.0,
-                              fit: BoxFit.fitWidth,
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 120.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with Page Title & Return Action
+                    CPageHeaderWidget(
+                      title: 'Report Inspection',
+                      subtitle: 'Review & update collection report details',
+                      icon: Icons.edit_note_rounded,
+                      trailing: InkWell(
+                        onTap: () async {
+                          context.safePop();
+                        },
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 6.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.primaryBackground,
+                            borderRadius: BorderRadius.circular(20.0),
+                            border: Border.all(
+                              color: theme.accent4.withValues(alpha: 0.6),
                             ),
                           ),
-                        ].divide(SizedBox(height: 5.0)),
-                      ),
-                      FutureBuilder<List<ReportRow>>(
-                        future: ReportTable().querySingleRow(
-                          queryFn: (q) => q.eqOrNull(
-                            'report_id',
-                            widget!.reportRef?.reportId,
-                          ),
-                        ),
-                        builder: (context, snapshot) {
-                          // Customize what your widget looks like when it's loading.
-                          if (!snapshot.hasData) {
-                            return Center(
-                              child: SizedBox(
-                                width: 50.0,
-                                height: 50.0,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    FlutterFlowTheme.of(context).primary,
-                                  ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.arrow_back_rounded,
+                                size: 16.0,
+                                color: theme.primaryText,
+                              ),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                'Back',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.primaryText,
                                 ),
                               ),
-                            );
-                          }
-                          List<ReportRow> containerReportRowList =
-                              snapshot.data!;
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12.0),
 
-                          final containerReportRow =
-                              containerReportRowList.isNotEmpty
-                                  ? containerReportRowList.first
-                                  : null;
-
-                          return Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFDFF1F1),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
+                    // Main Report Query & Form Card
+                    FutureBuilder<List<ReportRow>>(
+                      future: ReportTable().querySingleRow(
+                        queryFn: (q) => q.eqOrNull(
+                          'report_id',
+                          widget.reportRef?.reportId,
+                        ),
+                      ),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
                             child: Padding(
-                              padding: EdgeInsets.all(15.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.safePop();
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
+                              padding: EdgeInsets.all(40.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+
+                        final containerReportRowList = snapshot.data!;
+                        final containerReportRow =
+                            containerReportRowList.isNotEmpty
+                                ? containerReportRowList.first
+                                : null;
+
+                        if (containerReportRow == null) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(40.0),
+                              child: Text(
+                                'Report not found.',
+                                style: theme.bodyMedium,
+                              ),
+                            ),
+                          );
+                        }
+
+                        // Initialize field controllers once
+                        _model.forEditDescTextController ??=
+                            TextEditingController(
+                          text: containerReportRow.reportDescription,
+                        );
+                        _model.forEditRemarksTextController ??=
+                            TextEditingController(
+                          text: containerReportRow.reportRemarks,
+                        );
+                        _model.streetDropDownValue ??=
+                            containerReportRow.reportStreetNameRef;
+
+                        final conductedDate = _model.datePicked ??
+                            containerReportRow.reportConductedDate;
+
+                        return EBasuraCard(
+                          padding: const EdgeInsets.all(20.0),
+                          margin: EdgeInsets.zero,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 1. Date Picker Row
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14.0,
+                                  vertical: 10.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.primaryBackground,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color:
+                                        theme.accent4.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
                                       children: [
                                         Icon(
-                                          Icons.arrow_left,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 24.0,
+                                          Icons.calendar_month_rounded,
+                                          color: theme.accent3,
+                                          size: 20.0,
                                         ),
-                                        Text(
-                                          'Return',
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
+                                        const SizedBox(width: 8.0),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'COLLECTION DATE',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10.0,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.5,
+                                                color: theme.secondaryText,
                                               ),
+                                            ),
+                                            const SizedBox(height: 2.0),
+                                            Text(
+                                              dateTimeFormat(
+                                                  'yMd', conductedDate),
+                                              style: GoogleFonts.interTight(
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: theme.primaryText,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 0.0, 0.0, 0.0),
-                                        child: RichText(
-                                          textScaler:
-                                              MediaQuery.of(context).textScaler,
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text:
-                                                    'Collection Report Date : ',
-                                                style: TextStyle(),
+                                    EBasuraButton.button3(
+                                      width: 120.0,
+                                      height: 36.0,
+                                      text: 'Change Date',
+                                      iconData: Icons.edit_calendar_rounded,
+                                      onPressed: () async {
+                                        final pickedDate =
+                                            await showDatePicker(
+                                          context: context,
+                                          initialDate: conductedDate,
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime(2050),
+                                          builder: (context, child) {
+                                            return wrapInMaterialDatePickerTheme(
+                                              context,
+                                              child!,
+                                              headerBackgroundColor:
+                                                  theme.accent3,
+                                              headerForegroundColor:
+                                                  Colors.white,
+                                              headerTextStyle:
+                                                  GoogleFonts.interTight(
+                                                fontSize: 24.0,
+                                                fontWeight: FontWeight.w600,
                                               ),
-                                              TextSpan(
-                                                text: _model.datePicked == null
-                                                    ? dateTimeFormat(
-                                                        "yMd",
-                                                        containerReportRow!
-                                                            .reportConductedDate)
-                                                    : dateTimeFormat("yMd",
-                                                        _model.datePicked),
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                              )
-                                            ],
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                      TextFormField(
-                                        controller:
-                                            _model.forEditDescTextController ??=
-                                                TextEditingController(
-                                          text: containerReportRow
-                                              ?.reportDescription,
-                                        ),
-                                        focusNode: _model.forEditDescFocusNode,
-                                        autofocus: false,
-                                        enabled: true,
-                                        obscureText: false,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          labelStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .labelMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                          hintText: 'TextField',
-                                          hintStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .labelMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Color(0x00000000),
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Color(0x00000000),
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedErrorBorder:
-                                              OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          filled: true,
-                                          fillColor: Color(0xFFEAEFEF),
-                                        ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.inter(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                        cursorColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        enableInteractiveSelection: true,
-                                        validator: _model
-                                            .forEditDescTextControllerValidator
-                                            .asValidator(context),
-                                      ),
-                                      FutureBuilder<List<StreetRow>>(
-                                        future: StreetTable().queryRows(
-                                          queryFn: (q) => q.eqOrNull(
-                                            'has_storage',
-                                            true,
-                                          ),
-                                        ),
-                                        builder: (context, snapshot) {
-                                          // Customize what your widget looks like when it's loading.
-                                          if (!snapshot.hasData) {
-                                            return Center(
-                                              child: SizedBox(
-                                                width: 50.0,
-                                                height: 50.0,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              ),
+                                              pickerBackgroundColor:
+                                                  Colors.white,
+                                              pickerForegroundColor:
+                                                  theme.primaryText,
+                                              selectedDateTimeBackgroundColor:
+                                                  theme.accent3,
+                                              selectedDateTimeForegroundColor:
+                                                  Colors.white,
+                                              actionButtonForegroundColor:
+                                                  theme.accent3,
+                                              iconSize: 24.0,
                                             );
-                                          }
-                                          List<StreetRow>
-                                              containerStreetRowList =
-                                              snapshot.data!;
-
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFEAEFEF),
-                                            ),
-                                            child: FlutterFlowDropDown<String>(
-                                              controller: _model
-                                                      .streetDropDownValueController ??=
-                                                  FormFieldController<String>(
-                                                _model.streetDropDownValue ??=
-                                                    containerReportRow
-                                                        ?.reportStreetNameRef,
-                                              ),
-                                              options: containerStreetRowList
-                                                  .map((e) => e.streetName)
-                                                  .toList(),
-                                              onChanged: (val) => safeSetState(
-                                                  () => _model
-                                                          .streetDropDownValue =
-                                                      val),
-                                              height: 30.0,
-                                              textStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              hintText: 'Select a Street...',
-                                              icon: Icon(
-                                                Icons
-                                                    .keyboard_arrow_down_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                size: 24.0,
-                                              ),
-                                              fillColor: Color(0xFFEAEFEF),
-                                              elevation: 2.0,
-                                              borderColor: Colors.transparent,
-                                              borderWidth: 0.0,
-                                              borderRadius: 8.0,
-                                              margin: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      12.0, 0.0, 12.0, 0.0),
-                                              hidesUnderline: true,
-                                              isOverButton: false,
-                                              isSearchable: false,
-                                              isMultiSelect: false,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      TextFormField(
-                                        controller: _model
-                                                .forEditRemarksTextController ??=
-                                            TextEditingController(
-                                          text:
-                                              containerReportRow?.reportRemarks,
-                                        ),
-                                        focusNode:
-                                            _model.forEditRemarksFocusNode,
-                                        autofocus: false,
-                                        enabled: true,
-                                        obscureText: false,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          labelStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .labelMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                          hintText: 'TextField',
-                                          hintStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .labelMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .labelMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .fontStyle,
-                                              ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Color(0x00000000),
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color: Color(0x00000000),
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          focusedErrorBorder:
-                                              OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                          filled: true,
-                                          fillColor: Color(0xFFEAEFEF),
-                                        ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.inter(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                        cursorColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        enableInteractiveSelection: true,
-                                        validator: _model
-                                            .forEditRemarksTextControllerValidator
-                                            .asValidator(context),
-                                      ),
-                                      Align(
-                                        alignment:
-                                            AlignmentDirectional(1.0, 0.0),
-                                        child: FFButtonWidget(
-                                          onPressed: () async {
-                                            final _datePickedDate =
-                                                await showDatePicker(
-                                              context: context,
-                                              initialDate: getCurrentTimestamp,
-                                              firstDate: DateTime(1900),
-                                              lastDate: DateTime(2050),
-                                              builder: (context, child) {
-                                                return wrapInMaterialDatePickerTheme(
-                                                  context,
-                                                  child!,
-                                                  headerBackgroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primary,
-                                                  headerForegroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .info,
-                                                  headerTextStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .headlineLarge
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .interTight(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              fontStyle: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .headlineLarge
-                                                                  .fontStyle,
-                                                            ),
-                                                            fontSize: 32.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .headlineLarge
-                                                                    .fontStyle,
-                                                          ),
-                                                  pickerBackgroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .secondaryBackground,
-                                                  pickerForegroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primaryText,
-                                                  selectedDateTimeBackgroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primary,
-                                                  selectedDateTimeForegroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .info,
-                                                  actionButtonForegroundColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primaryText,
-                                                  iconSize: 24.0,
-                                                );
-                                              },
-                                            );
-
-                                            if (_datePickedDate != null) {
-                                              safeSetState(() {
-                                                _model.datePicked = DateTime(
-                                                  _datePickedDate.year,
-                                                  _datePickedDate.month,
-                                                  _datePickedDate.day,
-                                                );
-                                              });
-                                            } else if (_model.datePicked !=
-                                                null) {
-                                              safeSetState(() {
-                                                _model.datePicked =
-                                                    getCurrentTimestamp;
-                                              });
-                                            }
                                           },
-                                          text: 'Update Date',
-                                          options: FFButtonOptions(
-                                            height: 40.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
-                                            iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                            color: Colors.white,
-                                            textStyle: FlutterFlowTheme.of(
-                                                    context)
-                                                .titleSmall
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontStyle,
-                                                ),
-                                            elevation: 0.0,
-                                            borderSide: BorderSide(
-                                              color: Colors.black,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                      ),
-                                    ]
-                                        .divide(SizedBox(height: 10.0))
-                                        .around(SizedBox(height: 10.0)),
-                                  ),
-                                  Divider(
-                                    thickness: 2.0,
-                                    color: Colors.black,
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Align(
-                                        alignment:
-                                            AlignmentDirectional(-1.0, 0.0),
-                                        child: FFButtonWidget(
-                                          onPressed: () async {
-                                            await showModalBottomSheet(
-                                              isScrollControlled: true,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              enableDrag: false,
-                                              context: context,
-                                              builder: (context) {
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    FocusScope.of(context)
-                                                        .unfocus();
-                                                    FocusManager
-                                                        .instance.primaryFocus
-                                                        ?.unfocus();
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        MediaQuery.viewInsetsOf(
-                                                            context),
-                                                    child:
-                                                        CReportDeletionWidget(
-                                                      reportRef:
-                                                          widget!.reportRef!,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ).then(
-                                                (value) => safeSetState(() {}));
-                                          },
-                                          text: 'Delete',
-                                          icon: Icon(
-                                            Icons.edit_note,
-                                            size: 15.0,
-                                          ),
-                                          options: FFButtonOptions(
-                                            height: 40.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
-                                            iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                            color: Color(0xFFC44545),
-                                            textStyle: FlutterFlowTheme.of(
-                                                    context)
-                                                .titleSmall
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontStyle,
-                                                ),
-                                            elevation: 0.0,
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                      ),
-                                      FFButtonWidget(
-                                        onPressed: () async {
-                                          await ReportTable().update(
-                                            data: {
-                                              'created_at':
-                                                  supaSerialize<DateTime>(
-                                                      functions.getCurrentTime(
-                                                          getCurrentTimestamp)),
-                                              'reporter_userRef':
-                                                  currentUserUid,
-                                              'report_description':
-                                                  containerReportRow
-                                                      ?.reportDescription,
-                                              'report_remarks':
-                                                  containerReportRow
-                                                      ?.reportRemarks,
-                                              'report_conductedDate':
-                                                  supaSerialize<DateTime>(
-                                                      _model.datePicked),
-                                              'report_streetNameRef':
-                                                  _model.streetDropDownValue,
-                                            },
-                                            matchingRows: (rows) =>
-                                                rows.eqOrNull(
-                                              'report_id',
-                                              containerReportRow?.reportId,
-                                            ),
-                                          );
+                                        );
+
+                                        if (pickedDate != null) {
                                           safeSetState(() {
-                                            _model.forEditDescTextController
-                                                ?.clear();
-                                            _model.forEditRemarksTextController
-                                                ?.clear();
+                                            _model.datePicked = DateTime(
+                                              pickedDate.year,
+                                              pickedDate.month,
+                                              pickedDate.day,
+                                            );
                                           });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16.0),
+
+                              // 2. Street Selector Dropdown
+                              Text(
+                                'ASSIGNED STREET',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                  color: theme.secondaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 6.0),
+                              FutureBuilder<List<StreetRow>>(
+                                future: StreetTable().queryRows(
+                                  queryFn: (q) => q
+                                      .eqOrNull('has_storage', true)
+                                      .order('street_name'),
+                                ),
+                                builder: (context, streetSnapshot) {
+                                  final streetNames = streetSnapshot.hasData
+                                      ? streetSnapshot.data!
+                                          .map((e) => e.streetName)
+                                          .toList()
+                                      : <String>[];
+
+                                  return Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius:
+                                          BorderRadius.circular(12.0),
+                                      border: Border.all(
+                                        color: theme.accent4
+                                            .withValues(alpha: 0.5),
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0,
+                                    ),
+                                    child: FlutterFlowDropDown<String>(
+                                      controller: _model
+                                              .streetDropDownValueController ??=
+                                          FormFieldController<String>(
+                                        _model.streetDropDownValue ??=
+                                            containerReportRow
+                                                .reportStreetNameRef,
+                                      ),
+                                      options: streetNames,
+                                      onChanged: (val) => safeSetState(
+                                          () => _model.streetDropDownValue =
+                                              val),
+                                      height: 44.0,
+                                      textStyle: GoogleFonts.inter(
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.w500,
+                                        color: theme.primaryText,
+                                      ),
+                                      hintText: 'Select a Street...',
+                                      icon: Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: theme.secondaryText,
+                                        size: 22.0,
+                                      ),
+                                      fillColor: Colors.transparent,
+                                      elevation: 2.0,
+                                      borderColor: Colors.transparent,
+                                      borderWidth: 0.0,
+                                      borderRadius: 0.0,
+                                      margin: EdgeInsets.zero,
+                                      hidesUnderline: true,
+                                      isOverButton: false,
+                                      isSearchable: false,
+                                      isMultiSelect: false,
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 16.0),
+
+                              // 3. Report Description Input
+                              Text(
+                                'REPORT DESCRIPTION',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                  color: theme.secondaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 6.0),
+                              TextFormField(
+                                controller:
+                                    _model.forEditDescTextController,
+                                focusNode: _model.forEditDescFocusNode,
+                                maxLines: 3,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Enter collection summary and notes...',
+                                  hintStyle: GoogleFonts.inter(
+                                    fontSize: 13.0,
+                                    color: theme.secondaryText,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: theme.accent4
+                                          .withValues(alpha: 0.5),
+                                      width: 1.0,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(12.0),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: theme.accent3,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(12.0),
+                                  ),
+                                  contentPadding: const EdgeInsets.all(14.0),
+                                ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14.0,
+                                  color: theme.primaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 16.0),
+
+                              // 4. Remarks Input
+                              Text(
+                                'ADDITIONAL REMARKS',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                  color: theme.secondaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 6.0),
+                              TextFormField(
+                                controller:
+                                    _model.forEditRemarksTextController,
+                                focusNode: _model.forEditRemarksFocusNode,
+                                maxLines: 2,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Enter crew observations or flags...',
+                                  hintStyle: GoogleFonts.inter(
+                                    fontSize: 13.0,
+                                    color: theme.secondaryText,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: theme.accent4
+                                          .withValues(alpha: 0.5),
+                                      width: 1.0,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(12.0),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: theme.accent3,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(12.0),
+                                  ),
+                                  contentPadding: const EdgeInsets.all(14.0),
+                                ),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14.0,
+                                  color: theme.primaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 24.0),
+
+                              // 5. Action Buttons (Delete & Update)
+                              Row(
+                                children: [
+                                  // Danger Pill Button (Delete)
+                                  Expanded(
+                                    flex: 2,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        await showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          enableDrag: false,
+                                          context: context,
+                                          builder: (context) {
+                                            return GestureDetector(
+                                              onTap: () {
+                                                FocusScope.of(context)
+                                                    .unfocus();
+                                                FocusManager
+                                                    .instance.primaryFocus
+                                                    ?.unfocus();
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    MediaQuery.viewInsetsOf(
+                                                        context),
+                                                child:
+                                                    CReportDeletionWidget(
+                                                  reportRef:
+                                                      containerReportRow,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ).then((value) =>
+                                            safeSetState(() {}));
+                                      },
+                                      borderRadius:
+                                          BorderRadius.circular(22.0),
+                                      child: Container(
+                                        height: 44.0,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFDE8E8),
+                                          borderRadius:
+                                              BorderRadius.circular(22.0),
+                                          border: Border.all(
+                                            color: const Color(0xFFF8B4B4),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Icons.delete_outline_rounded,
+                                              color: Color(0xFFC44545),
+                                              size: 18.0,
+                                            ),
+                                            const SizedBox(width: 6.0),
+                                            Text(
+                                              'Delete',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13.0,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFFC44545),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12.0),
+
+                                  // Button 2 Ocean Blue Pill (Update)
+                                  Expanded(
+                                    flex: 3,
+                                    child: EBasuraButton.button2(
+                                      width: double.infinity,
+                                      height: 44.0,
+                                      text: 'Save Changes',
+                                      iconData: Icons.save_rounded,
+                                      onPressed: () async {
+                                        await ReportTable().update(
+                                          data: {
+                                            'created_at':
+                                                supaSerialize<DateTime>(
+                                                    functions.getCurrentTime(
+                                                        getCurrentTimestamp)),
+                                            'reporter_userRef': currentUserUid,
+                                            'report_description': _model
+                                                .forEditDescTextController
+                                                ?.text,
+                                            'report_remarks': _model
+                                                .forEditRemarksTextController
+                                                ?.text,
+                                            'report_conductedDate':
+                                                supaSerialize<DateTime>(
+                                                    _model.datePicked ??
+                                                        containerReportRow
+                                                            .reportConductedDate),
+                                            'report_streetNameRef':
+                                                _model.streetDropDownValue ??
+                                                    containerReportRow
+                                                        .reportStreetNameRef,
+                                          },
+                                          matchingRows: (rows) =>
+                                              rows.eqOrNull(
+                                            'report_id',
+                                            containerReportRow.reportId,
+                                          ),
+                                        );
+
+                                        if (context.mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Report successfully edited.',
-                                                style: TextStyle(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
+                                                'Report successfully updated.',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                      FontWeight.w500,
                                                 ),
                                               ),
-                                              duration:
-                                                  Duration(milliseconds: 4000),
-                                              backgroundColor: Colors.white,
+                                              duration: const Duration(
+                                                  milliseconds: 3000),
+                                              backgroundColor:
+                                                  theme.accent3,
                                             ),
                                           );
-                                        },
-                                        text: 'Update',
-                                        icon: Icon(
-                                          Icons.edit_note,
-                                          size: 15.0,
-                                        ),
-                                        options: FFButtonOptions(
-                                          height: 40.0,
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  16.0, 0.0, 16.0, 0.0),
-                                          iconPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 0.0),
-                                          color: Colors.white,
-                                          textStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .titleSmall
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontStyle,
-                                                ),
-                                                color: Colors.black,
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .fontStyle,
-                                              ),
-                                          elevation: 0.0,
-                                          borderSide: BorderSide(
-                                            color: Colors.black,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                        ),
-                                      ),
-                                    ],
+                                        }
+                                      },
+                                    ),
                                   ),
-                                ].divide(SizedBox(height: 10.0)),
+                                ],
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      Container(
-                        height: 150.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
-                    ].divide(SizedBox(height: 5.0)),
-                  ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+
+              // Bottom Navigation Bar
+              Align(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'Page_AdminDashboard',
+                  ),
+                ),
               ),
             ],
           ),
