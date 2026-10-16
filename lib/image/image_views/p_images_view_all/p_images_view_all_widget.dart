@@ -17,10 +17,12 @@ class PImagesViewAllWidget extends StatefulWidget {
     super.key,
     this.initialTabIndex = 0,
     this.initialStatus,
+    this.initialStreet,
   });
 
   final int initialTabIndex;
   final String? initialStatus;
+  final String? initialStreet;
 
   static String routeName = 'P_Images_ViewAll';
   static String routePath = '/pImagesViewAll';
@@ -40,9 +42,17 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
     _model = createModel(context, () => PImagesViewAllModel());
     _model.selectedTabIndex = widget.initialTabIndex;
 
+    if (widget.initialStreet != null && widget.initialStreet!.isNotEmpty) {
+      _model.selectedStreet = widget.initialStreet!;
+    }
+
     if (widget.initialStatus != null && widget.initialStatus!.isNotEmpty) {
       final s = widget.initialStatus!;
-      if (s == 'Categorized by Ai' || s == 'AI Categorized') {
+      if (s == 'Non-Verified' || s == 'NON-VERIFIED') {
+        _model.activeQuickFilter = 'All';
+        _model.dropDownStatusValue = 'All';
+        _model.selectedTabIndex = 0;
+      } else if (s == 'Categorized by Ai' || s == 'AI Categorized') {
         _model.activeQuickFilter = 'AI Categorized';
         _model.dropDownStatusValue = 'Categorized by Ai';
         _model.selectedTabIndex = 0;
@@ -954,6 +964,73 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                     ],
                                   ),
                                 ),
+
+                                // Active Street Filter Indicator
+                                if (_model.selectedStreet != 'All' &&
+                                    _model.selectedStreet.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 0.0, 6.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10.0, vertical: 4.0),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context)
+                                                .accent3
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                            border: Border.all(
+                                              color: FlutterFlowTheme.of(context)
+                                                  .accent3,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.place_rounded,
+                                                size: 14.0,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .accent3,
+                                              ),
+                                              const SizedBox(width: 4.0),
+                                              Text(
+                                                'Filtered by Street: ${_model.selectedStreet}',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      FlutterFlowTheme.of(context)
+                                                          .accent3,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6.0),
+                                              InkWell(
+                                                onTap: () {
+                                                  safeSetState(() {
+                                                    _model.selectedStreet =
+                                                        'All';
+                                                    _model.resetStream();
+                                                  });
+                                                },
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 14.0,
+                                                  color:
+                                                      FlutterFlowTheme.of(context)
+                                                          .accent3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
 
                                 // Grid Feed Stream with client-side reactive filtering and pagination
                                 Expanded(

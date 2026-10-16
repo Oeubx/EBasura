@@ -321,15 +321,15 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
           },
         ),
         const SizedBox(height: 10.0),
-        // Incident Reports
+        // System Reports Hub
         _buildAdminActionTile(
           context: context,
-          title: 'Waste Incident Reports',
-          subtitle: 'Citizen complaints, hazardous spills & overflow alerts',
-          icon: Icons.report_problem_rounded,
-          iconColor: const Color(0xFFE65100),
+          title: 'Reports Hub & Analytics',
+          subtitle: 'Street waste health, verification tallies & collection reports',
+          icon: Icons.assessment_rounded,
+          iconColor: FlutterFlowTheme.of(context).accent3,
           onTap: () async {
-            context.pushNamed(PReportViewAllWidget.routeName);
+            context.pushNamed(PReportSystemWidget.routeName);
           },
         ),
         const SizedBox(height: 10.0),
