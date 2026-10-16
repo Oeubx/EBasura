@@ -3,7 +3,6 @@ import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -318,7 +317,9 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                 child: wrapWithModel(
                   model: _model.cBottomBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: const CBottomBarWidget(),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'Page_AdminDashboard',
+                  ),
                 ),
               ),
             ],
@@ -363,19 +364,27 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.folder_shared_rounded,
-                      color: FlutterFlowTheme.of(context).accent3,
-                      size: 20.0,
+                    Container(
+                      width: 28.0,
+                      height: 28.0,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).accent3.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.folder_shared_rounded,
+                        color: FlutterFlowTheme.of(context).accent3,
+                        size: 16.0,
+                      ),
                     ),
-                    const SizedBox(width: 6.0),
+                    const SizedBox(width: 8.0),
                     Text(
                       'TOTAL CREATED REPORTS',
                       style: GoogleFonts.inter(
                         fontSize: 11.0,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
-                        color: FlutterFlowTheme.of(context).secondaryText,
+                        color: FlutterFlowTheme.of(context).primaryText,
                       ),
                     ),
                   ],
@@ -416,24 +425,13 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
           const SizedBox(width: 12.0),
 
           // Right: VIEW REPORTS > Button (Button 2 Style: #2E78A6 solid with white text)
-          FFButtonWidget(
+          EBasuraButton.button2(
+            width: 155.0,
+            height: 42.0,
+            text: 'VIEW REPORTS >',
             onPressed: () async {
               context.pushNamed(PReportViewAllWidget.routeName);
             },
-            text: 'VIEW REPORTS >',
-            options: FFButtonOptions(
-              height: 42.0,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              color: FlutterFlowTheme.of(context).accent3,
-              textStyle: GoogleFonts.inter(
-                fontSize: 12.0,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: 0.5,
-              ),
-              elevation: 2.0,
-              borderRadius: BorderRadius.circular(22.0),
-            ),
           ),
         ],
       ),
@@ -442,6 +440,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
 
   /// Search and street filter controls
   Widget _buildFilterBar(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -455,15 +454,19 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context).alternate,
+                    color: theme.accent4.withValues(alpha: 0.5),
+                    width: 1.0,
                   ),
+                  boxShadow: [
+                    theme.designToken.shadow.sm,
+                  ],
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
                     Icon(
                       Icons.search_rounded,
-                      color: FlutterFlowTheme.of(context).secondaryText,
+                      color: theme.secondaryText,
                       size: 20.0,
                     ),
                     const SizedBox(width: 8.0),
@@ -480,14 +483,14 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                           hintText: 'Filter by street name...',
                           hintStyle: GoogleFonts.inter(
                             fontSize: 13.0,
-                            color: FlutterFlowTheme.of(context).secondaryText,
+                            color: theme.secondaryText,
                           ),
                           border: InputBorder.none,
                           isDense: true,
                         ),
                         style: GoogleFonts.inter(
                           fontSize: 13.0,
-                          color: FlutterFlowTheme.of(context).primaryText,
+                          color: theme.primaryText,
                         ),
                       ),
                     ),
@@ -502,7 +505,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                         child: Icon(
                           Icons.clear_rounded,
                           size: 18.0,
-                          color: FlutterFlowTheme.of(context).secondaryText,
+                          color: theme.secondaryText,
                         ),
                       ),
                   ],
@@ -535,8 +538,12 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
-                      color: FlutterFlowTheme.of(context).alternate,
+                      color: theme.accent4.withValues(alpha: 0.5),
+                      width: 1.0,
                     ),
+                    boxShadow: [
+                      theme.designToken.shadow.sm,
+                    ],
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -545,7 +552,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                           : 'All',
                       icon: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        color: FlutterFlowTheme.of(context).secondaryText,
+                        color: theme.secondaryText,
                         size: 20.0,
                       ),
                       items: streetNames.map((name) {
@@ -556,7 +563,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                             style: GoogleFonts.inter(
                               fontSize: 13.0,
                               fontWeight: FontWeight.w500,
-                              color: FlutterFlowTheme.of(context).primaryText,
+                              color: theme.primaryText,
                             ),
                           ),
                         );
@@ -609,6 +616,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
     required String label,
     required String sortKey,
   }) {
+    final theme = FlutterFlowTheme.of(context);
     final isSelected = _model.sortBy == sortKey;
     return InkWell(
       onTap: () {
@@ -616,28 +624,34 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
           _model.sortBy = sortKey;
         });
       },
-      borderRadius: BorderRadius.circular(16.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      borderRadius: BorderRadius.circular(20.0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 7.0),
         decoration: BoxDecoration(
-          color: isSelected
-              ? FlutterFlowTheme.of(context).accent3
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16.0),
+          color: isSelected ? theme.accent3 : Colors.white,
+          borderRadius: BorderRadius.circular(20.0),
           border: Border.all(
             color: isSelected
-                ? FlutterFlowTheme.of(context).accent3
-                : FlutterFlowTheme.of(context).alternate,
+                ? theme.accent3
+                : theme.accent4.withValues(alpha: 0.5),
+            width: 1.0,
           ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: theme.accent3.withValues(alpha: 0.25),
+                blurRadius: 4.0,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Text(
           label,
           style: GoogleFonts.inter(
             fontSize: 12.0,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected
-                ? Colors.white
-                : FlutterFlowTheme.of(context).secondaryText,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : theme.secondaryText,
           ),
         ),
       ),
@@ -649,28 +663,14 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
     required BuildContext context,
     required _StreetReportSummary summary,
   }) {
+    final theme = FlutterFlowTheme.of(context);
     final formattedTime = summary.lastUpdatedTime != null
         ? dateTimeFormat('relative', summary.lastUpdatedTime)
         : 'Never';
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
-          width: 1.0,
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 6.0,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return EBasuraCard(
       padding: const EdgeInsets.all(16.0),
+      margin: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -682,19 +682,27 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
               Expanded(
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.place_rounded,
-                      color: FlutterFlowTheme.of(context).accent3,
-                      size: 22.0,
+                    Container(
+                      width: 32.0,
+                      height: 32.0,
+                      decoration: BoxDecoration(
+                        color: theme.secondaryBackground,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.place_rounded,
+                        color: theme.accent3,
+                        size: 18.0,
+                      ),
                     ),
-                    const SizedBox(width: 6.0),
+                    const SizedBox(width: 8.0),
                     Expanded(
                       child: Text(
                         summary.streetName,
                         style: GoogleFonts.interTight(
                           fontSize: 17.0,
                           fontWeight: FontWeight.bold,
-                          color: FlutterFlowTheme.of(context).primaryText,
+                          color: theme.primaryText,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -708,14 +716,10 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context)
-                      .accent4
-                      .withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(12.0),
+                  color: theme.accent4.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16.0),
                   border: Border.all(
-                    color: FlutterFlowTheme.of(context)
-                        .accent4
-                        .withValues(alpha: 0.8),
+                    color: theme.accent4.withValues(alpha: 0.7),
                     width: 1.0,
                   ),
                 ),
@@ -724,7 +728,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                   children: [
                     Icon(
                       Icons.photo_library_rounded,
-                      color: FlutterFlowTheme.of(context).accent3,
+                      color: theme.accent3,
                       size: 14.0,
                     ),
                     const SizedBox(width: 5.0),
@@ -733,7 +737,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                       style: GoogleFonts.interTight(
                         fontSize: 12.0,
                         fontWeight: FontWeight.bold,
-                        color: FlutterFlowTheme.of(context).accent3,
+                        color: theme.accent3,
                       ),
                     ),
                   ],
@@ -810,12 +814,10 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12.0, vertical: 10.0),
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    color: theme.secondaryBackground,
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
-                      color: FlutterFlowTheme.of(context)
-                          .success
-                          .withValues(alpha: 0.4),
+                      color: theme.ecoPrimary.withValues(alpha: 0.4),
                       width: 1.0,
                     ),
                   ),
@@ -825,14 +827,12 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                         width: 32.0,
                         height: 32.0,
                         decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context)
-                              .success
-                              .withValues(alpha: 0.15),
+                          color: theme.ecoPrimary.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.verified_rounded,
-                          color: FlutterFlowTheme.of(context).success,
+                          color: theme.ecoPrimary,
                           size: 18.0,
                         ),
                       ),
@@ -846,7 +846,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                               style: GoogleFonts.interTight(
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
-                                color: FlutterFlowTheme.of(context).success,
+                                color: theme.ecoPrimary,
                               ),
                             ),
                             Text(
@@ -871,16 +871,19 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
           // 3. Upload Velocity (Per Day / Per Hour)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).primaryBackground,
-              borderRadius: BorderRadius.circular(8.0),
+              color: theme.primaryBackground,
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(
+                color: theme.accent4.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.trending_up_rounded,
-                  color: FlutterFlowTheme.of(context).accent3,
+                  color: theme.accent3,
                   size: 16.0,
                 ),
                 const SizedBox(width: 6.0),
@@ -890,7 +893,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                     style: GoogleFonts.inter(
                       fontSize: 11.0,
                       fontWeight: FontWeight.w500,
-                      color: FlutterFlowTheme.of(context).secondaryText,
+                      color: theme.secondaryText,
                     ),
                   ),
                 ),
@@ -905,7 +908,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
               Icon(
                 Icons.access_time_rounded,
                 size: 14.0,
-                color: FlutterFlowTheme.of(context).secondaryText,
+                color: theme.secondaryText,
               ),
               const SizedBox(width: 5.0),
               Expanded(
@@ -913,7 +916,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                   'Last updated by: ${summary.lastUpdatedBy}  ($formattedTime)',
                   style: GoogleFonts.inter(
                     fontSize: 11.0,
-                    color: FlutterFlowTheme.of(context).secondaryText,
+                    color: theme.secondaryText,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -924,35 +927,23 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
           const SizedBox(height: 14.0),
 
           // 5. VIEW ALL BUTTON: Deep link to PImagesViewAllWidget pre-filtered to street & Non-Verified
-          SizedBox(
+          EBasuraButton.button3(
             width: double.infinity,
-            child: FFButtonWidget(
-              onPressed: () async {
-                context.pushNamed(
-                  PImagesViewAllWidget.routeName,
-                  queryParameters: {
-                    'initialTabIndex': serializeParam(0, ParamType.int),
-                    'initialStatus':
-                        serializeParam('Non-Verified', ParamType.String),
-                    'initialStreet':
-                        serializeParam(summary.streetName, ParamType.String),
-                  }.withoutNulls,
-                );
-              },
-              text: 'VIEW ALL',
-              options: FFButtonOptions(
-                height: 38.0,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                color: FlutterFlowTheme.of(context).accent4,
-                textStyle: GoogleFonts.inter(
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.bold,
-                  color: FlutterFlowTheme.of(context).primaryText,
-                ),
-                elevation: 0.0,
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-            ),
+            height: 40.0,
+            text: 'VIEW ALL',
+            iconData: Icons.open_in_new_rounded,
+            onPressed: () async {
+              context.pushNamed(
+                PImagesViewAllWidget.routeName,
+                queryParameters: {
+                  'initialTabIndex': serializeParam(0, ParamType.int),
+                  'initialStatus':
+                      serializeParam('Non-Verified', ParamType.String),
+                  'initialStreet':
+                      serializeParam(summary.streetName, ParamType.String),
+                }.withoutNulls,
+              );
+            },
           ),
         ],
       ),
