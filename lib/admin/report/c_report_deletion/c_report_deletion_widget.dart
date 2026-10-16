@@ -1,12 +1,9 @@
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'c_report_deletion_model.dart';
 export 'c_report_deletion_model.dart';
 
@@ -48,158 +45,192 @@ class _CReportDeletionWidgetState extends State<CReportDeletionWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
-      child: InkWell(
-        splashColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () async {
-          Navigator.pop(context);
-        },
+      alignment: Alignment.center,
+      child: Material(
+        color: Colors.transparent,
+        elevation: 10.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
         child: Container(
-          width: 250.0,
-          height: 325.0,
+          width: 320.0,
+          padding: const EdgeInsets.all(24.0),
           decoration: BoxDecoration(
-            color: Color(0xFFE8EDF2),
-            borderRadius: BorderRadius.circular(25.0),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
-              color: Colors.black,
+              color: theme.accent4.withValues(alpha: 0.5),
             ),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image.asset(
-                  'assets/images/Horizontal_Logo.png',
-                  width: double.infinity,
-                  height: 105.0,
-                  fit: BoxFit.fitHeight,
+              // Warning Icon Badge
+              Container(
+                width: 56.0,
+                height: 56.0,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDE8E8),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFC44545).withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Color(0xFFC44545),
+                  size: 32.0,
                 ),
               ),
-              Divider(
-                thickness: 2.0,
-                color: Colors.black,
-              ),
+              const SizedBox(height: 16.0),
+
+              // Title
               Text(
-                'Deleting this report content\nis irreversible.\nProceed carefully.',
+                'Delete Collection Report?',
                 textAlign: TextAlign.center,
-                style: FlutterFlowTheme.of(context).labelMedium.override(
-                      font: GoogleFonts.inter(
-                        fontWeight:
-                            FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight:
-                          FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                      fontStyle:
-                          FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                    ),
+                style: GoogleFonts.interTight(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: theme.primaryText,
+                ),
               ),
-              Divider(
-                thickness: 2.0,
-                color: Colors.black,
+              const SizedBox(height: 8.0),
+
+              // Description
+              Text(
+                'This action is irreversible. All summary metrics for this route will be permanently deleted.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13.0,
+                  color: theme.secondaryText,
+                  height: 1.4,
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  FFButtonWidget(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                    },
-                    text: 'Cancel',
-                    icon: Icon(
-                      Icons.close_outlined,
-                      size: 15.0,
-                    ),
-                    options: FFButtonOptions(
-                      height: 40.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: Colors.black,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                      elevation: 0.0,
-                      borderRadius: BorderRadius.circular(8.0),
+
+              // Street & Date preview chip if available
+              if (widget.reportRef != null) ...[
+                const SizedBox(height: 14.0),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 8.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.primaryBackground,
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(
+                      color: theme.accent4.withValues(alpha: 0.3),
                     ),
                   ),
-                  Align(
-                    alignment: AlignmentDirectional(-1.0, 0.0),
-                    child: FFButtonWidget(
-                      onPressed: () async {
-                        await ReportTable().delete(
-                          matchingRows: (rows) => rows.eqOrNull(
-                            'report_id',
-                            widget!.reportRef?.reportId,
-                          ),
-                        );
-
-                        context.goNamed(PReportViewAllWidget.routeName);
-                      },
-                      text: 'Delete',
-                      icon: Icon(
-                        Icons.edit_note,
-                        size: 15.0,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14.0,
+                        color: theme.accent3,
                       ),
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: Color(0xFFC44545),
-                        textStyle:
-                            FlutterFlowTheme.of(context).titleSmall.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
+                      const SizedBox(width: 4.0),
+                      Flexible(
+                        child: Text(
+                          widget.reportRef!.reportStreetNameRef,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.interTight(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w600,
+                            color: theme.primaryText,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        '|',
+                        style: TextStyle(
+                          color: theme.secondaryText.withValues(alpha: 0.4),
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        dateTimeFormat(
+                          'yMd',
+                          widget.reportRef!.reportConductedDate,
+                        ),
+                        style: GoogleFonts.inter(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 22.0),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: EBasuraButton.button1(
+                      height: 42.0,
+                      text: 'Cancel',
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Material(
+                      color: const Color(0xFFC44545),
+                      borderRadius: BorderRadius.circular(22.0),
+                      elevation: 1.0,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(22.0),
+                        onTap: () async {
+                          await ReportTable().delete(
+                            matchingRows: (rows) => rows.eqOrNull(
+                              'report_id',
+                              widget.reportRef?.reportId,
+                            ),
+                          );
+
+                          if (context.mounted) {
+                            context.goNamed(PReportViewAllWidget.routeName);
+                          }
+                        },
+                        child: Container(
+                          height: 42.0,
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.delete_forever_rounded,
+                                color: Colors.white,
+                                size: 18.0,
+                              ),
+                              const SizedBox(width: 6.0),
+                              Text(
+                                'Delete',
+                                style: GoogleFonts.interTight(
                                   color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ].divide(SizedBox(height: 15.0)).around(SizedBox(height: 15.0)),
+            ],
           ),
         ),
       ),
