@@ -151,8 +151,15 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
       );
     }
 
-    // Sort alphabetically by street name by default
-    summaries.sort((a, b) => a.streetName.compareTo(b.streetName));
+    // Sort based on active sort mode
+    if (_model.sortBy == 'Pending First') {
+      summaries.sort(
+          (a, b) => b.nonVerifiedImages.compareTo(a.nonVerifiedImages));
+    } else if (_model.sortBy == 'Most Uploads') {
+      summaries.sort((a, b) => b.totalImages.compareTo(a.totalImages));
+    } else {
+      summaries.sort((a, b) => a.streetName.compareTo(b.streetName));
+    }
     return summaries;
   }
 
@@ -560,7 +567,72 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
             ),
           ],
         ),
+        const SizedBox(height: 10.0),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildSortChip(
+                context: context,
+                label: 'A-Z (Alphabetical)',
+                sortKey: 'Alphabetical',
+              ),
+              const SizedBox(width: 8.0),
+              _buildSortChip(
+                context: context,
+                label: 'Pending Moderation First',
+                sortKey: 'Pending First',
+              ),
+              const SizedBox(width: 8.0),
+              _buildSortChip(
+                context: context,
+                label: 'Most Uploads',
+                sortKey: 'Most Uploads',
+              ),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildSortChip({
+    required BuildContext context,
+    required String label,
+    required String sortKey,
+  }) {
+    final isSelected = _model.sortBy == sortKey;
+    return InkWell(
+      onTap: () {
+        safeSetState(() {
+          _model.sortBy = sortKey;
+        });
+      },
+      borderRadius: BorderRadius.circular(16.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? FlutterFlowTheme.of(context).accent3
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(
+            color: isSelected
+                ? FlutterFlowTheme.of(context).accent3
+                : FlutterFlowTheme.of(context).alternate,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12.0,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? Colors.white
+                : FlutterFlowTheme.of(context).secondaryText,
+          ),
+        ),
+      ),
     );
   }
 

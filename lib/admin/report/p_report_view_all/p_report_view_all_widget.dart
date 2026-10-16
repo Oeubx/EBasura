@@ -98,7 +98,12 @@ class _PReportViewAllWidgetState extends State<PReportViewAllWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    context.safePop();
+                                    if (Navigator.of(context).canPop()) {
+                                      context.safePop();
+                                    } else {
+                                      context.goNamed(
+                                          PReportSystemWidget.routeName);
+                                    }
                                   },
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,

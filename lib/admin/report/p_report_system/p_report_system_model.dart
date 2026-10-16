@@ -15,6 +15,7 @@ class PReportSystemModel extends FlutterFlowModel<PReportSystemWidget> {
   String searchQuery = '';
   String selectedStreetFilter = 'All';
   String selectedTimeFilter = 'All Time';
+  String sortBy = 'Alphabetical';
 
   @override
   void initState(BuildContext context) {
