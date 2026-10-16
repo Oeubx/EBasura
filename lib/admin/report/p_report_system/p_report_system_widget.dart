@@ -181,17 +181,22 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                 width: double.infinity,
                 height: double.infinity,
                 color: FlutterFlowTheme.of(context).primaryBackground,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromSTEB(16.0, 12.0, 16.0, 110.0),
-                  child: Column(
+                child: RefreshIndicator(
+                  color: FlutterFlowTheme.of(context).primary,
+                  onRefresh: () async {
+                    safeSetState(() {});
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 110.0),
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Header with EBasura Brand Identity
-                      CPageHeaderWidget(
+                      const CPageHeaderWidget(
                         title: 'Reports Hub',
                         subtitle: 'Street waste health & collection monitoring',
                         icon: Icons.assessment_rounded,
-                        showBackButton: false,
                       ),
                       const SizedBox(height: 16.0),
 
@@ -302,15 +307,16 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                     ],
                   ),
                 ),
+                ),
               ),
 
               // Bottom Navigation Bar
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: wrapWithModel(
                   model: _model.cBottomBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: CBottomBarWidget(),
+                  child: const CBottomBarWidget(),
                 ),
               ),
             ],
@@ -806,7 +812,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
                       color: FlutterFlowTheme.of(context)
-                          .ecoPrimary
+                          .success
                           .withValues(alpha: 0.4),
                       width: 1.0,
                     ),
@@ -818,13 +824,13 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                         height: 32.0,
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context)
-                              .ecoPrimary
+                              .success
                               .withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.verified_rounded,
-                          color: FlutterFlowTheme.of(context).ecoPrimary,
+                          color: FlutterFlowTheme.of(context).success,
                           size: 18.0,
                         ),
                       ),
@@ -838,7 +844,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                               style: GoogleFonts.interTight(
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
-                                color: FlutterFlowTheme.of(context).ecoPrimary,
+                                color: FlutterFlowTheme.of(context).success,
                               ),
                             ),
                             Text(

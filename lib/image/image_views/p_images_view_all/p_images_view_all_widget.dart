@@ -965,6 +965,73 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                   ),
                                 ),
 
+                                // Active Street Filter Indicator
+                                if (_model.selectedStreet != 'All' &&
+                                    _model.selectedStreet.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 0.0, 6.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10.0, vertical: 4.0),
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context)
+                                                .accent3
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(16.0),
+                                            border: Border.all(
+                                              color: FlutterFlowTheme.of(context)
+                                                  .accent3,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.place_rounded,
+                                                size: 14.0,
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .accent3,
+                                              ),
+                                              const SizedBox(width: 4.0),
+                                              Text(
+                                                'Filtered by Street: ${_model.selectedStreet}',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      FlutterFlowTheme.of(context)
+                                                          .accent3,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6.0),
+                                              InkWell(
+                                                onTap: () {
+                                                  safeSetState(() {
+                                                    _model.selectedStreet =
+                                                        'All';
+                                                    _model.resetStream();
+                                                  });
+                                                },
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 14.0,
+                                                  color:
+                                                      FlutterFlowTheme.of(context)
+                                                          .accent3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
                                 // Grid Feed Stream with client-side reactive filtering and pagination
                                 Expanded(
                                   child: Container(
