@@ -232,6 +232,82 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
     }
   }
 
+  Future<void> _executeAdminDirectUpload(UserRow? containerUserRow) async {
+    safeSetState(() => _model.isDataUploading_uploadImgToDbAdetNoAI = true);
+    var selectedUploadedFiles = <FFUploadedFile>[];
+    var selectedMedia = <SelectedFile>[];
+    var downloadUrls = <String>[];
+    try {
+      selectedUploadedFiles =
+          _model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ?? false
+              ? [_model.uploadedLocalFile_uploadedImgAdet]
+              : <FFUploadedFile>[];
+      selectedMedia = selectedFilesFromUploadedFiles(
+        selectedUploadedFiles,
+        storageFolderPath: containerUserRow?.userStreetNameRef,
+      );
+      downloadUrls = await uploadSupabaseStorageFiles(
+        bucketName: 'Image_Bucket',
+        selectedFiles: selectedMedia,
+      );
+    } finally {
+      _model.isDataUploading_uploadImgToDbAdetNoAI = false;
+    }
+    if (selectedUploadedFiles.length == selectedMedia.length &&
+        downloadUrls.length == selectedMedia.length) {
+      safeSetState(() {
+        _model.uploadedLocalFile_uploadImgToDbAdetNoAI =
+            selectedUploadedFiles.first;
+        _model.uploadedFileUrl_uploadImgToDbAdetNoAI = downloadUrls.first;
+      });
+    } else {
+      safeSetState(() {});
+      return;
+    }
+
+    await ImageTable().insert({
+      'img_uploader': containerUserRow?.userId,
+      'img_streetNameRef': containerUserRow?.userStreetNameRef,
+      'img_reference_link': _model.uploadedFileUrl_uploadImgToDbAdetNoAI,
+      'created_at': supaSerialize<DateTime>(
+          functions.getCurrentTime(getCurrentTimestamp)),
+      'status': 'Uncategorized',
+      'created_atDate': supaSerialize<DateTime>(
+          functions.getCurrentTime(getCurrentTimestamp)),
+    });
+
+    safeSetState(() {
+      _model.isDataUploading_uploadedImgAdet = false;
+      _model.uploadedLocalFile_uploadedImgAdet = FFUploadedFile(
+        bytes: Uint8List.fromList([]),
+        originalFilename: '',
+      );
+      _model.isDataUploading_uploadImgToDbAdetNoAI = false;
+      _model.uploadedLocalFile_uploadImgToDbAdetNoAI = FFUploadedFile(
+        bytes: Uint8List.fromList([]),
+        originalFilename: '',
+      );
+      _model.uploadedFileUrl_uploadImgToDbAdetNoAI = '';
+      _model.apiResponseHolder = [];
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Image successfully uploaded.',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          duration: const Duration(milliseconds: 3000),
+          backgroundColor: FlutterFlowTheme.of(context).primary,
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _model.dispose();
@@ -257,7 +333,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
+                  color: FlutterFlowTheme.of(context).primaryBackground,
                 ),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
@@ -266,57 +342,57 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.asset(
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Image.asset(
                                 'assets/images/Horizontal_Logo.png',
-                                width: double.infinity,
-                                height: 150.0,
-                                fit: BoxFit.fitWidth,
+                                height: 44.0,
+                                fit: BoxFit.contain,
                               ),
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional(1.0, -1.0),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 15.0, 0.0, 0.0),
-                                child: FlutterFlowIconButton(
-                                  borderRadius: 8.0,
-                                  buttonSize: 40.0,
-                                  icon: Icon(
-                                    Icons.info_outline,
-                                    color: Colors.black,
-                                    size: 24.0,
-                                  ),
-                                  onPressed: () async {
-                                    await showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      enableDrag: false,
-                                      context: context,
-                                      builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child:
-                                                CImageInformationalDialogWidget(),
-                                          ),
-                                        );
-                                      },
-                                    ).then((value) => safeSetState(() {}));
-                                  },
+                              FlutterFlowIconButton(
+                                borderColor: FlutterFlowTheme.of(context)
+                                    .accent4
+                                    .withValues(alpha: 0.35),
+                                borderRadius: 20.0,
+                                buttonSize: 40.0,
+                                fillColor: Colors.white,
+                                icon: Icon(
+                                  Icons.info_outline_rounded,
+                                  color: FlutterFlowTheme.of(context).primaryText,
+                                  size: 22.0,
                                 ),
+                                onPressed: () async {
+                                  await showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          FocusScope.of(context).unfocus();
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                        },
+                                        child: Padding(
+                                          padding: MediaQuery.viewInsetsOf(
+                                              context),
+                                          child:
+                                              const CImageInformationalDialogWidget(),
+                                        ),
+                                      );
+                                    },
+                                  ).then((value) => safeSetState(() {}));
+                                },
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         FutureBuilder<List<UserRow>>(
                           future: UserTable().querySingleRow(
@@ -350,11 +426,22 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                             return Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Color(0xFFBFC9D1),
-                                borderRadius: BorderRadius.circular(15.0),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                border: Border.all(
+                                  color: FlutterFlowTheme.of(context)
+                                      .accent4
+                                      .withValues(alpha: 0.35),
+                                ),
+                                boxShadow: [
+                                  FlutterFlowTheme.of(context)
+                                      .designToken
+                                      .shadow
+                                      .sm,
+                                ],
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(15.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,9 +461,112 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                           ? const Color(0xFF1B3B6F)
                                           : const Color(0xFF2E7D32),
                                     ),
+                                    // User Greeting Card
+                                    Container(
+                                      width: double.infinity,
+                                      margin: const EdgeInsets.only(bottom: 12.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14.0, vertical: 10.0),
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                        border: Border.all(
+                                          color: FlutterFlowTheme.of(context)
+                                              .accent4
+                                              .withValues(alpha: 0.35),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(7.0),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      FlutterFlowTheme.of(context)
+                                                          .accent3
+                                                          .withValues(
+                                                              alpha: 0.12),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.person_rounded,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .accent3,
+                                                  size: 18.0,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10.0),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Welcome, ${containerUserRow?.userName ?? 'User'}',
+                                                    style:
+                                                        GoogleFonts.interTight(
+                                                      fontSize: 14.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'from ${containerUserRow?.userStreetNameRef ?? 'Street'}',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12.0,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .secondaryText,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if ((containerUserRow?.userStreetNameRef ?? '').isNotEmpty)
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10.0,
+                                                      vertical: 4.0),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .accent4
+                                                        .withValues(
+                                                            alpha: 0.2),
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                              ),
+                                              child: Text(
+                                                containerUserRow!.userStreetNameRef!,
+                                                style: GoogleFonts.interTight(
+                                                  fontSize: 11.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
                                     if (containerUserRow?.userType != 'Admin')
                                       Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 10.0),
+                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
                                         child: Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -412,645 +602,360 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                           ),
                                         ),
                                       ),
-                                    Stack(
-                                      alignment: AlignmentDirectional(1.0, 1.0),
-                                      children: [
-                                        if (_model.uploadedLocalFile_uploadedImgAdet ==
-                                                null ||
-                                            (_model.uploadedLocalFile_uploadedImgAdet
-                                                    .bytes?.isEmpty ??
-                                                true))
-                                          InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              if (containerUserRow?.userType != 'Admin') {
-                                                await _triggerDirectCameraCapture(containerUserRow);
+                                    if (_model.uploadedLocalFile_uploadedImgAdet ==
+                                            null ||
+                                        (_model.uploadedLocalFile_uploadedImgAdet
+                                                .bytes?.isEmpty ??
+                                            true))
+                                      InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          if (containerUserRow?.userType !=
+                                              'Admin') {
+                                            await _triggerDirectCameraCapture(
+                                                containerUserRow);
+                                          } else {
+                                            final selectedMedia =
+                                                await selectMediaWithSourceBottomSheet(
+                                              context: context,
+                                              maxWidth: 1024.0,
+                                              maxHeight: 1024.0,
+                                              imageQuality: 80,
+                                              allowPhoto: true,
+                                            );
+                                            if (selectedMedia != null &&
+                                                selectedMedia.every((m) =>
+                                                    validateFileFormat(
+                                                        m.storagePath,
+                                                        context))) {
+                                              safeSetState(() => _model
+                                                      .isDataUploading_uploadedImgAdet =
+                                                  true);
+                                              try {
+                                                final selectedUploadedFiles =
+                                                    selectedMedia
+                                                        .map((m) =>
+                                                            FFUploadedFile(
+                                                              name: m.storagePath
+                                                                  .split('/')
+                                                                  .last,
+                                                              bytes: m.bytes,
+                                                              height: m
+                                                                  .dimensions
+                                                                  ?.height,
+                                                              width: m
+                                                                  .dimensions
+                                                                  ?.width,
+                                                              blurHash:
+                                                                  m.blurHash,
+                                                              originalFilename: m
+                                                                  .originalFilename,
+                                                            ))
+                                                        .toList();
+                                                if (selectedUploadedFiles
+                                                    .isNotEmpty) {
+                                                  safeSetState(() {
+                                                    _model
+                                                            .uploadedLocalFile_uploadedImgAdet =
+                                                        selectedUploadedFiles
+                                                            .first;
+                                                  });
+                                                }
+                                              } finally {
+                                                _model
+                                                        .isDataUploading_uploadedImgAdet =
+                                                    false;
                                               }
-                                            },
-                                            child: Container(
-                                              width: double.infinity,
-                                              height: 180.0,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withValues(alpha: 0.65),
-                                                borderRadius: BorderRadius.circular(10.0),
-                                                border: Border.all(
-                                                  color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.3),
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    width: 56.0,
-                                                    height: 56.0,
-                                                    decoration: BoxDecoration(
-                                                      color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.12),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.camera_alt_rounded,
-                                                      color: FlutterFlowTheme.of(context).primary,
-                                                      size: 28.0,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 8.0),
-                                                  Text(
-                                                    containerUserRow?.userType == 'Admin'
-                                                        ? 'Select or capture waste image'
-                                                        : 'Tap to take a live photo of waste',
-                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                          font: GoogleFonts.inter(
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                          color: FlutterFlowTheme.of(context).primaryText,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(height: 2.0),
-                                                  Text(
-                                                    containerUserRow?.userType == 'Admin'
-                                                        ? 'Supports camera or gallery upload'
-                                                        : 'Live camera required • Gallery disabled',
-                                                    style: FlutterFlowTheme.of(context).labelSmall.override(
-                                                          font: GoogleFonts.inter(),
-                                                          color: FlutterFlowTheme.of(context).secondaryText,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
+                                            }
+                                          }
+                                        },
+                                        child: Container(
+                                          width: double.infinity,
+                                          height: 180.0,
+                                          decoration: BoxDecoration(
+                                            color: FlutterFlowTheme.of(context)
+                                                .primaryBackground,
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
+                                            border: Border.all(
+                                              color: FlutterFlowTheme.of(context)
+                                                  .accent4
+                                                  .withValues(alpha: 0.5),
+                                              width: 1.5,
                                             ),
                                           ),
-                                        if (_model.uploadedLocalFile_uploadedImgAdet !=
-                                                null &&
-                                            (_model.uploadedLocalFile_uploadedImgAdet
-                                                    .bytes?.isNotEmpty ??
-                                                false))
-                                          Stack(
-                                            alignment:
-                                                AlignmentDirectional(0.0, 1.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                child: Image.memory(
-                                                  _model.uploadedLocalFile_uploadedImgAdet
-                                                          .bytes ??
-                                                      Uint8List.fromList([]),
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
+                                              Container(
+                                                width: 56.0,
+                                                height: 56.0,
+                                                decoration: BoxDecoration(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .accent3
+                                                      .withValues(alpha: 0.12),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.camera_alt_rounded,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .accent3,
+                                                  size: 28.0,
                                                 ),
                                               ),
-                                              const Positioned.fill(
-                                                child: CCameraFramingOverlayWidget(
-                                                  height: 220.0,
+                                              const SizedBox(height: 10.0),
+                                              Text(
+                                                containerUserRow?.userType ==
+                                                        'Admin'
+                                                    ? 'Select or capture waste image'
+                                                    : 'Tap to take a live photo of waste',
+                                                style: GoogleFonts.interTight(
+                                                  fontSize: 15.0,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
                                                 ),
                                               ),
-                                              Opacity(
-                                                opacity: 0.5,
-                                                child: Container(
-                                                  width: double.infinity,
-                                                  height: 65.0,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .secondary
-                                                      ],
-                                                      stops: [0.0, 1.0],
-                                                      begin:
-                                                          AlignmentDirectional(
-                                                              0.0, -1.0),
-                                                      end: AlignmentDirectional(
-                                                          0, 1.0),
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      bottomLeft:
-                                                          Radius.circular(8.0),
-                                                      bottomRight:
-                                                          Radius.circular(8.0),
-                                                    ),
-                                                  ),
+                                              const SizedBox(height: 4.0),
+                                              Text(
+                                                containerUserRow?.userType ==
+                                                        'Admin'
+                                                    ? 'Supports camera or gallery upload'
+                                                    : 'Live camera required • Gallery disabled',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12.0,
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryText,
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        Padding(
-                                          padding: EdgeInsets.all(10.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      RichText(
-                                                        textScaler:
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .textScaler,
-                                                        text: TextSpan(
-                                                          children: [
-                                                            TextSpan(
-                                                              text: 'Welcome, ',
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .titleSmall
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .interTight(
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .titleSmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: _model.uploadedLocalFile_uploadedImgAdet !=
-                                                                                null &&
-                                                                            (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ??
-                                                                                false)
-                                                                        ? Colors
-                                                                            .white
-                                                                        : Colors
-                                                                            .black,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .titleSmall
-                                                                        .fontStyle,
-                                                                  ),
-                                                            ),
-                                                            TextSpan(
-                                                              text:
-                                                                  valueOrDefault<
-                                                                      String>(
-                                                                containerUserRow
-                                                                    ?.userName,
-                                                                '>username',
-                                                              ),
-                                                              style: TextStyle(
-                                                                color: _model.uploadedLocalFile_uploadedImgAdet !=
-                                                                            null &&
-                                                                        (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ??
-                                                                            false)
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .black,
-                                                              ),
-                                                            )
-                                                          ],
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .titleSmall
-                                                              .override(
-                                                                font: GoogleFonts
-                                                                    .interTight(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontStyle,
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                      RichText(
-                                                        textScaler:
-                                                            MediaQuery.of(
-                                                                    context)
-                                                                .textScaler,
-                                                        text: TextSpan(
-                                                          children: [
-                                                            TextSpan(
-                                                              text: 'from ',
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .labelLarge
-                                                                  .override(
-                                                                    font: GoogleFonts
-                                                                        .inter(
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .labelLarge
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .labelLarge
-                                                                          .fontStyle,
-                                                                    ),
-                                                                    color: _model.uploadedLocalFile_uploadedImgAdet !=
-                                                                                null &&
-                                                                            (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ??
-                                                                                false)
-                                                                        ? Colors
-                                                                            .white
-                                                                        : Colors
-                                                                            .black,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelLarge
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                            ),
-                                                            TextSpan(
-                                                              text:
-                                                                  valueOrDefault<
-                                                                      String>(
-                                                                containerUserRow
-                                                                    ?.userStreetNameRef,
-                                                                '>streetname',
-                                                              ),
-                                                              style: TextStyle(
-                                                                color: _model.uploadedLocalFile_uploadedImgAdet !=
-                                                                            null &&
-                                                                        (_model.uploadedLocalFile_uploadedImgAdet.bytes?.isNotEmpty ??
-                                                                            false)
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .black,
-                                                              ),
-                                                            )
-                                                          ],
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .labelLarge
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelLarge
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ].divide(
-                                                        SizedBox(height: 5.0)),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: [
-                                                      if (_model.uploadedLocalFile_uploadedImgAdet ==
-                                                              null ||
-                                                          (_model
-                                                                  .uploadedLocalFile_uploadedImgAdet
-                                                                  .bytes
-                                                                  ?.isEmpty ??
-                                                              true))
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      0.0,
-                                                                      0.0,
-                                                                      5.0,
-                                                                      0.0),
-                                                          child:
-                                                              FlutterFlowIconButton(
-                                                            borderColor:
-                                                                Colors.black,
-                                                            borderRadius: 8.0,
-                                                            buttonSize: 40.0,
-                                                            fillColor:
-                                                                Colors.white,
-                                                            icon: Icon(
-                                                              containerUserRow?.userType != 'Admin'
-                                                                  ? Icons.camera_alt_rounded
-                                                                  : Icons.camera,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                            onPressed:
-                                                                () async {
-                                                              if (containerUserRow?.userType != 'Admin') {
-                                                                await _triggerDirectCameraCapture(containerUserRow);
-                                                                return;
-                                                              }
-                                                              final selectedMedia =
-                                                                  await selectMediaWithSourceBottomSheet(
-                                                                    context:
-                                                                        context,
-                                                                    maxWidth:
-                                                                        1024.0,
-                                                                    maxHeight:
-                                                                        1024.0,
-                                                                    imageQuality:
-                                                                        80,
-                                                                    allowPhoto:
-                                                                        true,
-                                                                  );
-                                                              if (selectedMedia !=
-                                                                      null &&
-                                                                  selectedMedia.every((m) =>
-                                                                      validateFileFormat(
-                                                                          m.storagePath,
-                                                                          context))) {
-                                                                safeSetState(() =>
-                                                                    _model.isDataUploading_uploadedImgAdet =
-                                                                        true);
-                                                                var selectedUploadedFiles =
-                                                                    <FFUploadedFile>[];
-
-                                                                try {
-                                                                  selectedUploadedFiles =
-                                                                      selectedMedia
-                                                                          .map((m) =>
-                                                                              FFUploadedFile(
-                                                                                name: m.storagePath.split('/').last,
-                                                                                bytes: m.bytes,
-                                                                                height: m.dimensions?.height,
-                                                                                width: m.dimensions?.width,
-                                                                                blurHash: m.blurHash,
-                                                                                originalFilename: m.originalFilename,
-                                                                              ))
-                                                                          .toList();
-                                                                } finally {
-                                                                  _model.isDataUploading_uploadedImgAdet =
-                                                                      false;
-                                                                }
-                                                                if (selectedUploadedFiles
-                                                                        .length ==
-                                                                    selectedMedia
-                                                                        .length) {
-                                                                  safeSetState(
-                                                                      () {
-                                                                    _model.uploadedLocalFile_uploadedImgAdet =
-                                                                        selectedUploadedFiles
-                                                                            .first;
-                                                                  });
-                                                                } else {
-                                                                  safeSetState(
-                                                                      () {});
-                                                                  return;
-                                                                }
-                                                              }
-                                                            },
-                                                          ),
-                                                        ),
-                                                      if ((_model.uploadedLocalFile_uploadedImgAdet !=
-                                                                  null &&
-                                                              (_model
-                                                                      .uploadedLocalFile_uploadedImgAdet
-                                                                      .bytes
-                                                                      ?.isNotEmpty ??
-                                                                  false)) &&
-                                                          !(_model
-                                                              .apiResponseHolder
-                                                              .isNotEmpty) &&
-                                                          containerUserRow?.userType == 'Admin')
-                                                        FlutterFlowIconButton(
-                                                          borderColor:
-                                                              Colors.black,
-                                                          borderRadius: 8.0,
-                                                          buttonSize: 40.0,
-                                                          fillColor:
-                                                              Colors.white,
-                                                          icon: Icon(
-                                                            Icons
-                                                                .upload_outlined,
-                                                            color: Colors.black,
-                                                          ),
-                                                          onPressed: () async {
-                                                            {
-                                                              safeSetState(() =>
-                                                                  _model.isDataUploading_uploadImgToDbAdetNoAI =
-                                                                      true);
-                                                              var selectedUploadedFiles =
-                                                                  <FFUploadedFile>[];
-                                                              var selectedMedia =
-                                                                  <SelectedFile>[];
-                                                              var downloadUrls =
-                                                                  <String>[];
-                                                              try {
-                                                                selectedUploadedFiles = _model
-                                                                        .uploadedLocalFile_uploadedImgAdet
-                                                                        .bytes!
-                                                                        .isNotEmpty
-                                                                    ? [
-                                                                        _model
-                                                                            .uploadedLocalFile_uploadedImgAdet
-                                                                      ]
-                                                                    : <FFUploadedFile>[];
-                                                                selectedMedia =
-                                                                    selectedFilesFromUploadedFiles(
-                                                                  selectedUploadedFiles,
-                                                                  storageFolderPath:
-                                                                      containerUserRow
-                                                                          ?.userStreetNameRef,
-                                                                );
-                                                                downloadUrls =
-                                                                    await uploadSupabaseStorageFiles(
-                                                                  bucketName:
-                                                                      'Image_Bucket',
-                                                                  selectedFiles:
-                                                                      selectedMedia,
-                                                                );
-                                                              } finally {
-                                                                _model.isDataUploading_uploadImgToDbAdetNoAI =
-                                                                    false;
-                                                              }
-                                                              if (selectedUploadedFiles
-                                                                          .length ==
-                                                                      selectedMedia
-                                                                          .length &&
-                                                                  downloadUrls
-                                                                          .length ==
-                                                                      selectedMedia
-                                                                          .length) {
-                                                                safeSetState(
-                                                                    () {
-                                                                  _model.uploadedLocalFile_uploadImgToDbAdetNoAI =
-                                                                      selectedUploadedFiles
-                                                                          .first;
-                                                                  _model.uploadedFileUrl_uploadImgToDbAdetNoAI =
-                                                                      downloadUrls
-                                                                          .first;
-                                                                });
-                                                              } else {
-                                                                safeSetState(
-                                                                    () {});
-                                                                return;
-                                                              }
-                                                            }
-
-                                                            await ImageTable()
-                                                                .insert({
-                                                              'img_uploader':
-                                                                  containerUserRow
-                                                                      ?.userId,
-                                                              'img_streetNameRef':
-                                                                  containerUserRow
-                                                                      ?.userStreetNameRef,
-                                                              'img_reference_link':
-                                                                  _model
-                                                                      .uploadedFileUrl_uploadImgToDbAdetNoAI,
-                                                              'created_at': supaSerialize<
-                                                                      DateTime>(
-                                                                  functions
-                                                                      .getCurrentTime(
-                                                                          getCurrentTimestamp)),
-                                                              'status':
-                                                                  'Uncategorized',
-                                                              'created_atDate':
-                                                                  supaSerialize<
-                                                                          DateTime>(
-                                                                      functions
-                                                                          .getCurrentTime(
-                                                                              getCurrentTimestamp)),
-                                                            });
-                                                            safeSetState(() {
-                                                              _model.isDataUploading_uploadedImgAdet =
-                                                                  false;
-                                                              _model.uploadedLocalFile_uploadedImgAdet =
-                                                                  FFUploadedFile(
-                                                                      bytes: Uint8List
-                                                                          .fromList(
-                                                                              []),
-                                                                      originalFilename:
-                                                                          '');
-                                                            });
-
-                                                            safeSetState(() {
-                                                              _model.isDataUploading_uploadImgToDbAdetNoAI =
-                                                                  false;
-                                                              _model.uploadedLocalFile_uploadImgToDbAdetNoAI =
-                                                                  FFUploadedFile(
-                                                                      bytes: Uint8List
-                                                                          .fromList(
-                                                                              []),
-                                                                      originalFilename:
-                                                                          '');
-                                                              _model.uploadedFileUrl_uploadImgToDbAdetNoAI =
-                                                                  '';
-                                                            });
-
-                                                            _model.apiResponseHolder =
-                                                                [];
-                                                            safeSetState(() {});
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                  'Image is successfully uploaded.',
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleLarge
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .interTight(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .titleLarge
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .titleLarge
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Colors
-                                                                            .white,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .titleLarge
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .titleLarge
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                                duration: Duration(
-                                                                    milliseconds:
-                                                                        4000),
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .black,
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ].divide(SizedBox(height: 10.0)),
-                                          ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    if (_model.uploadedLocalFile_uploadedImgAdet !=
+                                            null &&
+                                        (_model.uploadedLocalFile_uploadedImgAdet
+                                                .bytes?.isNotEmpty ??
+                                            false))
+                                      Stack(
+                                        alignment:
+                                            AlignmentDirectional(1.0, -1.0),
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
+                                            child: Image.memory(
+                                              _model
+                                                      .uploadedLocalFile_uploadedImgAdet
+                                                      .bytes ??
+                                                  Uint8List.fromList([]),
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          const Positioned.fill(
+                                            child: CCameraFramingOverlayWidget(
+                                              height: 220.0,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if (containerUserRow
+                                                            ?.userType ==
+                                                        'Admin' &&
+                                                    !_model.apiResponseHolder
+                                                        .isNotEmpty)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 8.0),
+                                                    child: Material(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20.0),
+                                                      elevation: 2.0,
+                                                      child: InkWell(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20.0),
+                                                        onTap: () async {
+                                                          await _executeAdminDirectUpload(
+                                                              containerUserRow);
+                                                        },
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      10.0,
+                                                                  vertical:
+                                                                      6.0),
+                                                          child: Row(
+                                                            children: [
+                                                              Icon(
+                                                                Icons
+                                                                    .upload_outlined,
+                                                                size: 16.0,
+                                                                color: FlutterFlowTheme
+                                                                        .of(context)
+                                                                    .primaryText,
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 4.0),
+                                                              Text(
+                                                                'Direct Upload',
+                                                                style: GoogleFonts
+                                                                    .inter(
+                                                                  fontSize:
+                                                                      11.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color: FlutterFlowTheme
+                                                                          .of(context)
+                                                                      .primaryText,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                Material(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  elevation: 2.0,
+                                                  child: InkWell(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20.0),
+                                                    onTap: () async {
+                                                      if (containerUserRow
+                                                              ?.userType !=
+                                                          'Admin') {
+                                                        safeSetState(() {
+                                                          _model
+                                                                  .uploadedLocalFile_uploadedImgAdet =
+                                                              FFUploadedFile(
+                                                            bytes:
+                                                                Uint8List.fromList(
+                                                                    []),
+                                                            originalFilename:
+                                                                '',
+                                                          );
+                                                          _model
+                                                              .apiResponseHolder = [];
+                                                        });
+                                                        await _triggerDirectCameraCapture(
+                                                            containerUserRow);
+                                                      } else {
+                                                        final selectedMedia =
+                                                            await selectMediaWithSourceBottomSheet(
+                                                          context: context,
+                                                          maxWidth: 1024.0,
+                                                          maxHeight: 1024.0,
+                                                          imageQuality: 80,
+                                                          allowPhoto: true,
+                                                        );
+                                                        if (selectedMedia !=
+                                                                null &&
+                                                            selectedMedia.every(
+                                                                (m) =>
+                                                                    validateFileFormat(
+                                                                        m.storagePath,
+                                                                        context))) {
+                                                          safeSetState(() =>
+                                                              _model
+                                                                      .isDataUploading_uploadedImgAdet =
+                                                                  true);
+                                                          try {
+                                                            final selectedUploadedFiles =
+                                                                selectedMedia
+                                                                    .map((m) =>
+                                                                        FFUploadedFile(
+                                                                          name: m.storagePath.split('/').last,
+                                                                          bytes: m.bytes,
+                                                                          height: m.dimensions?.height,
+                                                                          width: m.dimensions?.width,
+                                                                          blurHash: m.blurHash,
+                                                                          originalFilename: m.originalFilename,
+                                                                        ))
+                                                                    .toList();
+                                                            if (selectedUploadedFiles
+                                                                .isNotEmpty) {
+                                                              safeSetState(() {
+                                                                _model
+                                                                        .uploadedLocalFile_uploadedImgAdet =
+                                                                    selectedUploadedFiles
+                                                                        .first;
+                                                                _model
+                                                                    .apiResponseHolder = [];
+                                                              });
+                                                            }
+                                                          } finally {
+                                                            _model
+                                                                    .isDataUploading_uploadedImgAdet =
+                                                                false;
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 10.0,
+                                                          vertical: 6.0),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons
+                                                                .refresh_rounded,
+                                                            size: 16.0,
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .primaryText,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 4.0),
+                                                          Text(
+                                                            'Retake',
+                                                            style:
+                                                                GoogleFonts
+                                                                    .inter(
+                                                              fontSize: 11.0,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .primaryText,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     if (_model.isAutoScanning)
                                       Padding(
                                         padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
@@ -2535,19 +2440,21 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                             );
                           },
                         ),
-                        Container(
-                          height: 500.0,
-                          decoration: BoxDecoration(),
-                        ),
+                        const SizedBox(height: 100.0),
                       ].divide(SizedBox(height: 5.0)),
                     ),
                   ),
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+              Align(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'P_ImgUpload_A_Auth',
+                  ),
+                ),
               ),
             ],
           ),
