@@ -49,3 +49,5 @@ To install an EBasura release APK on an Android device:
 4. **Permissions**:
    - Grant **Camera** permission when prompted (required for waste scanning).
    - Grant **Internet** access (required for Gemini AI analysis and Supabase sync).
+
+| `v2.0.0+2` | Emerging Tech (Gemini AI) | 2026-10-17 | `releases/v2.0.0+2/EBasura-v2.0.0+2-release.apk` | `7c00beb4df1e...` | [`versions/v2.0.0+2.md`](versions/v2.0.0+2.md) |
