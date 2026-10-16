@@ -24,4 +24,5 @@ Module 3 contains the AI computer vision engine of EBasura. By utilizing the Goo
 - **[`classification_and_injection_guard.md`](classification_and_injection_guard.md)**: Rules, prompts, and classification parsing for valid waste, recyclability, segregation, biodegradability, and adversarial text injection mitigation.
 - **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, deterministic JSON schema outputs, client-side downscaling/compression, and API service unification.
 - **[`EBASURA_IMAGE_SCANNING_PROCESS.md`](../../EBASURA_IMAGE_SCANNING_PROCESS.md)**: Comprehensive end-to-end specification covering media acquisition, Gemini multimodal evaluation, injection defenses, and persistence.
+- **[`EBASURA_AI_IMAGE_SCANNING_RULES_AND_HEURISTICS.md`](../../EBASURA_AI_IMAGE_SCANNING_RULES_AND_HEURISTICS.md)**: Consolidated specification of all AI scanning prompt rules, 5-attribute classification heuristics, injection defense, and client parsing.
 
