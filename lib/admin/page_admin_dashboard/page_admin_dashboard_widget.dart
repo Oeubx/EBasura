@@ -637,7 +637,7 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
                                       context.pushNamed(
-                                          PReportViewAllWidget.routeName);
+                                          PReportSystemWidget.routeName);
                                     },
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,

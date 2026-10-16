@@ -8,6 +8,8 @@ export '/admin/report/p_report_view_one/p_report_view_one_widget.dart'
     show PReportViewOneWidget;
 export '/admin/report/p_report_view_all/p_report_view_all_widget.dart'
     show PReportViewAllWidget;
+export '/admin/report/p_report_system/p_report_system_widget.dart'
+    show PReportSystemWidget;
 export '/admin/page_admin_dashboard/page_admin_dashboard_widget.dart'
     show PageAdminDashboardWidget;
 export '/admin/dates/p_dates_view_one/p_dates_view_one_widget.dart'

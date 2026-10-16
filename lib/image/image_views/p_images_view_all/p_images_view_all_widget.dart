@@ -17,10 +17,12 @@ class PImagesViewAllWidget extends StatefulWidget {
     super.key,
     this.initialTabIndex = 0,
     this.initialStatus,
+    this.initialStreet,
   });
 
   final int initialTabIndex;
   final String? initialStatus;
+  final String? initialStreet;
 
   static String routeName = 'P_Images_ViewAll';
   static String routePath = '/pImagesViewAll';
@@ -40,9 +42,17 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
     _model = createModel(context, () => PImagesViewAllModel());
     _model.selectedTabIndex = widget.initialTabIndex;
 
+    if (widget.initialStreet != null && widget.initialStreet!.isNotEmpty) {
+      _model.selectedStreet = widget.initialStreet!;
+    }
+
     if (widget.initialStatus != null && widget.initialStatus!.isNotEmpty) {
       final s = widget.initialStatus!;
-      if (s == 'Categorized by Ai' || s == 'AI Categorized') {
+      if (s == 'Non-Verified' || s == 'NON-VERIFIED') {
+        _model.activeQuickFilter = 'All';
+        _model.dropDownStatusValue = 'All';
+        _model.selectedTabIndex = 0;
+      } else if (s == 'Categorized by Ai' || s == 'AI Categorized') {
         _model.activeQuickFilter = 'AI Categorized';
         _model.dropDownStatusValue = 'Categorized by Ai';
         _model.selectedTabIndex = 0;

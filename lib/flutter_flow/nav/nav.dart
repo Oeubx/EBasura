@@ -107,6 +107,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'initialTabIndex',
               ParamType.int,
             ) ?? 0,
+            initialStatus: params.getParam(
+              'initialStatus',
+              ParamType.String,
+            ),
+            initialStreet: params.getParam(
+              'initialStreet',
+              ParamType.String,
+            ),
           ),
         ),
         FFRoute(
@@ -128,6 +136,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: PReportViewAllWidget.routeName,
           path: PReportViewAllWidget.routePath,
           builder: (context, params) => PReportViewAllWidget(),
+        ),
+        FFRoute(
+          name: PReportSystemWidget.routeName,
+          path: PReportSystemWidget.routePath,
+          builder: (context, params) => PReportSystemWidget(),
         ),
         FFRoute(
           name: PageAdminDashboardWidget.routeName,
