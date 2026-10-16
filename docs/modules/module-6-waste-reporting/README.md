@@ -10,7 +10,7 @@ Module 6 enables community members to submit waste incident reports (illegal dum
 | Feature Code | Feature Name | Status | Primary Artifacts | Technical Documentation |
 | :--- | :--- | :--- | :--- | :--- |
 | `EBASURA-M6-F0` | Community Waste Incident Submission | Active | `lib/admin/report/c_report_creation/` | [`incident_reporting.md`](incident_reporting.md) |
-| `EBASURA-M6-F1` | Reports Directory & Feed | Active | `lib/admin/report/p_report_view_all/` | [`report_management.md`](report_management.md) |
+| `EBASURA-M6-F1` | Reports Directory & Dual-Page Hub | Active | `lib/admin/report/p_report_system/`, `lib/admin/report/p_report_view_all/` | [`system_reports_hub.md`](system_reports_hub.md), [`report_management.md`](report_management.md) |
 | `EBASURA-M6-F2` | Single Report Details & Location Inspection | Active | `lib/admin/report/p_report_view_one/` | [`report_management.md`](report_management.md) |
 | `EBASURA-M6-F3` | Incident Attached Photos Viewer | Active | `lib/admin/report/c_report_view_images/` | [`incident_reporting.md`](incident_reporting.md) |
 | `EBASURA-M6-F4` | Incident Report Deletion & Resolution | Active | `lib/admin/report/c_report_deletion/` | [`report_management.md`](report_management.md) |
@@ -19,6 +19,7 @@ Module 6 enables community members to submit waste incident reports (illegal dum
 
 ## 3. Submodule Directory
 
+- **[`system_reports_hub.md`](system_reports_hub.md)**: Specifications for Page 1 System Reports Hub (`PReportSystemWidget`), top hero counter banner, per-street aggregation tallies, and deep-linking into moderation.
 - **[`incident_reporting.md`](incident_reporting.md)**: Specifications for creating incident reports, capturing on-site photos, selecting target streets, and writing incident descriptions.
 - **[`report_management.md`](report_management.md)**: Specifications for browsing active incident reports, viewing detail cards, photo carousels, and executing report resolution or deletion.
 - **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, status lifecycle filtering (Pending/Resolved), and interactive photo evidence zoom.
