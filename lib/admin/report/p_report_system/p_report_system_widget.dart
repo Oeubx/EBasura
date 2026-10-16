@@ -69,16 +69,18 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
     final startOfToday = DateTime(now.year, now.month, now.day);
     final oneHourAgo = now.subtract(const Duration(hours: 1));
 
-    // Collect all unique street names from both StreetTable and ImageTable
+    // Collect all unique street names from both StreetTable and ImageTable (case-insensitively)
     final Map<String, StreetRow?> streetMap = {};
     for (final s in streets) {
-      if (s.streetName.trim().isNotEmpty) {
-        streetMap[s.streetName.trim()] = s;
+      final trimmed = s.streetName.trim();
+      if (trimmed.isNotEmpty) {
+        streetMap[trimmed] = s;
       }
     }
     for (final img in images) {
       final name = img.imgStreetNameRef.trim();
-      if (name.isNotEmpty && !streetMap.containsKey(name)) {
+      if (name.isNotEmpty &&
+          !streetMap.keys.any((k) => k.toLowerCase() == name.toLowerCase())) {
         streetMap[name] = null;
       }
     }
