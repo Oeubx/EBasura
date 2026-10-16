@@ -144,7 +144,7 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | Commit Code | Feature Name | Description | Specification Link |
 | :--- | :--- | :--- | :--- |
 | `EBASURA-M6-F0` | Community Waste Incident Submission | Reporting form with date, description, and street selection | [`incident_reporting.md`](../modules/module-6-waste-reporting/incident_reporting.md) |
-| `EBASURA-M6-F1` | Reports Directory & Feed | Community feed of active waste reports with status indicators | [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
+| `EBASURA-M6-F1` | Reports Directory & Dual-Page Hub | System street reports hub with macro tallies & collection incident feed | [`system_reports_hub.md`](../modules/module-6-waste-reporting/system_reports_hub.md), [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
 | `EBASURA-M6-F2` | Single Report Details & Location Inspection | Detailed incident view with street information and timestamp | [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
 | `EBASURA-M6-F3` | Incident Attached Photos Viewer | Full-screen photo evidence viewer with zoom and swipe carousel | [`incident_reporting.md`](../modules/module-6-waste-reporting/incident_reporting.md) |
 | `EBASURA-M6-F4` | Incident Report Deletion & Resolution | Resolution flow and administrative incident report deletion | [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
