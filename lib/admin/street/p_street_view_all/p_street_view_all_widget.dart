@@ -2,17 +2,14 @@ import '/admin/street/c_street_creation/c_street_creation_widget.dart';
 import '/custom_code/actions/street_compliance_exporter.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_street_view_all_model.dart';
 export 'p_street_view_all_model.dart';
 
@@ -28,26 +25,26 @@ class PStreetViewAllWidget extends StatefulWidget {
 
 class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
   late PStreetViewAllModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isExporting = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PStreetViewAllModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -55,474 +52,375 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).tertiary,
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 8.0,
+                  bottom: 120.0,
                 ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Horizontal_Logo.png',
-                          width: double.infinity,
-                          height: 150.0,
-                          fit: BoxFit.fitWidth,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Brand topbar with back button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset(
+                            'assets/images/Horizontal_Logo.png',
+                            height: 38.0,
+                            fit: BoxFit.contain,
+                          ),
+                          FlutterFlowIconButton(
+                            borderColor: theme.accent4.withValues(alpha: 0.35),
+                            borderRadius: 20.0,
+                            buttonSize: 38.0,
+                            fillColor: Colors.white,
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: theme.primaryText,
+                              size: 20.0,
+                            ),
+                            onPressed: () async => context.safePop(),
+                          ),
+                        ],
                       ),
-                      Container(
-                        width: double.infinity,
-                        height: 525.0,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDFF1F1),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: SingleChildScrollView(
+                    ),
+
+                    const CPageHeaderWidget(
+                      title: 'Batasan Street Directory',
+                      subtitle:
+                          'Manage community streets, pickup routes, & compliance exports',
+                      icon: Icons.alt_route_rounded,
+                    ),
+
+                    // Compliance Exporter Action Row
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: FFButtonWidget(
+                              onPressed: _isExporting
+                                  ? null
+                                  : () async {
+                                      setState(() => _isExporting = true);
+                                      try {
+                                        final streets = await StreetTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        final images = await ImageTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        final reports = await ReportTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        if (context.mounted) {
+                                          await StreetComplianceExporter
+                                              .exportCSV(
+                                            context: context,
+                                            streets: streets,
+                                            images: images,
+                                            reports: reports,
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isExporting = false);
+                                        }
+                                      }
+                                    },
+                              text: 'Export CSV',
+                              icon: const Icon(
+                                Icons.table_chart_rounded,
+                                size: 16.0,
+                              ),
+                              options: FFButtonOptions(
+                                height: 42.0,
+                                color: const Color(0xFF1B5E20),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Expanded(
+                            child: FFButtonWidget(
+                              onPressed: _isExporting
+                                  ? null
+                                  : () async {
+                                      setState(() => _isExporting = true);
+                                      try {
+                                        final streets = await StreetTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        final images = await ImageTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        final reports = await ReportTable()
+                                            .queryRows(queryFn: (q) => q);
+                                        if (context.mounted) {
+                                          await StreetComplianceExporter
+                                              .exportPDF(
+                                            context: context,
+                                            streets: streets,
+                                            images: images,
+                                            reports: reports,
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isExporting = false);
+                                        }
+                                      }
+                                    },
+                              text: 'Export PDF',
+                              icon: const Icon(
+                                Icons.picture_as_pdf_rounded,
+                                size: 16.0,
+                              ),
+                              options: FFButtonOptions(
+                                height: 42.0,
+                                color: const Color(0xFFDC2626),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Streets Listing
+                    FutureBuilder<List<StreetRow>>(
+                      future: StreetTable().queryRows(
+                        queryFn: (q) => q.order('street_name', ascending: true),
+                      ),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF2E78A6),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final streetList = snapshot.data!;
+
+                        if (streetList.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(28.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.0),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                                width: 1.0,
+                              ),
+                            ),
                             child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    context.safePop();
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
+                                const Icon(
+                                  Icons.location_off_rounded,
+                                  size: 40.0,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                const SizedBox(height: 12.0),
+                                Text(
+                                  'No Streets Registered',
+                                  style: GoogleFonts.comfortaa(
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF013448),
+                                  ),
+                                ),
+                                const SizedBox(height: 4.0),
+                                Text(
+                                  'Tap the + button below to add a new street record.',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.0,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.separated(
+                          padding: EdgeInsets.zero,
+                          primary: false,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: streetList.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10.0),
+                          itemBuilder: (context, index) {
+                            final street = streetList[index];
+                            final hasStorage = street.hasStorage ?? false;
+                            final desc = street.streetDescription;
+
+                            return InkWell(
+                              onTap: () async {
+                                context.pushNamed(
+                                  PStreetViewOneWidget.routeName,
+                                  queryParameters: {
+                                    'streetsRef': serializeParam(
+                                      street,
+                                      ParamType.SupabaseRow,
+                                    ),
+                                  }.withoutNulls,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(16.0),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  border: Border.all(
+                                    color: const Color(0xFFE2E8F0),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x06000000),
+                                      blurRadius: 8.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42.0,
+                                      height: 42.0,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE8F1F8),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                      ),
+                                      child: const Icon(
+                                        Icons.location_on_rounded,
+                                        color: Color(0xFF2E78A6),
+                                        size: 22.0,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14.0),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Icon(
-                                            Icons.arrow_left,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            size: 24.0,
-                                          ),
                                           Text(
-                                            'Return',
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleLarge
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
+                                            street.streetName,
+                                            style: GoogleFonts.interTight(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF1E293B),
+                                            ),
+                                          ),
+                                          if (desc != null && desc.isNotEmpty) ...[
+                                            const SizedBox(height: 2.0),
+                                            Text(
+                                              desc,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12.0,
+                                                color: const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 6.0),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                              vertical: 2.0,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: hasStorage
+                                                  ? const Color(0xFFD5F2E2)
+                                                  : const Color(0xFFF1F5F9),
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                            child: Text(
+                                              hasStorage
+                                                  ? 'Waste Storage Facility'
+                                                  : 'No Direct Storage',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: hasStorage
+                                                    ? const Color(0xFF31A11F)
+                                                    : const Color(0xFF64748B),
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        'Street Records',
-                                        style: FlutterFlowTheme.of(context)
-                                            .titleLarge
-                                            .override(
-                                              font: GoogleFonts.interTight(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleLarge
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .titleLarge
-                                                      .fontStyle,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 22.0,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                  ],
                                 ),
-                                Divider(
-                                  thickness: 2.0,
-                                  color: Colors.black,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: () async {
-                                            final streets = await StreetTable().queryRows(queryFn: (q) => q);
-                                            final images = await ImageTable().queryRows(queryFn: (q) => q);
-                                            final reports = await ReportTable().queryRows(queryFn: (q) => q);
-                                            if (context.mounted) {
-                                              await StreetComplianceExporter.exportCSV(
-                                                context: context,
-                                                streets: streets,
-                                                images: images,
-                                                reports: reports,
-                                              );
-                                            }
-                                          },
-                                          icon: const Icon(Icons.table_chart, size: 16.0, color: Colors.white),
-                                          label: Text('Export CSV', style: GoogleFonts.inter(fontSize: 12.0, fontWeight: FontWeight.bold, color: Colors.white)),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF1B5E20),
-                                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8.0),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: () async {
-                                            final streets = await StreetTable().queryRows(queryFn: (q) => q);
-                                            final images = await ImageTable().queryRows(queryFn: (q) => q);
-                                            final reports = await ReportTable().queryRows(queryFn: (q) => q);
-                                            if (context.mounted) {
-                                              await StreetComplianceExporter.exportPDF(
-                                                context: context,
-                                                streets: streets,
-                                                images: images,
-                                                reports: reports,
-                                              );
-                                            }
-                                          },
-                                          icon: const Icon(Icons.picture_as_pdf, size: 16.0, color: Colors.white),
-                                          label: Text('Export PDF', style: GoogleFonts.inter(fontSize: 12.0, fontWeight: FontWeight.bold, color: Colors.white)),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFD32F2F),
-                                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                StreamBuilder<List<StreetRow>>(
-                                  stream: _model.listViewSupabaseStream ??=
-                                      SupaFlow
-                                          .client
-                                          .from("Street")
-                                          .stream(primaryKey: [
-                                    'street_name'
-                                  ]).map((list) => list
-                                              .map((item) => StreetRow(item))
-                                              .toList()),
-                                  builder: (context, snapshot) {
-                                    // Customize what your widget looks like when it's loading.
-                                    if (!snapshot.hasData) {
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 50.0,
-                                          height: 50.0,
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    List<StreetRow> listViewStreetRowList =
-                                        snapshot.data!;
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
-                                    return ListView.builder(
-                                      padding: EdgeInsets.zero,
-                                      primary: false,
-                                      shrinkWrap: true,
-                                      scrollDirection: Axis.vertical,
-                                      itemCount: listViewStreetRowList.length,
-                                      itemBuilder: (context, listViewIndex) {
-                                        final listViewStreetRow =
-                                            listViewStreetRowList[
-                                                listViewIndex];
-                                        return Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 15.0),
-                                          child: InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              context.pushNamed(
-                                                PStreetViewOneWidget.routeName,
-                                                queryParameters: {
-                                                  'streetsRef': serializeParam(
-                                                    listViewStreetRow,
-                                                    ParamType.SupabaseRow,
-                                                  ),
-                                                }.withoutNulls,
-                                              );
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(15.0),
-                                                border: Border.all(
-                                                  color: Colors.black,
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding: EdgeInsets.all(10.0),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        FaIcon(
-                                                          FontAwesomeIcons
-                                                              .streetView,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primaryText,
-                                                          size: 25.0,
-                                                        ),
-                                                        Text(
-                                                          listViewStreetRow
-                                                              .streetName,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .titleLarge
-                                                              .override(
-                                                                font: GoogleFonts
-                                                                    .interTight(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleLarge
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(width: 5.0)),
-                                                    ),
-                                                    Text(
-                                                      valueOrDefault<String>(
-                                                        listViewStreetRow
-                                                            .streetDescription,
-                                                        '>desc',
-                                                      ),
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyLarge
-                                                              .override(
-                                                                font:
-                                                                    GoogleFonts
-                                                                        .inter(
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                                letterSpacing:
-                                                                    0.0,
-                                                                fontWeight: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontWeight,
-                                                                fontStyle: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyLarge
-                                                                    .fontStyle,
-                                                              ),
-                                                    ),
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        FaIcon(
-                                                          FontAwesomeIcons
-                                                              .clock,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primaryText,
-                                                          size: 15.0,
-                                                        ),
-                                                        RichText(
-                                                          textScaler:
-                                                              MediaQuery.of(
-                                                                      context)
-                                                                  .textScaler,
-                                                          text: TextSpan(
-                                                            children: [
-                                                              TextSpan(
-                                                                text:
-                                                                    'Last updated at : ',
-                                                                style:
-                                                                    TextStyle(),
-                                                              ),
-                                                              TextSpan(
-                                                                text: dateTimeFormat(
-                                                                    "relative",
-                                                                    listViewStreetRow
-                                                                        .lastUpdatedTime!),
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodySmall
-                                                                    .override(
-                                                                      font: GoogleFonts
-                                                                          .inter(
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .fontStyle,
-                                                                      ),
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                      fontWeight: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodySmall
-                                                                          .fontWeight,
-                                                                      fontStyle: FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .bodySmall
-                                                                          .fontStyle,
-                                                                    ),
-                                                              )
-                                                            ],
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodySmall
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodySmall
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodySmall
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodySmall
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodySmall
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(width: 5.0)),
-                                                    ),
-                                                  ].divide(
-                                                      SizedBox(height: 10.0)),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ].divide(SizedBox(height: 10.0)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 125.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
+              // Floating Action Button
+              Positioned(
+                bottom: 86.0,
+                right: 20.0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x282E78A6),
+                        blurRadius: 10.0,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
-                ),
-              ),
-              Align(
-                alignment: AlignmentDirectional(1.0, 1.0),
-                child: Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 25.0, 100.0),
                   child: FlutterFlowIconButton(
-                    borderRadius: 15.0,
-                    borderWidth: 0.0,
-                    buttonSize: 50.0,
-                    fillColor: Colors.black,
-                    icon: Icon(
-                      Icons.edit_document,
-                      color: FlutterFlowTheme.of(context).info,
-                      size: 25.0,
+                    borderRadius: 26.0,
+                    buttonSize: 52.0,
+                    fillColor: const Color(0xFF2E78A6),
+                    icon: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 28.0,
                     ),
                     onPressed: () async {
                       await showModalBottomSheet(
@@ -531,26 +429,27 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
                         enableDrag: false,
                         context: context,
                         builder: (context) {
-                          return GestureDetector(
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            child: Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: CStreetCreationWidget(),
-                            ),
+                          return Padding(
+                            padding: MediaQuery.viewInsetsOf(context),
+                            child: const CStreetCreationWidget(),
                           );
                         },
-                      ).then((value) => safeSetState(() {}));
+                      ).then((_) => safeSetState(() {}));
                     },
                   ),
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+
+              // Bottom Bar
+              Align(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'P_Street_ViewAll',
+                  ),
+                ),
               ),
             ],
           ),

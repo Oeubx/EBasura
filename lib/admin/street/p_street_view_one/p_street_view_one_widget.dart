@@ -2,14 +2,14 @@ import '/admin/street/c_street_deletion/c_street_deletion_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_street_view_one_model.dart';
 export 'p_street_view_one_model.dart';
 
@@ -30,30 +30,31 @@ class PStreetViewOneWidget extends StatefulWidget {
 
 class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
   late PStreetViewOneModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isSaving = false;
+  bool _hasStorage = false;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PStreetViewOneModel());
-
     _model.nameFocusNode ??= FocusNode();
-
     _model.descriptionFocusNode ??= FocusNode();
-
+    _hasStorage = widget.streetsRef?.hasStorage ?? false;
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -61,628 +62,476 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).tertiary,
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 8.0,
+                  bottom: 120.0,
                 ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Brand topbar with back button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset(
                             'assets/images/Horizontal_Logo.png',
-                            width: double.infinity,
-                            height: 150.0,
-                            fit: BoxFit.fitWidth,
+                            height: 38.0,
+                            fit: BoxFit.contain,
                           ),
+                          FlutterFlowIconButton(
+                            borderColor: theme.accent4.withValues(alpha: 0.35),
+                            borderRadius: 20.0,
+                            buttonSize: 38.0,
+                            fillColor: Colors.white,
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: theme.primaryText,
+                              size: 20.0,
+                            ),
+                            onPressed: () async => context.safePop(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const CPageHeaderWidget(
+                      title: 'Street Profile',
+                      subtitle:
+                          'Review and update street details and waste storage status',
+                      icon: Icons.edit_road_rounded,
+                    ),
+
+                    FutureBuilder<List<StreetRow>>(
+                      future: StreetTable().querySingleRow(
+                        queryFn: (q) => q.eqOrNull(
+                          'street_id',
+                          widget.streetsRef?.streetId,
                         ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 25.0),
-                          child: StreamBuilder<List<StreetRow>>(
-                            stream: _model.containerSupabaseStream ??= SupaFlow
-                                .client
-                                .from("Street")
-                                .stream(primaryKey: ['street_name'])
-                                .eqOrNull(
-                                  'street_id',
-                                  widget!.streetsRef?.streetId,
-                                )
-                                .map((list) => list
-                                    .map((item) => StreetRow(item))
-                                    .toList()),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
+                      ),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(48.0),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF2E78A6),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final rows = snapshot.data!;
+                        final street =
+                            rows.isNotEmpty ? rows.first : widget.streetsRef;
+
+                        if (street == null) {
+                          return Center(
+                            child: Text(
+                              'Street not found.',
+                              style: GoogleFonts.inter(
+                                color: theme.secondaryText,
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (!_initialized) {
+                          _model.nameTextController ??= TextEditingController(
+                            text: street.streetName,
+                          );
+                          _model.descriptionTextController ??=
+                              TextEditingController(
+                            text: street.streetDescription,
+                          );
+                          _hasStorage = street.hasStorage ?? false;
+                          _initialized = true;
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(18.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                  width: 1.0,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0A000000),
+                                    blurRadius: 8.0,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Street Information',
+                                    style: GoogleFonts.comfortaa(
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF013448),
                                     ),
                                   ),
-                                );
-                              }
-                              List<StreetRow> containerStreetRowList =
-                                  snapshot.data!;
+                                  const SizedBox(height: 14.0),
 
-                              final containerStreetRow =
-                                  containerStreetRowList.isNotEmpty
-                                      ? containerStreetRowList.first
-                                      : null;
-
-                              return Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFDFF1F1),
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(15.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.safePop();
-                                        },
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Icon(
-                                              Icons.arrow_left,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              size: 24.0,
-                                            ),
-                                            Text(
-                                              'Return',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontStyle,
-                                                    ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                            ),
-                                          ],
+                                  // Street Name
+                                  Text(
+                                    'Street Name',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  TextFormField(
+                                    controller: _model.nameTextController,
+                                    focusNode: _model.nameFocusNode,
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter official street name',
+                                      hintStyle: GoogleFonts.inter(
+                                        fontSize: 13.0,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF8FAFC),
+                                      contentPadding: const EdgeInsets.all(14.0),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
                                         ),
                                       ),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          TextFormField(
-                                            controller:
-                                                _model.nameTextController ??=
-                                                    TextEditingController(
-                                              text: containerStreetRow
-                                                  ?.streetName,
-                                            ),
-                                            focusNode: _model.nameFocusNode,
-                                            autofocus: false,
-                                            enabled: true,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              hintText: 'Street Name here...',
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Colors.black,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Color(0x00000000),
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              errorBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedErrorBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              filled: true,
-                                              fillColor: Color(0xFFE8EDF2),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            cursorColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            enableInteractiveSelection: true,
-                                            validator: _model
-                                                .nameTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                          TextFormField(
-                                            controller: _model
-                                                    .descriptionTextController ??=
-                                                TextEditingController(
-                                              text: containerStreetRow
-                                                  ?.streetDescription,
-                                            ),
-                                            focusNode:
-                                                _model.descriptionFocusNode,
-                                            autofocus: false,
-                                            enabled: true,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              hintText:
-                                                  'Street Description here...',
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Colors.black,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Color(0x00000000),
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              errorBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedErrorBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              filled: true,
-                                              fillColor: Color(0xFFE8EDF2),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            cursorColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            enableInteractiveSelection: true,
-                                            validator: _model
-                                                .descriptionTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
+                                        ),
                                       ),
-                                      Divider(
-                                        thickness: 2.0,
-                                        color: Colors.black,
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFF2E78A6),
+                                          width: 1.5,
+                                        ),
                                       ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Align(
-                                            alignment:
-                                                AlignmentDirectional(-1.0, 0.0),
-                                            child: FFButtonWidget(
-                                              onPressed: () async {
-                                                await showModalBottomSheet(
-                                                  isScrollControlled: true,
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  enableDrag: false,
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return GestureDetector(
-                                                      onTap: () {
-                                                        FocusScope.of(context)
-                                                            .unfocus();
-                                                        FocusManager.instance
-                                                            .primaryFocus
-                                                            ?.unfocus();
-                                                      },
-                                                      child: Padding(
-                                                        padding: MediaQuery
-                                                            .viewInsetsOf(
-                                                                context),
-                                                        child:
-                                                            CStreetDeletionWidget(
-                                                          streetRef: widget!
-                                                              .streetsRef!,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ).then((value) =>
-                                                    safeSetState(() {}));
-                                              },
-                                              text: 'Delete',
-                                              icon: Icon(
-                                                Icons.edit_note,
-                                                size: 15.0,
-                                              ),
-                                              options: FFButtonOptions(
-                                                height: 40.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 16.0, 0.0),
-                                                iconPadding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
-                                                color: Color(0xFFC44545),
-                                                textStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .interTight(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                elevation: 0.0,
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                          ),
-                                          FFButtonWidget(
-                                            onPressed: () async {
-                                              await StreetTable().update(
-                                                data: {
-                                                  'street_name':
-                                                      containerStreetRow
-                                                          ?.streetName,
-                                                  'street_description':
-                                                      containerStreetRow
-                                                          ?.streetDescription,
-                                                  'last_updatedBy':
-                                                      currentUserUid,
-                                                  'last_updatedTime': supaSerialize<
-                                                          DateTime>(
-                                                      functions.getCurrentTime(
-                                                          getCurrentTimestamp)),
-                                                },
-                                                matchingRows: (rows) =>
-                                                    rows.eqOrNull(
-                                                  'street_id',
-                                                  widget!.streetsRef?.streetId,
-                                                ),
-                                              );
-                                            },
-                                            text: 'Update',
-                                            icon: Icon(
-                                              Icons.edit_note,
-                                              size: 15.0,
-                                            ),
-                                            options: FFButtonOptions(
-                                              height: 40.0,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      16.0, 0.0, 16.0, 0.0),
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              color: Colors.white,
-                                              textStyle: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleSmall
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontStyle,
-                                                  ),
-                                              elevation: 0.0,
-                                              borderSide: BorderSide(
-                                                color: Colors.black,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ].divide(SizedBox(height: 15.0)),
+                                    ),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      color: const Color(0xFF1E293B),
+                                    ),
                                   ),
+                                  const SizedBox(height: 14.0),
+
+                                  // Description
+                                  Text(
+                                    'Description / Landmark',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  TextFormField(
+                                    controller:
+                                        _model.descriptionTextController,
+                                    focusNode: _model.descriptionFocusNode,
+                                    maxLines: 3,
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'E.g., Near Batasan National High School...',
+                                      hintStyle: GoogleFonts.inter(
+                                        fontSize: 13.0,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF8FAFC),
+                                      contentPadding: const EdgeInsets.all(14.0),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFF2E78A6),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      color: const Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16.0),
+
+                                  // Waste Storage Toggle
+                                  Container(
+                                    padding: const EdgeInsets.all(12.0),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8FAFC),
+                                      borderRadius:
+                                          BorderRadius.circular(14.0),
+                                      border: Border.all(
+                                        color: const Color(0xFFE2E8F0),
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          decoration: BoxDecoration(
+                                            color: _hasStorage
+                                                ? const Color(0xFFD5F2E2)
+                                                : const Color(0xFFF1F5F9),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.warehouse_rounded,
+                                            size: 20.0,
+                                            color: _hasStorage
+                                                ? const Color(0xFF31A11F)
+                                                : const Color(0xFF64748B),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12.0),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Designated Storage Facility',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 13.0,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(0xFF1E293B),
+                                                ),
+                                              ),
+                                              Text(
+                                                'Has physical barangay bins or drop-off point',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11.0,
+                                                  color: const Color(0xFF64748B),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Switch.adaptive(
+                                          value: _hasStorage,
+                                          activeThumbColor:
+                                              const Color(0xFF31A11F),
+                                          onChanged: (val) {
+                                            setState(() => _hasStorage = val);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 18.0),
+
+                            // Save Changes Button
+                            FFButtonWidget(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () async {
+                                      final newName = _model
+                                          .nameTextController?.text
+                                          .trim();
+                                      if (newName == null || newName.isEmpty) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Street name cannot be empty.',
+                                            ),
+                                            backgroundColor:
+                                                Color(0xFFDC2626),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      setState(() => _isSaving = true);
+                                      try {
+                                        await StreetTable().update(
+                                          data: {
+                                            'street_name': newName,
+                                            'street_description': _model
+                                                    .descriptionTextController
+                                                    ?.text
+                                                    .trim() ??
+                                                '',
+                                            'has_storage': _hasStorage,
+                                            'last_updatedBy': currentUserUid,
+                                            'last_updatedTime':
+                                                supaSerialize<DateTime>(
+                                              functions.getCurrentTime(
+                                                getCurrentTimestamp,
+                                              ),
+                                            ),
+                                          },
+                                          matchingRows: (rows) => rows.eqOrNull(
+                                            'street_id',
+                                            street.streetId,
+                                          ),
+                                        );
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Street updated successfully!',
+                                              ),
+                                              backgroundColor:
+                                                  Color(0xFF31A11F),
+                                            ),
+                                          );
+                                          context.safePop();
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to update: $e',
+                                              ),
+                                              backgroundColor:
+                                                  const Color(0xFFDC2626),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isSaving = false);
+                                        }
+                                      }
+                                    },
+                              text: _isSaving
+                                  ? 'Saving Changes...'
+                                  : 'Save Changes',
+                              icon: _isSaving
+                                  ? null
+                                  : const Icon(
+                                      Icons.check_circle_rounded,
+                                      size: 18.0,
+                                    ),
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 48.0,
+                                color: const Color(0xFF2E78A6),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        Container(
-                          height: 500.0,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(0.0),
-                          ),
-                        ),
-                      ],
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                            const SizedBox(height: 10.0),
+
+                            // Delete Button
+                            FFButtonWidget(
+                              onPressed: () async {
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  enableDrag: false,
+                                  context: context,
+                                  builder: (context) {
+                                    return Padding(
+                                      padding: MediaQuery.viewInsetsOf(context),
+                                      child: CStreetDeletionWidget(
+                                        streetRef: street,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              text: 'Delete Street',
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                size: 18.0,
+                                color: Color(0xFFDC2626),
+                              ),
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 44.0,
+                                color: const Color(0xFFFEE2E2),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFDC2626),
+                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                  ),
+                  ],
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+
+              // Bottom Bar
+              Align(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'P_Street_ViewAll',
+                  ),
+                ),
               ),
             ],
           ),

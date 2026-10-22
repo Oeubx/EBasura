@@ -254,41 +254,17 @@ class _PDatesViewAllWidgetState extends State<PDatesViewAllWidget> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    FutureBuilder<
-                                                        List<StreetRow>>(
-                                                      future: StreetTable()
-                                                          .querySingleRow(
-                                                        queryFn: (q) =>
-                                                            q.eqOrNull(
-                                                          'street_name',
-                                                          listViewCollectionRow
-                                                              .collectionStreetNameRef,
-                                                        ),
+                                                    Text(
+                                                      listViewCollectionRow
+                                                          .collectionStreetNameRef,
+                                                      style: GoogleFonts
+                                                          .interTight(
+                                                        fontSize: 16.0,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: theme
+                                                            .primaryText,
                                                       ),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        final streetRowList =
-                                                            snapshot.data;
-                                                        final streetName =
-                                                            (streetRowList?.isNotEmpty ==
-                                                                    true)
-                                                                ? streetRowList!
-                                                                    .first
-                                                                    .streetName
-                                                                : listViewCollectionRow
-                                                                    .collectionStreetNameRef;
-                                                        return Text(
-                                                          streetName,
-                                                          style: GoogleFonts
-                                                              .interTight(
-                                                            fontSize: 16.0,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: theme
-                                                                .primaryText,
-                                                          ),
-                                                        );
-                                                      },
                                                     ),
                                                     const SizedBox(height: 6.0),
                                                     Wrap(

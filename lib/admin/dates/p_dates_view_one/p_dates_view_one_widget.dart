@@ -2,19 +2,16 @@ import '/admin/dates/c_dates_deletion/c_dates_deletion_widget.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import '/index.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_dates_view_one_model.dart';
 export 'p_dates_view_one_model.dart';
 
@@ -35,28 +32,27 @@ class PDatesViewOneWidget extends StatefulWidget {
 
 class _PDatesViewOneWidgetState extends State<PDatesViewOneWidget> {
   late PDatesViewOneModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PDatesViewOneModel());
-
     _model.descriptionFocusNode ??= FocusNode();
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -64,1098 +60,680 @@ class _PDatesViewOneWidgetState extends State<PDatesViewOneWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 8.0,
+                  bottom: 120.0,
                 ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Horizontal_Logo.png',
-                          width: double.infinity,
-                          height: 150.0,
-                          fit: BoxFit.fitWidth,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Brand topbar with back button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset(
+                            'assets/images/Horizontal_Logo.png',
+                            height: 38.0,
+                            fit: BoxFit.contain,
+                          ),
+                          FlutterFlowIconButton(
+                            borderColor: theme.accent4.withValues(alpha: 0.35),
+                            borderRadius: 20.0,
+                            buttonSize: 38.0,
+                            fillColor: Colors.white,
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: theme.primaryText,
+                              size: 20.0,
+                            ),
+                            onPressed: () async => context.safePop(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const CPageHeaderWidget(
+                      title: 'Collection Details',
+                      subtitle:
+                          'Manage collection day, timings, & street assignment',
+                      icon: Icons.event_note_rounded,
+                    ),
+
+                    FutureBuilder<List<CollectionRow>>(
+                      future: CollectionTable().querySingleRow(
+                        queryFn: (q) => q.eqOrNull(
+                          'collection_id',
+                          widget.collectionRef?.collectionId,
                         ),
                       ),
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
-                        child: FutureBuilder<List<CollectionRow>>(
-                          future: CollectionTable().querySingleRow(
-                            queryFn: (q) => q.eqOrNull(
-                              'collection_id',
-                              widget!.collectionRef?.collectionId,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(48.0),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF2E78A6),
+                                ),
+                              ),
                             ),
-                          ),
-                          builder: (context, snapshot) {
-                            // Customize what your widget looks like when it's loading.
-                            if (!snapshot.hasData) {
-                              return Center(
-                                child: SizedBox(
-                                  width: 50.0,
-                                  height: 50.0,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      FlutterFlowTheme.of(context).primary,
+                          );
+                        }
+
+                        final rows = snapshot.data!;
+                        final collection =
+                            rows.isNotEmpty ? rows.first : widget.collectionRef;
+
+                        if (collection == null) {
+                          return Center(
+                            child: Text(
+                              'Collection schedule not found.',
+                              style: GoogleFonts.inter(
+                                color: theme.secondaryText,
+                              ),
+                            ),
+                          );
+                        }
+
+                        // Pre-populate fields once
+                        _model.dayDropDownValue ??= collection.collectionDay;
+                        _model.streetDropDownValue ??=
+                            collection.collectionStreetNameRef;
+                        _model.descriptionTextController ??=
+                            TextEditingController(
+                          text: collection.collectionDescription,
+                        );
+
+                        final startTimeStr = _model.datePicked1 != null
+                            ? dateTimeFormat("jm", _model.datePicked1)
+                            : dateTimeFormat(
+                                "jm",
+                                collection
+                                    .collectionTimeDurationStart.time,
+                              );
+
+                        final endTimeStr = _model.datePicked2 != null
+                            ? dateTimeFormat("jm", _model.datePicked2)
+                            : dateTimeFormat(
+                                "jm",
+                                collection.collectionTimeDurationEnd.time,
+                              );
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Card 1: Schedule Parameters
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(18.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                  width: 1.0,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0A000000),
+                                    blurRadius: 8.0,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Schedule Assignment',
+                                    style: GoogleFonts.comfortaa(
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF013448),
                                     ),
                                   ),
-                                ),
-                              );
-                            }
-                            List<CollectionRow> containerCollectionRowList =
-                                snapshot.data!;
+                                  const SizedBox(height: 14.0),
 
-                            final containerCollectionRow =
-                                containerCollectionRowList.isNotEmpty
-                                    ? containerCollectionRowList.first
-                                    : null;
+                                  // Street Assignment Dropdown
+                                  Text(
+                                    'Assigned Street',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  FutureBuilder<List<StreetRow>>(
+                                    future: StreetTable().queryRows(
+                                      queryFn: (q) => q.order(
+                                        'street_name',
+                                        ascending: true,
+                                      ),
+                                    ),
+                                    builder: (context, streetSnap) {
+                                      final streetRows =
+                                          streetSnap.data ?? [];
+                                      final streetOptions = streetRows
+                                          .map((s) => s.streetName)
+                                          .where((s) => s.isNotEmpty)
+                                          .toList();
 
-                            return Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Color(0xFFDFF1F1),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(15.0),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                      if (_model.streetDropDownValue != null &&
+                                          !streetOptions.contains(
+                                              _model.streetDropDownValue)) {
+                                        streetOptions.add(
+                                            _model.streetDropDownValue!);
+                                      }
+
+                                      return FlutterFlowDropDown<String>(
+                                        controller: _model
+                                                .streetDropDownValueController ??=
+                                            FormFieldController<String>(
+                                          _model.streetDropDownValue,
+                                        ),
+                                        options: streetOptions,
+                                        onChanged: (val) => safeSetState(
+                                            () => _model
+                                                .streetDropDownValue = val),
+                                        width: double.infinity,
+                                        height: 48.0,
+                                        textStyle: GoogleFonts.inter(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF1E293B),
+                                        ),
+                                        hintText: 'Select Batasan Street',
+                                        icon: const Icon(
+                                          Icons.keyboard_arrow_down_rounded,
+                                          color: Color(0xFF64748B),
+                                          size: 20.0,
+                                        ),
+                                        fillColor: const Color(0xFFF8FAFC),
+                                        elevation: 2.0,
+                                        borderColor: const Color(0xFFCBD5E1),
+                                        borderWidth: 1.0,
+                                        borderRadius: 16.0,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 14.0,
+                                          vertical: 4.0,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 14.0),
+
+                                  // Day of Week Dropdown
+                                  Text(
+                                    'Collection Day',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  FlutterFlowDropDown<String>(
+                                    controller: _model
+                                            .dayDropDownValueController ??=
+                                        FormFieldController<String>(
+                                      _model.dayDropDownValue,
+                                    ),
+                                    options: const [
+                                      'Monday',
+                                      'Tuesday',
+                                      'Wednesday',
+                                      'Thursday',
+                                      'Friday',
+                                      'Saturday',
+                                      'Sunday'
+                                    ],
+                                    onChanged: (val) => safeSetState(
+                                        () => _model.dayDropDownValue = val),
+                                    width: double.infinity,
+                                    height: 48.0,
+                                    textStyle: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1E293B),
+                                    ),
+                                    hintText: 'Select Collection Day',
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: Color(0xFF64748B),
+                                      size: 20.0,
+                                    ),
+                                    fillColor: const Color(0xFFF8FAFC),
+                                    elevation: 2.0,
+                                    borderColor: const Color(0xFFCBD5E1),
+                                    borderWidth: 1.0,
+                                    borderRadius: 16.0,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 14.0,
+                                      vertical: 4.0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14.0),
+
+                                  // Pickup Duration Timers
+                                  Text(
+                                    'Collection Duration',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  Row(
                                     children: [
-                                      InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.safePop();
-                                        },
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Icon(
-                                              Icons.arrow_left,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              size: 24.0,
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final picked =
+                                                await showTimePicker(
+                                              context: context,
+                                              initialTime:
+                                                  TimeOfDay.fromDateTime(
+                                                _model.datePicked1 ??
+                                                    DateTime.now(),
+                                              ),
+                                            );
+                                            if (picked != null) {
+                                              safeSetState(() {
+                                                final now = DateTime.now();
+                                                _model.datePicked1 = DateTime(
+                                                  now.year,
+                                                  now.month,
+                                                  now.day,
+                                                  picked.hour,
+                                                  picked.minute,
+                                                );
+                                              });
+                                            }
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(16.0),
+                                          child: Container(
+                                            height: 48.0,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
                                             ),
-                                            Text(
-                                              'Return',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontStyle,
-                                                    ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF8FAFC),
+                                              borderRadius:
+                                                  BorderRadius.circular(16.0),
+                                              border: Border.all(
+                                                color: const Color(0xFFCBD5E1),
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.schedule_rounded,
+                                                  size: 18.0,
+                                                  color: Color(0xFF2E78A6),
+                                                ),
+                                                const SizedBox(width: 8.0),
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'Start Time',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 10.0,
+                                                          color: const Color(
+                                                              0xFF64748B),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        startTimeStr,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12.5,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: const Color(
+                                                              0xFF1E293B),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          RichText(
-                                            textScaler: MediaQuery.of(context)
-                                                .textScaler,
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: 'Collection Day : ',
-                                                  style: TextStyle(),
-                                                ),
-                                                TextSpan(
-                                                  text: valueOrDefault<String>(
-                                                    _model.dayDropDownValue,
-                                                    '<selected day>',
-                                                  ),
-                                                  style: TextStyle(),
-                                                )
-                                              ],
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                            ),
-                                          ),
-                                          RichText(
-                                            textScaler: MediaQuery.of(context)
-                                                .textScaler,
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text:
-                                                      'Collection Duration : ',
-                                                  style: TextStyle(),
-                                                ),
-                                                TextSpan(
-                                                  text: valueOrDefault<String>(
-                                                    _model.datePicked1 != null
-                                                        ? _model.datePicked1
-                                                            ?.toString()
-                                                        : dateTimeFormat(
-                                                            "jm",
-                                                            containerCollectionRow
-                                                                ?.collectionTimeDurationStart
-                                                                ?.time),
-                                                    'time',
-                                                  ),
-                                                  style: TextStyle(),
-                                                ),
-                                                TextSpan(
-                                                  text: ' - ',
-                                                  style: TextStyle(),
-                                                ),
-                                                TextSpan(
-                                                  text: valueOrDefault<String>(
-                                                    _model.datePicked1 != null
-                                                        ? _model.datePicked2
-                                                            ?.toString()
-                                                        : dateTimeFormat(
-                                                            "jm",
-                                                            containerCollectionRow
-                                                                ?.collectionTimeDurationEnd
-                                                                ?.time),
-                                                    'time',
-                                                  ),
-                                                  style: TextStyle(),
-                                                )
-                                              ],
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                            ),
-                                          ),
-                                          TextFormField(
-                                            controller: _model
-                                                    .descriptionTextController ??=
-                                                TextEditingController(
-                                              text: containerCollectionRow
-                                                  ?.collectionDescription,
-                                            ),
-                                            focusNode:
-                                                _model.descriptionFocusNode,
-                                            autofocus: false,
-                                            enabled: true,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              hintText:
-                                                  'Collection Information Description here...',
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .labelMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Colors.black,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                      const SizedBox(width: 10.0),
+                                      Expanded(
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final picked =
+                                                await showTimePicker(
+                                              context: context,
+                                              initialTime:
+                                                  TimeOfDay.fromDateTime(
+                                                _model.datePicked2 ??
+                                                    DateTime.now(),
                                               ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: Color(0x00000000),
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              errorBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              focusedErrorBorder:
-                                                  OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .error,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              filled: true,
-                                              fillColor: Color(0xFFF5F5F5),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            cursorColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            enableInteractiveSelection: true,
-                                            validator: _model
-                                                .descriptionTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                          FutureBuilder<List<StreetRow>>(
-                                            future: StreetTable().queryRows(
-                                              queryFn: (q) => q.eqOrNull(
-                                                'has_storage',
-                                                true,
-                                              ),
-                                            ),
-                                            builder: (context, snapshot) {
-                                              // Customize what your widget looks like when it's loading.
-                                              if (!snapshot.hasData) {
-                                                return Center(
-                                                  child: SizedBox(
-                                                    width: 50.0,
-                                                    height: 50.0,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              }
-                                              List<StreetRow>
-                                                  streetDropDownStreetRowList =
-                                                  snapshot.data!;
-
-                                              return FlutterFlowDropDown<
-                                                  String>(
-                                                controller: _model
-                                                        .streetDropDownValueController ??=
-                                                    FormFieldController<String>(
-                                                  _model.streetDropDownValue ??=
-                                                      containerCollectionRow
-                                                          ?.collectionStreetNameRef,
-                                                ),
-                                                options:
-                                                    streetDropDownStreetRowList
-                                                        .map(
-                                                            (e) => e.streetName)
-                                                        .toList(),
-                                                onChanged: (val) =>
-                                                    safeSetState(() => _model
-                                                            .streetDropDownValue =
-                                                        val),
-                                                height: 40.0,
-                                                textStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .bodyMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                hintText: 'Select a Street...',
-                                                icon: Icon(
-                                                  Icons
-                                                      .keyboard_arrow_down_rounded,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  size: 24.0,
-                                                ),
-                                                fillColor: Color(0xFFF5F5F5),
-                                                elevation: 2.0,
-                                                borderColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                borderWidth: 0.0,
-                                                borderRadius: 8.0,
-                                                margin: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        12.0, 0.0, 12.0, 0.0),
-                                                hidesUnderline: true,
-                                                isOverButton: false,
-                                                isSearchable: false,
-                                                isMultiSelect: false,
-                                              );
-                                            },
-                                          ),
-                                          FlutterFlowDropDown<String>(
-                                            controller: _model
-                                                    .dayDropDownValueController ??=
-                                                FormFieldController<String>(
-                                              _model.dayDropDownValue ??=
-                                                  containerCollectionRow
-                                                      ?.collectionDay,
-                                            ),
-                                            options: [
-                                              'Sunday',
-                                              'Monday',
-                                              'Tuesday',
-                                              'Wednesday',
-                                              'Thursday',
-                                              'Friday',
-                                              'Saturday'
-                                            ],
-                                            onChanged: (val) => safeSetState(
-                                                () => _model.dayDropDownValue =
-                                                    val),
-                                            width: double.infinity,
-                                            height: 40.0,
-                                            textStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                            hintText: 'Select a Day...',
-                                            icon: Icon(
-                                              Icons.keyboard_arrow_down_rounded,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryText,
-                                              size: 24.0,
-                                            ),
-                                            fillColor: Color(0xFFF5F5F5),
-                                            elevation: 2.0,
-                                            borderColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primaryText,
-                                            borderWidth: 0.0,
-                                            borderRadius: 8.0,
-                                            margin:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 0.0, 12.0, 0.0),
-                                            hidesUnderline: true,
-                                            isOverButton: false,
-                                            isSearchable: false,
-                                            isMultiSelect: false,
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              FFButtonWidget(
-                                                onPressed: () async {
-                                                  final _datePicked1Time =
-                                                      await showTimePicker(
-                                                    context: context,
-                                                    initialTime:
-                                                        TimeOfDay.fromDateTime(
-                                                            getCurrentTimestamp),
-                                                    builder: (context, child) {
-                                                      return wrapInMaterialTimePickerTheme(
-                                                        context,
-                                                        child!,
-                                                        headerBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        headerForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        headerTextStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .headlineLarge
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .interTight(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .headlineLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      32.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                        pickerBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryBackground,
-                                                        pickerForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        selectedDateTimeBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        selectedDateTimeForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        actionButtonForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        iconSize: 24.0,
-                                                      );
-                                                    },
-                                                  );
-                                                  if (_datePicked1Time !=
-                                                      null) {
-                                                    safeSetState(() {
-                                                      _model.datePicked1 =
-                                                          DateTime(
-                                                        getCurrentTimestamp
-                                                            .year,
-                                                        getCurrentTimestamp
-                                                            .month,
-                                                        getCurrentTimestamp.day,
-                                                        _datePicked1Time.hour,
-                                                        _datePicked1Time.minute,
-                                                      );
-                                                    });
-                                                  } else if (_model
-                                                          .datePicked1 !=
-                                                      null) {
-                                                    safeSetState(() {
-                                                      _model.datePicked1 =
-                                                          getCurrentTimestamp;
-                                                    });
-                                                  }
-                                                },
-                                                text: 'Update Start Time',
-                                                options: FFButtonOptions(
-                                                  height: 50.0,
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  iconPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: Colors.white,
-                                                  textStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .interTight(
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                  elevation: 0.0,
-                                                  borderSide: BorderSide(
-                                                    color: Colors.black,
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                              ),
-                                              FFButtonWidget(
-                                                onPressed: () async {
-                                                  final _datePicked2Time =
-                                                      await showTimePicker(
-                                                    context: context,
-                                                    initialTime:
-                                                        TimeOfDay.fromDateTime(
-                                                            getCurrentTimestamp),
-                                                    builder: (context, child) {
-                                                      return wrapInMaterialTimePickerTheme(
-                                                        context,
-                                                        child!,
-                                                        headerBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        headerForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        headerTextStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .headlineLarge
-                                                                .override(
-                                                                  font: GoogleFonts
-                                                                      .interTight(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .headlineLarge
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  fontSize:
-                                                                      32.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineLarge
-                                                                      .fontStyle,
-                                                                ),
-                                                        pickerBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryBackground,
-                                                        pickerForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        selectedDateTimeBackgroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        selectedDateTimeForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .info,
-                                                        actionButtonForegroundColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        iconSize: 24.0,
-                                                      );
-                                                    },
-                                                  );
-                                                  if (_datePicked2Time !=
-                                                      null) {
-                                                    safeSetState(() {
-                                                      _model.datePicked2 =
-                                                          DateTime(
-                                                        getCurrentTimestamp
-                                                            .year,
-                                                        getCurrentTimestamp
-                                                            .month,
-                                                        getCurrentTimestamp.day,
-                                                        _datePicked2Time.hour,
-                                                        _datePicked2Time.minute,
-                                                      );
-                                                    });
-                                                  } else if (_model
-                                                          .datePicked2 !=
-                                                      null) {
-                                                    safeSetState(() {
-                                                      _model.datePicked2 =
-                                                          getCurrentTimestamp;
-                                                    });
-                                                  }
-                                                },
-                                                text: 'Update End Time',
-                                                options: FFButtonOptions(
-                                                  height: 50.0,
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          16.0, 0.0, 16.0, 0.0),
-                                                  iconPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: Colors.white,
-                                                  textStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .override(
-                                                            font: GoogleFonts
-                                                                .interTight(
-                                                              fontWeight:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontWeight,
-                                                              fontStyle:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleSmall
-                                                                      .fontStyle,
-                                                            ),
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                  elevation: 0.0,
-                                                  borderSide: BorderSide(
-                                                    color: Colors.black,
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ]
-                                            .divide(SizedBox(height: 10.0))
-                                            .around(SizedBox(height: 10.0)),
-                                      ),
-                                      Divider(
-                                        thickness: 2.0,
-                                        color: Colors.black,
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Align(
-                                            alignment:
-                                                AlignmentDirectional(-1.0, 0.0),
-                                            child: FFButtonWidget(
-                                              onPressed: () async {
-                                                await showModalBottomSheet(
-                                                  isScrollControlled: true,
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  enableDrag: false,
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return GestureDetector(
-                                                      onTap: () {
-                                                        FocusScope.of(context)
-                                                            .unfocus();
-                                                        FocusManager.instance
-                                                            .primaryFocus
-                                                            ?.unfocus();
-                                                      },
-                                                      child: Padding(
-                                                        padding: MediaQuery
-                                                            .viewInsetsOf(
-                                                                context),
-                                                        child:
-                                                            CDatesDeletionWidget(
-                                                          collectionRef: widget!
-                                                              .collectionRef!,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                ).then((value) =>
-                                                    safeSetState(() {}));
-                                              },
-                                              text: 'Delete',
-                                              icon: Icon(
-                                                Icons.edit_note,
-                                                size: 15.0,
-                                              ),
-                                              options: FFButtonOptions(
-                                                height: 40.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 16.0, 0.0),
-                                                iconPadding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
-                                                color: Color(0xFFC44545),
-                                                textStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          font: GoogleFonts
-                                                              .interTight(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .fontStyle,
-                                                          ),
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .fontStyle,
-                                                        ),
-                                                elevation: 0.0,
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                          ),
-                                          FFButtonWidget(
-                                            onPressed: () async {
-                                              await CollectionTable().update(
-                                                data: {
-                                                  'collection_description': _model
-                                                      .descriptionTextController
-                                                      .text,
-                                                  'collection_streetNameRef':
-                                                      _model
-                                                          .streetDropDownValue,
-                                                  'collection_day':
-                                                      _model.dayDropDownValue,
-                                                  'collection_timeDuration_start':
-                                                      supaSerialize<
-                                                              PostgresTime>(
-                                                          PostgresTime(_model
-                                                              .datePicked1)),
-                                                  'collection_timeDuration_end':
-                                                      supaSerialize<
-                                                              PostgresTime>(
-                                                          PostgresTime(_model
-                                                              .datePicked2)),
-                                                  'last_updatedBy':
-                                                      currentUserUid,
-                                                  'last_updatedTime': supaSerialize<
-                                                          DateTime>(
-                                                      functions.getCurrentTime(
-                                                          getCurrentTimestamp)),
-                                                },
-                                                matchingRows: (rows) =>
-                                                    rows.eqOrNull(
-                                                  'collection_id',
-                                                  widget!.collectionRef
-                                                      ?.collectionId,
-                                                ),
-                                              );
+                                            );
+                                            if (picked != null) {
                                               safeSetState(() {
-                                                _model.descriptionTextController
-                                                    ?.clear();
+                                                final now = DateTime.now();
+                                                _model.datePicked2 = DateTime(
+                                                  now.year,
+                                                  now.month,
+                                                  now.day,
+                                                  picked.hour,
+                                                  picked.minute,
+                                                );
                                               });
-
-                                              context.goNamed(
-                                                  PDatesViewAllWidget
-                                                      .routeName);
-                                            },
-                                            text: 'Update',
-                                            icon: Icon(
-                                              Icons.edit_note,
-                                              size: 15.0,
+                                            }
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(16.0),
+                                          child: Container(
+                                            height: 48.0,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
                                             ),
-                                            options: FFButtonOptions(
-                                              height: 40.0,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      16.0, 0.0, 16.0, 0.0),
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              color: Colors.white,
-                                              textStyle: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleSmall
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleSmall
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontStyle,
-                                                  ),
-                                              elevation: 0.0,
-                                              borderSide: BorderSide(
-                                                color: Colors.black,
-                                              ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF8FAFC),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(16.0),
+                                              border: Border.all(
+                                                color: const Color(0xFFCBD5E1),
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.timelapse_rounded,
+                                                  size: 18.0,
+                                                  color: Color(0xFF31A11F),
+                                                ),
+                                                const SizedBox(width: 8.0),
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'End Time',
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 10.0,
+                                                          color: const Color(
+                                                              0xFF64748B),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        endTimeStr,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 12.5,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: const Color(
+                                                              0xFF1E293B),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ].divide(SizedBox(height: 15.0)),
+                                    ],
                                   ),
-                                ),
+                                  const SizedBox(height: 14.0),
+
+                                  // Description Text Area
+                                  Text(
+                                    'Route Instructions / Notes',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF475569),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6.0),
+                                  TextFormField(
+                                    controller:
+                                        _model.descriptionTextController,
+                                    focusNode: _model.descriptionFocusNode,
+                                    maxLines: 3,
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          'E.g., Morning regular pickup, truck entrance via gate 2...',
+                                      hintStyle: GoogleFonts.inter(
+                                        fontSize: 13.0,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF8FAFC),
+                                      contentPadding: const EdgeInsets.all(14.0),
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFCBD5E1),
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFF2E78A6),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      color: const Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      Container(
-                        height: 150.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
-                    ].divide(SizedBox(height: 5.0)),
-                  ),
+                            ),
+                            const SizedBox(height: 18.0),
+
+                            // Action Buttons
+                            FFButtonWidget(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () async {
+                                      setState(() => _isSaving = true);
+                                      try {
+                                        final startVal = _model.datePicked1 ??
+                                            collection
+                                                .collectionTimeDurationStart
+                                                .time;
+                                        final endVal = _model.datePicked2 ??
+                                            collection
+                                                .collectionTimeDurationEnd
+                                                .time;
+
+                                        await CollectionTable().update(
+                                          data: {
+                                            'collection_description': _model
+                                                .descriptionTextController
+                                                ?.text,
+                                            'collection_streetNameRef':
+                                                _model.streetDropDownValue,
+                                            'collection_day':
+                                                _model.dayDropDownValue,
+                                            if (startVal != null)
+                                              'collection_timeDuration_start':
+                                                  supaSerialize<PostgresTime>(
+                                                PostgresTime(startVal),
+                                              ),
+                                            if (endVal != null)
+                                              'collection_timeDuration_end':
+                                                  supaSerialize<PostgresTime>(
+                                                PostgresTime(endVal),
+                                              ),
+                                            'last_updatedBy': currentUserUid,
+                                            'last_updatedTime':
+                                                supaSerialize<DateTime>(
+                                              functions.getCurrentTime(
+                                                getCurrentTimestamp,
+                                              ),
+                                            ),
+                                          },
+                                          matchingRows: (rows) => rows.eqOrNull(
+                                            'collection_id',
+                                            collection.collectionId,
+                                          ),
+                                        );
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Collection schedule updated successfully!',
+                                              ),
+                                              backgroundColor:
+                                                  Color(0xFF31A11F),
+                                            ),
+                                          );
+                                          context.safePop();
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to update: $e',
+                                              ),
+                                              backgroundColor:
+                                                  const Color(0xFFDC2626),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isSaving = false);
+                                        }
+                                      }
+                                    },
+                              text: _isSaving
+                                  ? 'Saving Changes...'
+                                  : 'Save Changes',
+                              icon: _isSaving
+                                  ? null
+                                  : const Icon(
+                                      Icons.check_circle_rounded,
+                                      size: 18.0,
+                                    ),
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 48.0,
+                                color: const Color(0xFF2E78A6),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                            const SizedBox(height: 10.0),
+
+                            // Delete Action Button
+                            FFButtonWidget(
+                              onPressed: () async {
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  enableDrag: false,
+                                  context: context,
+                                  builder: (context) {
+                                    return Padding(
+                                      padding: MediaQuery.viewInsetsOf(context),
+                                      child: CDatesDeletionWidget(
+                                        collectionRef: collection,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              text: 'Delete Schedule',
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                size: 18.0,
+                                color: Color(0xFFDC2626),
+                              ),
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 44.0,
+                                color: const Color(0xFFFEE2E2),
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFDC2626),
+                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+
+              // Bottom Bar
+              Align(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'P_Dates_ViewAll',
+                  ),
+                ),
               ),
             ],
           ),
