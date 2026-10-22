@@ -1,18 +1,16 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:async';
-import 'dart:ui';
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'page_profile_about_model.dart';
 export 'page_profile_about_model.dart';
 
@@ -28,28 +26,27 @@ class PageProfileAboutWidget extends StatefulWidget {
 
 class _PageProfileAboutWidgetState extends State<PageProfileAboutWidget> {
   late PageProfileAboutModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isSavingFeedback = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PageProfileAboutModel());
-
     _model.textFieldFeedbackFocusNode ??= FocusNode();
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -57,615 +54,398 @@ class _PageProfileAboutWidgetState extends State<PageProfileAboutWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                height: 1750.0,
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).tertiary,
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 8.0,
+                  bottom: 120.0,
                 ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset(
                             'assets/images/Horizontal_Logo.png',
-                            width: double.infinity,
-                            height: 150.0,
-                            fit: BoxFit.fitWidth,
+                            height: 38.0,
+                            fit: BoxFit.contain,
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 25.0),
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Color(0xFFDFF1F1),
-                              borderRadius: BorderRadius.circular(15.0),
+                          FlutterFlowIconButton(
+                            borderColor: theme.accent4.withValues(alpha: 0.35),
+                            borderRadius: 20.0,
+                            buttonSize: 38.0,
+                            fillColor: Colors.white,
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: theme.primaryText,
+                              size: 20.0,
                             ),
-                            child: Padding(
-                              padding: EdgeInsets.all(15.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.account_box,
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                        size: 30.0,
-                                      ),
-                                      Text(
-                                        'About',
-                                        style: FlutterFlowTheme.of(context)
-                                            .headlineSmall
-                                            .override(
-                                              font: GoogleFonts.interTight(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineSmall
-                                                        .fontStyle,
-                                              ),
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall
-                                                      .fontStyle,
-                                            ),
-                                      ),
-                                    ].divide(SizedBox(width: 5.0)),
-                                  ),
-                                  Divider(
-                                    thickness: 2.0,
-                                    color: Colors.black,
-                                  ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          PageProfileAboutResearchWidget
-                                              .routeName);
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        FaIcon(
-                                          FontAwesomeIcons.solidNewspaper,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        Text(
-                                          'About Research',
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 5.0)),
-                                    ),
-                                  ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      context.pushNamed(
-                                          PageProfileAboutADETWidget.routeName);
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Icon(
-                                          Icons.android,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        Text(
-                                          'About ADET',
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 5.0)),
-                                    ),
-                                  ),
-                                  Divider(
-                                    thickness: 2.0,
-                                    color: Colors.black,
-                                  ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      await launchURL(
-                                          'https://sites.google.com/view/gr6studyforwastesegregationpup/home');
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        FaIcon(
-                                          FontAwesomeIcons.mousePointer,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        Text(
-                                          'View our research paper here',
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 5.0)),
-                                    ),
-                                  ),
-                                  InkWell(
-                                    splashColor: Colors.transparent,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      unawaited(
-                                        () async {
-                                          await launchURL(
-                                              'https://docs.google.com/forms/d/e/1FAIpQLSebfxJFuMIrrYfMWg4Fy_Mdg52ETbPGQO7WXdJj2nqDdHFxRg/viewform');
-                                        }(),
-                                      );
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        FaIcon(
-                                          FontAwesomeIcons.mousePointer,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 25.0,
-                                        ),
-                                        Text(
-                                          'Answer our survey here',
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ].divide(SizedBox(width: 5.0)),
-                                    ),
-                                  ),
-                                  Divider(
-                                    thickness: 2.0,
-                                    color: Colors.black,
-                                  ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      FutureBuilder<List<UserSubtableRow>>(
-                                        future:
-                                            UserSubtableTable().querySingleRow(
-                                          queryFn: (q) => q.eqOrNull(
-                                            'user_idRef',
-                                            currentUserUid,
-                                          ),
-                                        ),
-                                        builder: (context, snapshot) {
-                                          // Customize what your widget looks like when it's loading.
-                                          if (!snapshot.hasData) {
-                                            return Center(
-                                              child: SizedBox(
-                                                width: 50.0,
-                                                height: 50.0,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          List<UserSubtableRow>
-                                              textFieldFeedbackUserSubtableRowList =
-                                              snapshot.data!;
-
-                                          final textFieldFeedbackUserSubtableRow =
-                                              textFieldFeedbackUserSubtableRowList
-                                                      .isNotEmpty
-                                                  ? textFieldFeedbackUserSubtableRowList
-                                                      .first
-                                                  : null;
-
-                                          return Container(
-                                            width: double.infinity,
-                                            child: TextFormField(
-                                              controller: _model
-                                                      .textFieldFeedbackTextController ??=
-                                                  TextEditingController(
-                                                text: textFieldFeedbackUserSubtableRow
-                                                                ?.feedback !=
-                                                            null &&
-                                                        textFieldFeedbackUserSubtableRow
-                                                                ?.feedback !=
-                                                            ''
-                                                    ? textFieldFeedbackUserSubtableRow
-                                                        ?.feedback
-                                                    : '',
-                                              ),
-                                              focusNode: _model
-                                                  .textFieldFeedbackFocusNode,
-                                              onChanged: (_) =>
-                                                  EasyDebounce.debounce(
-                                                '_model.textFieldFeedbackTextController',
-                                                Duration(milliseconds: 100),
-                                                () => safeSetState(() {}),
-                                              ),
-                                              autofocus: false,
-                                              enabled: true,
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                labelStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                hintText:
-                                                    'Enter your feedback here',
-                                                hintStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .labelMedium
-                                                        .override(
-                                                          font:
-                                                              GoogleFonts.inter(
-                                                            fontWeight:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontWeight,
-                                                            fontStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium
-                                                                    .fontStyle,
-                                                          ),
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .labelMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: Colors.black,
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: Color(0x00000000),
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                errorBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                focusedErrorBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .error,
-                                                    width: 1.0,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                filled: true,
-                                                fillColor: Color(0xFFE8EDF2),
-                                              ),
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              maxLines: 5,
-                                              maxLength: 500,
-                                              maxLengthEnforcement:
-                                                  MaxLengthEnforcement.enforced,
-                                              cursorColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              enableInteractiveSelection: true,
-                                              validator: _model
-                                                  .textFieldFeedbackTextControllerValidator
-                                                  .asValidator(context),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      Align(
-                                        alignment:
-                                            AlignmentDirectional(1.0, 1.0),
-                                        child: FFButtonWidget(
-                                          onPressed: () async {
-                                            await UserSubtableTable().update(
-                                              data: {
-                                                'feedback': _model
-                                                    .textFieldFeedbackTextController
-                                                    .text,
-                                              },
-                                              matchingRows: (rows) =>
-                                                  rows.eqOrNull(
-                                                'user_idRef',
-                                                currentUserUid,
-                                              ),
-                                            );
-                                            safeSetState(() {});
-                                          },
-                                          text: 'Save',
-                                          options: FFButtonOptions(
-                                            height: 40.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
-                                            iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            textStyle: FlutterFlowTheme.of(
-                                                    context)
-                                                .titleSmall
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleSmall
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleSmall
-                                                          .fontStyle,
-                                                ),
-                                            elevation: 0.0,
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                      ),
-                                    ].divide(SizedBox(height: 10.0)),
-                                  ),
-                                ].divide(SizedBox(height: 10.0)),
+                            onPressed: () async => context.safePop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const CPageHeaderWidget(
+                      title: 'About EBasura',
+                      subtitle:
+                          'Explore platform mission, academic research & share feedback',
+                      icon: Icons.eco_rounded,
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8.0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Related Documentation',
+                            style: GoogleFonts.comfortaa(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF013448),
+                            ),
+                          ),
+                          const SizedBox(height: 12.0),
+                          _buildNavRow(
+                            icon: Icons.biotech_outlined,
+                            title: 'Research Methodology',
+                            subtitle: 'Quezon City study design & validation',
+                            onTap: () => context.pushNamed(
+                              PageProfileAboutResearchWidget.routeName,
+                            ),
+                          ),
+                          const Divider(
+                            height: 16.0,
+                            thickness: 1.0,
+                            color: Color(0xFFF1F5F9),
+                          ),
+                          _buildNavRow(
+                            icon: Icons.groups_outlined,
+                            title: 'About ADET Developers',
+                            subtitle: 'Development team & course info',
+                            onTap: () => context.pushNamed(
+                              PageProfileAboutADETWidget.routeName,
+                            ),
+                          ),
+                          const Divider(
+                            height: 16.0,
+                            thickness: 1.0,
+                            color: Color(0xFFF1F5F9),
+                          ),
+                          _buildNavRow(
+                            icon: Icons.open_in_new_rounded,
+                            title: 'View Research Paper',
+                            subtitle: 'Official academic study site',
+                            onTap: () async {
+                              await launchURL(
+                                'https://sites.google.com/view/gr6studyforwastesegregationpup/home',
+                              );
+                            },
+                          ),
+                          const Divider(
+                            height: 16.0,
+                            thickness: 1.0,
+                            color: Color(0xFFF1F5F9),
+                          ),
+                          _buildNavRow(
+                            icon: Icons.assignment_outlined,
+                            title: 'Answer Research Survey',
+                            subtitle: 'Help improve waste segregation tools',
+                            onTap: () async {
+                              await launchURL(
+                                'https://docs.google.com/forms/d/e/1FAIpQLSebfxJFuMIrrYfMWg4Fy_Mdg52ETbPGQO7WXdJj2nqDdHFxRg/viewform',
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A000000),
+                            blurRadius: 8.0,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Send Feedback',
+                            style: GoogleFonts.comfortaa(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF013448),
+                            ),
+                          ),
+                          const SizedBox(height: 4.0),
+                          Text(
+                            'Share your suggestions or report issues with the app',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.0,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 12.0),
+                          FutureBuilder<List<UserSubtableRow>>(
+                            future: UserSubtableTable().querySingleRow(
+                              queryFn: (q) => q.eqOrNull(
+                                'user_idRef',
+                                currentUserUid,
                               ),
                             ),
+                            builder: (context, snapshot) {
+                              final existingFeedback =
+                                  snapshot.data?.firstOrNull?.feedback ?? '';
+                              _model.textFieldFeedbackTextController ??=
+                                  TextEditingController(
+                                text: existingFeedback,
+                              );
+
+                              return Column(
+                                children: [
+                                  TextFormField(
+                                    controller:
+                                        _model.textFieldFeedbackTextController,
+                                    focusNode:
+                                        _model.textFieldFeedbackFocusNode,
+                                    onChanged: (_) => EasyDebounce.debounce(
+                                      '_model.textFieldFeedbackTextController',
+                                      const Duration(milliseconds: 100),
+                                      () => safeSetState(() {}),
+                                    ),
+                                    maxLines: 4,
+                                    maxLength: 500,
+                                    maxLengthEnforcement:
+                                        MaxLengthEnforcement.enforced,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14.0,
+                                      color: theme.primaryText,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter your feedback here...',
+                                      hintStyle: GoogleFonts.inter(
+                                        fontSize: 13.0,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF8FAFC),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFFE2E8F0),
+                                          width: 1.0,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFF2E78A6),
+                                          width: 1.5,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      contentPadding: const EdgeInsets.all(14.0),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12.0),
+                                  FFButtonWidget(
+                                    onPressed: _isSavingFeedback
+                                        ? null
+                                        : () async {
+                                            final feedback = _model
+                                                .textFieldFeedbackTextController
+                                                ?.text
+                                                .trim();
+                                            setState(
+                                              () => _isSavingFeedback = true,
+                                            );
+                                            try {
+                                              await UserSubtableTable().update(
+                                                data: {
+                                                  'feedback': feedback ?? '',
+                                                },
+                                                matchingRows: (rows) =>
+                                                    rows.eqOrNull(
+                                                  'user_idRef',
+                                                  currentUserUid,
+                                                ),
+                                              );
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Thank you! Feedback saved.',
+                                                    ),
+                                                    backgroundColor:
+                                                        Color(0xFF31A11F),
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Failed to save feedback: $e',
+                                                    ),
+                                                    backgroundColor:
+                                                        const Color(0xFFDC2626),
+                                                  ),
+                                                );
+                                              }
+                                            } finally {
+                                              if (mounted) {
+                                                setState(
+                                                  () => _isSavingFeedback =
+                                                      false,
+                                                );
+                                              }
+                                            }
+                                          },
+                                    text: _isSavingFeedback
+                                        ? 'Saving...'
+                                        : 'Submit Feedback',
+                                    icon: _isSavingFeedback
+                                        ? null
+                                        : const Icon(
+                                            Icons.send_rounded,
+                                            size: 16.0,
+                                          ),
+                                    options: FFButtonOptions(
+                                      width: double.infinity,
+                                      height: 44.0,
+                                      color: const Color(0xFF2E78A6),
+                                      textStyle: GoogleFonts.inter(
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                      elevation: 0.0,
+                                      borderRadius:
+                                          BorderRadius.circular(20.0),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
-                        ),
-                        Container(
-                          height: 125.0,
-                          decoration: BoxDecoration(),
-                        ),
-                      ].divide(SizedBox(height: 5.0)),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 0.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: wrapWithModel(
                   model: _model.cBottomBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: CBottomBarWidget(),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'Page_Profile',
+                  ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE8F1F8),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 18.0,
+                color: const Color(0xFF2E78A6),
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.0,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20.0,
+              color: Color(0xFF94A3B8),
+            ),
+          ],
         ),
       ),
     );
