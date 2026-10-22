@@ -1,7 +1,5 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
@@ -51,8 +49,8 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
     if (reasonText.length < 5) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide a dispute explanation (at least 5 characters).'),
-          backgroundColor: Colors.redAccent,
+          content: Text('Please provide an explanation (at least 5 characters).'),
+          backgroundColor: Color(0xFFD32F2F),
         ),
       );
       return;
@@ -72,7 +70,7 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Cannot dispute an image without a valid image ID.'),
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xFFD32F2F),
             ),
           );
         }
@@ -96,7 +94,7 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Dispute submitted successfully! Sent for verifier review.'),
-            backgroundColor: Color(0xFF2E7D32),
+            backgroundColor: Color(0xFF31A11F),
           ),
         );
         Navigator.pop(context, true);
@@ -106,7 +104,7 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to submit dispute: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color(0xFFD32F2F),
           ),
         );
       }
@@ -124,103 +122,176 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFFF1F4F8),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 16.0,
+            offset: Offset(0, -4),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 28.0),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 44.0,
+                  height: 4.0,
+                  margin: const EdgeInsets.only(bottom: 14.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2.0),
+                  ),
+                ),
+              ),
+
+              // Title and Close Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.gavel_rounded,
-                        color: Color(0xFFD32F2F),
-                        size: 26.0,
+                      Container(
+                        width: 38.0,
+                        height: 38.0,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBEE),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: const Icon(
+                          Icons.gavel_rounded,
+                          color: Color(0xFFD32F2F),
+                          size: 22.0,
+                        ),
                       ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        'Dispute Decision',
-                        style: FlutterFlowTheme.of(context).titleMedium.override(
-                              font: GoogleFonts.interTight(fontWeight: FontWeight.bold),
-                              color: Colors.black,
+                      const SizedBox(width: 10.0),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dispute Decision',
+                            style: GoogleFonts.comfortaa(
+                              fontSize: 17.5,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF2E78A6),
                             ),
+                          ),
+                          Text(
+                            'Request secondary verifier re-inspection',
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  FlutterFlowIconButton(
-                    borderRadius: 20.0,
-                    buttonSize: 38.0,
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.black54,
-                      size: 20.0,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(18.0),
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 36.0,
+                      height: 36.0,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2F2F2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFD5F2E2),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.black54,
+                        size: 18.0,
+                      ),
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const Divider(thickness: 1.0, color: Colors.black12),
-              const SizedBox(height: 10.0),
+              const SizedBox(height: 14.0),
+
+              // Appeal Notice Banner
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3E0),
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(color: const Color(0xFFFFB74D)),
+                  color: const Color(0xFFFFF8E1),
+                  borderRadius: BorderRadius.circular(14.0),
+                  border: Border.all(
+                    color: const Color(0xFFFFE082),
+                    width: 1.2,
+                  ),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline, color: Color(0xFFE65100), size: 22.0),
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFFE65100),
+                      size: 20.0,
+                    ),
                     const SizedBox(width: 10.0),
                     Expanded(
                       child: Text(
-                        'Appeal rejected validation for image #${widget.imageRef.imageId ?? 'N/A'}. A verifier will re-evaluate your scan.',
-                        style: FlutterFlowTheme.of(context).bodySmall.override(
-                              font: GoogleFonts.inter(),
-                              color: const Color(0xFFE65100),
-                            ),
+                        'Appeal rejected validation for image #${widget.imageRef.imageId ?? 'N/A'}. A verifier will re-evaluate your scan against Barangay standards.',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.0,
+                          color: const Color(0xFFE65100),
+                          height: 1.35,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 15.0),
+              const SizedBox(height: 16.0),
+
+              // Dropdown Category Field
               Text(
-                'Select Dispute Reason:',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                      color: Colors.black87,
-                    ),
+                'Select Dispute Reason',
+                style: GoogleFonts.inter(
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
-              const SizedBox(height: 8.0),
+              const SizedBox(height: 6.0),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(color: Colors.black26),
+                  color: const Color(0xFFF2F2F2),
+                  borderRadius: BorderRadius.circular(16.0),
+                  border: Border.all(
+                    color: const Color(0xFFD5F2E2),
+                    width: 1.2,
+                  ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _model.selectedDisputeCategory,
                     isExpanded: true,
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF2E78A6),
+                    ),
                     items: _disputeCategories.map((category) {
                       return DropdownMenuItem<String>(
                         value: category,
                         child: Text(
                           category,
-                          style: GoogleFonts.inter(fontSize: 14.0),
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: Colors.black87,
+                          ),
                         ),
                       );
                     }).toList(),
@@ -234,50 +305,73 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
                   ),
                 ),
               ),
-              const SizedBox(height: 15.0),
+              const SizedBox(height: 16.0),
+
+              // Detailed Explanation Form Field
               Text(
-                'Detailed Explanation:',
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                      color: Colors.black87,
-                    ),
+                'Detailed Explanation',
+                style: GoogleFonts.inter(
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
-              const SizedBox(height: 8.0),
+              const SizedBox(height: 6.0),
               TextFormField(
                 controller: _model.disputeReasonTextController,
                 focusNode: _model.disputeReasonFocusNode,
-                maxLines: 3,
+                maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Explain why this decision should be re-evaluated...',
-                  hintStyle: GoogleFonts.inter(color: Colors.black38, fontSize: 13.0),
+                  hintText:
+                      'Explain why this decision should be re-evaluated (e.g. materials inside bag are cleaned plastics)...',
+                  hintStyle: GoogleFonts.inter(
+                    color: Colors.black38,
+                    fontSize: 13.0,
+                  ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.black26),
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFD5F2E2),
+                      width: 1.2,
+                    ),
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Color(0xFF1B5E20), width: 2.0),
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF2E78A6),
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(12.0),
+                  fillColor: const Color(0xFFF2F2F2),
+                  contentPadding: const EdgeInsets.all(14.0),
                 ),
-                style: GoogleFonts.inter(fontSize: 14.0),
+                style: GoogleFonts.inter(fontSize: 13.5),
               ),
-              const SizedBox(height: 20.0),
+              const SizedBox(height: 22.0),
+
+              // Submit CTA Pill Button
               FFButtonWidget(
                 onPressed: _isSubmitting ? null : _submitDispute,
-                text: _isSubmitting ? 'Submitting Dispute...' : 'Submit Dispute Claim',
+                text: _isSubmitting
+                    ? 'Submitting Claim...'
+                    : 'Submit Dispute Claim',
+                icon: const Icon(
+                  Icons.send_rounded,
+                  size: 18.0,
+                  color: Colors.white,
+                ),
                 options: FFButtonOptions(
                   width: double.infinity,
-                  height: 46.0,
+                  height: 48.0,
                   color: const Color(0xFFD32F2F),
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                        font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                        color: Colors.white,
-                      ),
+                  textStyle: GoogleFonts.inter(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                   elevation: 2.0,
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(22.0),
                 ),
               ),
             ],

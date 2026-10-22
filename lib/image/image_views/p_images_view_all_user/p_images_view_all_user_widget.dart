@@ -1,18 +1,13 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/image/image_views/c_img_view_user/c_img_view_user_widget.dart';
-import 'dart:ui';
-import '/index.dart';
-import 'package:flutter/gestures.dart';
+import '/image/image_views/p_img_view_verifier/p_img_view_verifier_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'p_images_view_all_user_model.dart';
 export 'p_images_view_all_user_model.dart';
 
@@ -29,22 +24,75 @@ class PImagesViewAllUserWidget extends StatefulWidget {
 
 class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
   late PImagesViewAllUserModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  Future<List<ImageRow>>? _imagesFuture;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PImagesViewAllUserModel());
+    _loadUserImages();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  void _loadUserImages() {
+    if (currentUserUid.isNotEmpty) {
+      _imagesFuture = ImageTable().queryRows(
+        queryFn: (q) => q
+            .eqOrNull('img_uploader', currentUserUid)
+            .order('created_at', ascending: false)
+            .limit(30),
+      );
+    } else {
+      _imagesFuture = Future.value(<ImageRow>[]);
+    }
+  }
+
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _loadUserImages();
+    });
+    await _imagesFuture;
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'Verified':
+        return const Color(0xFF31A11F); // Eco Green
+      case 'Segregated':
+        return const Color(0xFF70BF5A); // Leaf Green
+      case 'Categorized by Ai':
+        return const Color(0xFF2E78A6); // Ocean Blue
+      case 'Unsegregated':
+      case 'Flagged':
+        return const Color(0xFFD32F2F); // Danger Red
+      case 'Uncategorized':
+      default:
+        return const Color(0xFFE65100); // Warning Orange
+    }
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status) {
+      case 'Verified':
+        return Icons.verified_rounded;
+      case 'Segregated':
+        return Icons.check_circle_rounded;
+      case 'Categorized by Ai':
+        return Icons.smart_toy_rounded;
+      case 'Unsegregated':
+        return Icons.delete_sweep_rounded;
+      case 'Flagged':
+        return Icons.flag_rounded;
+      case 'Uncategorized':
+      default:
+        return Icons.help_outline_rounded;
+    }
   }
 
   @override
@@ -56,528 +104,379 @@ class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFFF2F2F2),
         body: SafeArea(
           top: true,
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
-                ),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
+              RefreshIndicator(
+                color: const Color(0xFF2E78A6),
+                backgroundColor: Colors.white,
+                onRefresh: _handleRefresh,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 120.0),
                   child: Column(
-                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.asset(
-                          'assets/images/Horizontal_Logo.png',
-                          width: double.infinity,
-                          height: 150.0,
-                          fit: BoxFit.fitWidth,
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        height: 525.0,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFDFF1F1),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: FutureBuilder<List<UserRow>>(
-                            future: UserTable().querySingleRow(
-                              queryFn: (q) => q.eqOrNull(
-                                'user_id',
-                                currentUserUid,
+                      // Top Brand Header Bar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            borderRadius: BorderRadius.circular(20.0),
+                            onTap: () => context.safePop(),
+                            child: Container(
+                              width: 40.0,
+                              height: 40.0,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.0,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0D000000),
+                                    blurRadius: 4.0,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Color(0xFF2E78A6),
+                                size: 20.0,
                               ),
                             ),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
+                          ),
+                          Image.asset(
+                            'assets/images/Horizontal_Logo.png',
+                            height: 42.0,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 40.0),
+                        ],
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Page Header Widget
+                      const CPageHeaderWidget(
+                        title: 'My Uploads',
+                        subtitle:
+                            'Personal waste scanning, segregation history & validation status',
+                        icon: Icons.photo_library_rounded,
+                      ),
+                      const SizedBox(height: 16.0),
+
+                      // Image Feed Future Builder
+                      FutureBuilder<List<ImageRow>>(
+                        future: _imagesFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 60.0),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF2E78A6),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          final imageList = snapshot.data ?? [];
+
+                          if (imageList.isEmpty) {
+                            return Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
+                                vertical: 48.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.0),
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0D000000),
+                                    blurRadius: 8.0,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 72.0,
+                                    height: 72.0,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD5F2E2)
+                                          .withValues(alpha: 0.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.photo_library_outlined,
+                                      size: 36.0,
+                                      color: Color(0xFF2E78A6),
                                     ),
                                   ),
-                                );
-                              }
-                              List<UserRow> columnUserRowList = snapshot.data!;
-
-                              final columnUserRow = columnUserRowList.isNotEmpty
-                                  ? columnUserRowList.first
-                                  : null;
-
-                              return Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.person,
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                        size: 25.0,
-                                      ),
-                                      RichText(
-                                        textScaler:
-                                            MediaQuery.of(context).textScaler,
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: 'Welcome user, ',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleMedium
-                                                            .fontStyle,
-                                                  ),
-                                            ),
-                                            TextSpan(
-                                              text: columnUserRow!.userName!,
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleMedium
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleMedium
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleMedium
-                                                              .fontStyle,
-                                                    ),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleMedium
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleMedium
-                                                            .fontStyle,
-                                                  ),
-                                            )
-                                          ],
-                                          style: FlutterFlowTheme.of(context)
-                                              .titleLarge
-                                              .override(
-                                                font: GoogleFonts.interTight(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleLarge
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ].divide(SizedBox(width: 5.0)),
-                                  ),
+                                  const SizedBox(height: 16.0),
                                   Text(
-                                    'Click on the image to view their description.',
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .fontStyle,
+                                    'No Uploads Found',
+                                    style: GoogleFonts.comfortaa(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF2E78A6),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                  Text(
+                                    'You haven\'t scanned or uploaded any waste photos yet. Tap the center camera button below to get started!',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.0,
+                                      color: Colors.black54,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          return MasonryGridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                                const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                            ),
+                            crossAxisSpacing: 12.0,
+                            mainAxisSpacing: 12.0,
+                            itemCount: imageList.length,
+                            itemBuilder: (context, index) {
+                              final item = imageList[index];
+                              final statusColor = _getStatusColor(item.status);
+                              final statusIcon = _getStatusIcon(item.status);
+
+                              return InkWell(
+                                borderRadius: BorderRadius.circular(16.0),
+                                onTap: () async {
+                                  // Check user role: Admin / Crew go to verifier view, Residents view user details sheet
+                                  final userRows = await UserTable().querySingleRow(
+                                    queryFn: (q) => q.eqOrNull('user_id', currentUserUid),
+                                  );
+                                  if (!context.mounted) return;
+                                  final currentUser = userRows.isNotEmpty ? userRows.first : null;
+
+                                  if (currentUser?.userType == 'Admin' ||
+                                      currentUser?.userType == 'Crew') {
+                                    context.pushNamed(
+                                      PImgViewVerifierWidget.routeName,
+                                      queryParameters: {
+                                        'imageIDref': serializeParam(
+                                          item,
+                                          ParamType.SupabaseRow,
                                         ),
+                                      }.withoutNulls,
+                                    );
+                                  } else {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      enableDrag: true,
+                                      context: context,
+                                      builder: (ctx) => Padding(
+                                        padding: MediaQuery.viewInsetsOf(ctx),
+                                        child: CImgViewUserWidget(
+                                          imageIDref: item,
+                                        ),
+                                      ),
+                                    );
+                                    if (!context.mounted) return;
+                                    _handleRefresh();
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    border: Border.all(
+                                      color: const Color(0xFFD5F2E2),
+                                      width: 1.2,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x0A000000),
+                                        blurRadius: 6.0,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                  Divider(
-                                    thickness: 2.0,
-                                    color: Colors.black,
-                                  ),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 425.0,
-                                    decoration: BoxDecoration(),
-                                    child: StreamBuilder<List<ImageRow>>(
-                                      stream: _model
-                                              .staggeredViewSupabaseStream ??=
-                                          SupaFlow.client
-                                              .from("Image")
-                                              .stream(primaryKey: ['image_id'])
-                                              .eqOrNull(
-                                                'img_uploader',
-                                                currentUserUid,
-                                              )
-                                              .order('created_at')
-                                              .limit(10)
-                                              .map((list) => list
-                                                  .map((item) => ImageRow(item))
-                                                  .toList()),
-                                      builder: (context, snapshot) {
-                                        // Customize what your widget looks like when it's loading.
-                                        if (!snapshot.hasData) {
-                                          return Center(
-                                            child: SizedBox(
-                                              width: 50.0,
-                                              height: 50.0,
-                                              child: CircularProgressIndicator(
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Image Thumbnail
+                                      Stack(
+                                        children: [
+                                          AspectRatio(
+                                            aspectRatio: 1.0,
+                                            child: Image.network(
+                                              item.imgReferenceLink,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) =>
+                                                      Container(
+                                                color: const Color(0xFFF2F2F2),
+                                                child: const Icon(
+                                                  Icons.broken_image_rounded,
+                                                  color: Colors.black26,
+                                                  size: 32.0,
                                                 ),
                                               ),
                                             ),
-                                          );
-                                        }
-                                        List<ImageRow>
-                                            staggeredViewImageRowList =
-                                            snapshot.data!;
-
-                                        return MasonryGridView.builder(
-                                          gridDelegate:
-                                              SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
                                           ),
-                                          crossAxisSpacing: 10.0,
-                                          mainAxisSpacing: 10.0,
-                                          itemCount:
-                                              staggeredViewImageRowList.length,
-                                          itemBuilder:
-                                              (context, staggeredViewIndex) {
-                                            final staggeredViewImageRow =
-                                                staggeredViewImageRowList[
-                                                    staggeredViewIndex];
-                                            return Stack(
-                                              alignment: AlignmentDirectional(
-                                                  1.0, 1.0),
+                                          // Status Pill Chip (Top Right)
+                                          Positioned(
+                                            top: 8.0,
+                                            right: 8.0,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0,
+                                                vertical: 4.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withValues(alpha: 0.65),
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    statusIcon,
+                                                    color: statusColor,
+                                                    size: 13.0,
+                                                  ),
+                                                  const SizedBox(width: 4.0),
+                                                  Text(
+                                                    item.status ?? 'Pending',
+                                                    style: GoogleFonts.inter(
+                                                      color: Colors.white,
+                                                      fontSize: 10.0,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      // Card Footer Metadata
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
                                               children: [
-                                                Stack(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          0.0, 1.0),
-                                                  children: [
-                                                    InkWell(
-                                                      splashColor:
-                                                          Colors.transparent,
-                                                      focusColor:
-                                                          Colors.transparent,
-                                                      hoverColor:
-                                                          Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: () async {
-                                                        if ((columnUserRow
-                                                                    ?.userType ==
-                                                                'Admin') ||
-                                                            (columnUserRow
-                                                                    ?.userType ==
-                                                                'Crew')) {
-                                                          context.pushNamed(
-                                                            PImgViewVerifierWidget
-                                                                .routeName,
-                                                            queryParameters: {
-                                                              'imageIDref':
-                                                                  serializeParam(
-                                                                staggeredViewImageRow,
-                                                                ParamType
-                                                                    .SupabaseRow,
-                                                              ),
-                                                            }.withoutNulls,
-                                                          );
-                                                        } else {
-                                                          await showModalBottomSheet(
-                                                            isScrollControlled:
-                                                                true,
-                                                            backgroundColor:
-                                                                Colors
-                                                                    .transparent,
-                                                            enableDrag: false,
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return GestureDetector(
-                                                                onTap: () {
-                                                                  FocusScope.of(
-                                                                          context)
-                                                                      .unfocus();
-                                                                  FocusManager
-                                                                      .instance
-                                                                      .primaryFocus
-                                                                      ?.unfocus();
-                                                                },
-                                                                child: Padding(
-                                                                  padding: MediaQuery
-                                                                      .viewInsetsOf(
-                                                                          context),
-                                                                  child:
-                                                                      CImgViewUserWidget(
-                                                                    imageIDref:
-                                                                        staggeredViewImageRow,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            },
-                                                          ).then((value) =>
-                                                              safeSetState(
-                                                                  () {}));
-                                                        }
-                                                      },
-                                                      child: ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8.0),
-                                                        child: Image.network(
-                                                          staggeredViewImageRow
-                                                              .imgReferenceLink,
-                                                          width:
-                                                              double.infinity,
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Opacity(
-                                                      opacity: 0.5,
-                                                      child: Container(
-                                                        width: double.infinity,
-                                                        height: 35.0,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Color(0xFF263B6A),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      8.0),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                                const Icon(
+                                                  Icons.access_time_rounded,
+                                                  size: 13.0,
+                                                  color: Colors.black45,
                                                 ),
-                                                Padding(
-                                                  padding: EdgeInsets.all(10.0),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          FaIcon(
-                                                            FontAwesomeIcons
-                                                                .clock,
-                                                            color: Colors.white,
-                                                            size: 20.0,
-                                                          ),
-                                                          Text(
-                                                            dateTimeFormat(
-                                                                "Md",
-                                                                staggeredViewImageRow
-                                                                    .createdAt),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  font:
-                                                                      GoogleFonts
-                                                                          .inter(
-                                                                    fontWeight: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontWeight,
-                                                                    fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
-                                                                  ),
-                                                                  color: Colors
-                                                                      .white,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontWeight,
-                                                                  fontStyle: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .fontStyle,
-                                                                ),
-                                                          ),
-                                                        ].divide(SizedBox(
-                                                            width: 5.0)),
-                                                      ),
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Uncategorized')
-                                                            Icon(
-                                                              Icons
-                                                                  .question_mark_rounded,
-                                                              color: Color(
-                                                                  0xFFDB1A1A),
-                                                              size: 20.0,
-                                                            ),
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Categorized by Ai')
-                                                            Icon(
-                                                              Icons.android,
-                                                              color: Color(
-                                                                  0xFFC44545),
-                                                              size: 20.0,
-                                                            ),
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Unsegregated')
-                                                            Icon(
-                                                              Icons
-                                                                  .delete_forever,
-                                                              color: Color(
-                                                                  0xFFDB1A1A),
-                                                              size: 20.0,
-                                                            ),
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Segregated')
-                                                            Icon(
-                                                              Icons
-                                                                  .check_circle_outline_sharp,
-                                                              color: Color(
-                                                                  0xFF468432),
-                                                              size: 20.0,
-                                                            ),
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Flagged')
-                                                            Icon(
-                                                              Icons
-                                                                  .flag_outlined,
-                                                              color: Color(
-                                                                  0xFFDB1A1A),
-                                                              size: 20.0,
-                                                            ),
-                                                          if (staggeredViewImageRow
-                                                                  .status ==
-                                                              'Verified')
-                                                            FaIcon(
-                                                              FontAwesomeIcons
-                                                                  .checkDouble,
-                                                              color: Color(
-                                                                  0xFF468432),
-                                                              size: 20.0,
-                                                            ),
-                                                        ],
-                                                      ),
-                                                    ],
+                                                const SizedBox(width: 4.0),
+                                                Expanded(
+                                                  child: Text(
+                                                    dateTimeFormat(
+                                                        "Md", item.createdAt),
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11.0,
+                                                      color: Colors.black54,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
                                               ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
+                                            ),
+                                            const SizedBox(height: 6.0),
+                                            // Category tag row
+                                            Wrap(
+                                              spacing: 4.0,
+                                              runSpacing: 4.0,
+                                              children: [
+                                                if (item.categoryRecycling == true)
+                                                  _buildCategoryChip('Recyclable', const Color(0xFF2E78A6)),
+                                                if (item.categoryBiode == true)
+                                                  _buildCategoryChip('Bio', const Color(0xFF70BF5A)),
+                                                if (item.categoryNonbiode == true)
+                                                  _buildCategoryChip('Non-Bio', const Color(0xFF546E7A)),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ].divide(SizedBox(height: 5.0)),
+                                ),
                               );
                             },
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                      Container(
-                        height: 125.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
-                    ].divide(SizedBox(height: 5.0)),
+                    ],
                   ),
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+
+              // Pinned Bottom Dock
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'Page_Profile',
+                  ),
+                ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 0.8,
+        ),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w600,
+          color: color,
         ),
       ),
     );

@@ -62,68 +62,95 @@ class _PImgUploadResearchWidgetState extends State<PImgUploadResearchWidget> {
           child: Stack(
             children: [
               Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFE8EDF2),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF2F2F2),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 120.0),
                   child: SingleChildScrollView(
                     primary: false,
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Stack(
+                        // Top Brand Bar with Back Button and Info
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.asset(
-                                'assets/images/Horizontal_Logo.png',
-                                width: double.infinity,
-                                height: 150.0,
-                                fit: BoxFit.fitWidth,
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: () => context.safePop(),
+                              child: Container(
+                                width: 40.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFD5F2E2),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0D000000),
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_back_rounded,
+                                  color: Color(0xFF2E78A6),
+                                  size: 20.0,
+                                ),
                               ),
                             ),
-                            Align(
-                              alignment: AlignmentDirectional(1.0, -1.0),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 15.0, 0.0, 0.0),
-                                child: FlutterFlowIconButton(
-                                  borderRadius: 8.0,
-                                  buttonSize: 40.0,
-                                  icon: Icon(
-                                    Icons.info_outline,
-                                    color: Colors.black,
-                                    size: 24.0,
+                            Image.asset(
+                              'assets/images/Horizontal_Logo.png',
+                              height: 42.0,
+                              fit: BoxFit.contain,
+                            ),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: () async {
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  enableDrag: true,
+                                  context: context,
+                                  builder: (context) => const Padding(
+                                    padding: EdgeInsets.zero,
+                                    child: CImageInformationalDialogWidget(),
                                   ),
-                                  onPressed: () async {
-                                    await showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      enableDrag: false,
-                                      context: context,
-                                      builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child:
-                                                CImageInformationalDialogWidget(),
-                                          ),
-                                        );
-                                      },
-                                    ).then((value) => safeSetState(() {}));
-                                  },
+                                );
+                              },
+                              child: Container(
+                                width: 40.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFD5F2E2),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0D000000),
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF2E78A6),
+                                  size: 20.0,
                                 ),
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 14.0),
                         FutureBuilder<List<UserRow>>(
                           future: UserTable().querySingleRow(
                             queryFn: (q) => q.eqOrNull(
@@ -156,11 +183,22 @@ class _PImgUploadResearchWidgetState extends State<PImgUploadResearchWidget> {
                             return Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Color(0xFFBFC9D1),
-                                borderRadius: BorderRadius.circular(15.0),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.0),
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0D000000),
+                                    blurRadius: 10.0,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(15.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,19 +738,20 @@ class _PImgUploadResearchWidgetState extends State<PImgUploadResearchWidget> {
                             );
                           },
                         ),
-                        Container(
-                          height: 750.0,
-                          decoration: BoxDecoration(),
-                        ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     ),
                   ),
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'Page_Profile',
+                  ),
+                ),
               ),
             ],
           ),

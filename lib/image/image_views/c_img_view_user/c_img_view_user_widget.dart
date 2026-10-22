@@ -1,16 +1,10 @@
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/image/c_dispute_decision/c_dispute_decision_widget.dart';
-import 'dart:ui';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'c_img_view_user_model.dart';
 export 'c_img_view_user_model.dart';
 
@@ -49,8 +43,46 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'Verified':
+        return const Color(0xFF31A11F); // Eco Green
+      case 'Segregated':
+        return const Color(0xFF70BF5A); // Leaf Green
+      case 'Categorized by Ai':
+        return const Color(0xFF2E78A6); // Ocean Blue
+      case 'Unsegregated':
+      case 'Flagged':
+        return const Color(0xFFD32F2F); // Danger Red
+      case 'Disputed':
+        return const Color(0xFFFF8F00); // Amber
+      case 'Uncategorized':
+      default:
+        return const Color(0xFFE65100); // Warning Orange
+    }
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status) {
+      case 'Verified':
+        return Icons.verified_rounded;
+      case 'Segregated':
+        return Icons.check_circle_rounded;
+      case 'Categorized by Ai':
+        return Icons.smart_toy_rounded;
+      case 'Unsegregated':
+        return Icons.delete_sweep_rounded;
+      case 'Flagged':
+        return Icons.flag_rounded;
+      case 'Disputed':
+        return Icons.hourglass_top_rounded;
+      case 'Uncategorized':
+      default:
+        return Icons.help_outline_rounded;
+    }
   }
 
   @override
@@ -63,80 +95,163 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
             .stream(primaryKey: ['image_id'])
             .eqOrNull(
               'image_id',
-              widget!.imageIDref?.imageId,
+              widget.imageIDref?.imageId,
             )
             .map((list) => list.map((item) => ImageRow(item)).toList()),
         builder: (context, snapshot) {
-          // Customize what your widget looks like when it's loading.
           if (!snapshot.hasData) {
-            return Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlutterFlowTheme.of(context).primary,
+            return Container(
+              height: 250.0,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+              ),
+              child: const Center(
+                child: SizedBox(
+                  width: 44.0,
+                  height: 44.0,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF2E78A6),
+                    ),
                   ),
                 ),
               ),
             );
           }
-          List<ImageRow> containerImageRowList = snapshot.data!;
-
+          final containerImageRowList = snapshot.data!;
           final containerImageRow = containerImageRowList.isNotEmpty
               ? containerImageRowList.first
               : null;
 
+          if (containerImageRow == null) {
+            return Container(
+              padding: const EdgeInsets.all(24.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+              ),
+              child: const Center(
+                child: Text('Waste record not found.'),
+              ),
+            );
+          }
+
+          final statusColor = _getStatusColor(containerImageRow.status);
+          final statusIcon = _getStatusIcon(containerImageRow.status);
+
           return Container(
             width: double.infinity,
             constraints: BoxConstraints(
-              maxHeight: 500.0,
+              maxHeight: MediaQuery.sizeOf(context).height * 0.90,
             ),
-            decoration: BoxDecoration(
-              color: Color(0xFFE8EDF2),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25.0),
-                topRight: Radius.circular(25.0),
-              ),
-              border: Border.all(
-                color: Colors.black,
-              ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 16.0,
+                  offset: Offset(0, -4),
+                ),
+              ],
             ),
-            alignment: AlignmentDirectional(0.0, 1.0),
-            child: Padding(
-              padding: EdgeInsets.all(15.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Stack(
-                      children: [
-                        if ((containerImageRow?.allowFlagging == true) &&
-                            (containerImageRow?.status != 'Flagged'))
-                          Align(
-                            alignment: AlignmentDirectional(-1.0, 0.0),
-                            child: FlutterFlowIconButton(
-                              borderRadius: 8.0,
-                              buttonSize: 40.0,
-                              icon: Icon(
-                                Icons.info_outline,
-                                color: Colors.black,
-                                size: 24.0,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18.0, 12.0, 18.0, 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag Handle
+                  Center(
+                    child: Container(
+                      width: 44.0,
+                      height: 4.0,
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
+                    ),
+                  ),
+
+                  // Header with Title and Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 36.0,
+                            height: 36.0,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD5F2E2),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: const Icon(
+                              Icons.photo_size_select_actual_rounded,
+                              color: Color(0xFF2E78A6),
+                              size: 20.0,
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Scan Details',
+                                style: GoogleFonts.comfortaa(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF2E78A6),
+                                ),
                               ),
+                              Text(
+                                'Image verification & categorization breakdown',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          if (containerImageRow.allowFlagging == true &&
+                              containerImageRow.status != 'Flagged')
+                            IconButton(
+                              icon: const Icon(
+                                Icons.info_outline_rounded,
+                                color: Color(0xFF2E78A6),
+                                size: 22.0,
+                              ),
+                              tooltip: 'Flagging Help',
                               onPressed: () async {
                                 await showDialog(
                                   context: context,
                                   builder: (alertDialogContext) {
                                     return AlertDialog(
-                                      title: Text('Informational Dialog'),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18.0),
+                                      ),
+                                      title: Text(
+                                        'Verification Notice',
+                                        style: GoogleFonts.comfortaa(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16.0,
+                                        ),
+                                      ),
                                       content: Text(
-                                          'Press the Red Flag Icon if the image verification seems wrong.'),
+                                        'Tap the Red Flag icon if you believe the automated categorization or verification decision is incorrect.',
+                                        style: GoogleFonts.inter(fontSize: 13.0),
+                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(alertDialogContext),
-                                          child: Text('Ok'),
+                                          child: const Text('OK'),
                                         ),
                                       ],
                                     );
@@ -144,933 +259,539 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                                 );
                               },
                             ),
-                          ),
-                        Align(
-                          alignment: AlignmentDirectional(1.0, 0.0),
-                          child: FlutterFlowIconButton(
-                            borderRadius: 8.0,
-                            buttonSize: 40.0,
-                            icon: Icon(
-                              Icons.close_outlined,
-                              color: Colors.black,
-                              size: 24.0,
+                          InkWell(
+                            borderRadius: BorderRadius.circular(18.0),
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 36.0,
+                              height: 36.0,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF2F2F2),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.black54,
+                                size: 18.0,
+                              ),
                             ),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                            },
                           ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14.0),
+
+                  // Image Preview Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF2F2F2),
+                      borderRadius: BorderRadius.circular(18.0),
+                      border: Border.all(
+                        color: const Color(0xFFD5F2E2),
+                        width: 1.2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0D000000),
+                          blurRadius: 8.0,
+                          offset: Offset(0, 3),
                         ),
                       ],
                     ),
-                    Stack(
-                      alignment: AlignmentDirectional(1.0, 1.0),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
                       children: [
-                        Stack(
-                          alignment: AlignmentDirectional(0.0, 1.0),
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.network(
-                                containerImageRow!.imgReferenceLink,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Opacity(
-                              opacity: 0.5,
-                              child: Container(
-                                width: double.infinity,
-                                height: 85.0,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF6984A9),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(8.0),
-                                    bottomRight: Radius.circular(8.0),
-                                  ),
+                        AspectRatio(
+                          aspectRatio: 16 / 10,
+                          child: Image.network(
+                            containerImageRow.imgReferenceLink,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                              color: const Color(0xFFF2F2F2),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.black26,
+                                  size: 40.0,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  FutureBuilder<List<UserRow>>(
-                                    future: UserTable().querySingleRow(
-                                      queryFn: (q) => q.eqOrNull(
-                                        'user_id',
-                                        containerImageRow?.imgUploader,
-                                      ),
-                                    ),
-                                    builder: (context, snapshot) {
-                                      // Customize what your widget looks like when it's loading.
-                                      if (!snapshot.hasData) {
-                                        return Center(
-                                          child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      List<UserRow> rowUserRowList =
-                                          snapshot.data!;
-
-                                      final rowUserRow =
-                                          rowUserRowList.isNotEmpty
-                                              ? rowUserRowList.first
-                                              : null;
-
-                                      return Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Icon(
-                                            Icons.person,
-                                            color: Colors.white,
-                                            size: 25.0,
-                                          ),
-                                          Text(
-                                            valueOrDefault<String>(
-                                              rowUserRow?.userName,
-                                              '>user_name',
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleLarge
-                                                .override(
-                                                  font: GoogleFonts.interTight(
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Colors.white,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .titleLarge
-                                                          .fontStyle,
-                                                ),
-                                          ),
-                                        ].divide(SizedBox(width: 5.0)),
-                                      );
-                                    },
-                                  ),
-                                  if ((containerImageRow?.allowFlagging ==
-                                          true) &&
-                                      (containerImageRow?.status != 'Flagged'))
-                                    Align(
-                                      alignment: AlignmentDirectional(1.0, 0.0),
-                                      child: FlutterFlowIconButton(
-                                        borderRadius: 8.0,
-                                        buttonSize: 40.0,
-                                        icon: Icon(
-                                          Icons.flag_circle,
-                                          color: Color(0xFFFF000E),
-                                          size: 25.0,
-                                        ),
-                                        onPressed: () async {
-                                          await ImageTable().update(
-                                            data: {
-                                              'status': 'Flagged',
-                                            },
-                                            matchingRows: (rows) =>
-                                                rows.eqOrNull(
-                                              'image_id',
-                                              containerImageRow?.imageId,
-                                            ),
-                                          );
-                                          safeSetState(() {});
-                                        },
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      FaIcon(
-                                        FontAwesomeIcons.clock,
-                                        color: Colors.white,
-                                        size: 20.0,
-                                      ),
-                                      Text(
-                                        dateTimeFormat(
-                                            "Md", containerImageRow!.createdAt),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.inter(
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: Colors.white,
-                                              letterSpacing: 0.0,
-                                              fontWeight:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontWeight,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                      ),
-                                    ].divide(SizedBox(width: 5.0)),
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      if (containerImageRow?.status ==
-                                          'Uncategorized')
-                                        Icon(
-                                          Icons.question_mark_rounded,
-                                          color: Color(0xFFFF0000),
-                                          size: 20.0,
-                                        ),
-                                      if (containerImageRow?.status ==
-                                          'Categorized by Ai')
-                                        Icon(
-                                          Icons.android,
-                                          color: Color(0xFFC44545),
-                                          size: 20.0,
-                                        ),
-                                      if (containerImageRow?.status ==
-                                          'Unsegregated')
-                                        Icon(
-                                          Icons.delete_forever,
-                                          color: Color(0xFFFF0000),
-                                          size: 20.0,
-                                        ),
-                                      if (containerImageRow?.status ==
-                                          'Segregated')
-                                        Icon(
-                                          Icons.check_circle_outline_sharp,
-                                          color: Color(0xFF468432),
-                                          size: 20.0,
-                                        ),
-                                      if (containerImageRow?.status ==
-                                          'Flagged')
-                                        Icon(
-                                          Icons.flag_outlined,
-                                          color: Color(0xFFFF0000),
-                                          size: 20.0,
-                                        ),
-                                      if (containerImageRow?.status ==
-                                          'Verified')
-                                        FaIcon(
-                                          FontAwesomeIcons.checkDouble,
-                                          color: Color(0xFF468432),
-                                          size: 20.0,
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ].divide(SizedBox(height: 10.0)),
                           ),
                         ),
-                      ],
-                    ),
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        color: Color(0x00000000),
-                        child: ExpandableNotifier(
-                          controller: _model.expandableExpandableController,
-                          child: ExpandablePanel(
-                            header: Text(
-                              'Image Description',
-                              style: FlutterFlowTheme.of(context)
-                                  .titleLarge
-                                  .override(
-                                    font: GoogleFonts.interTight(
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .titleLarge
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .titleLarge
-                                          .fontStyle,
-                                    ),
-                                    color: Colors.black,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleLarge
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleLarge
-                                        .fontStyle,
-                                  ),
+                        // Top Status Pill
+                        Positioned(
+                          top: 10.0,
+                          right: 10.0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                              vertical: 5.0,
                             ),
-                            collapsed: Column(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.70),
+                              borderRadius: BorderRadius.circular(14.0),
+                            ),
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                Icon(
+                                  statusIcon,
+                                  color: statusColor,
+                                  size: 14.0,
+                                ),
+                                const SizedBox(width: 5.0),
                                 Text(
-                                  'View Image details by expanding this window',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        font: GoogleFonts.inter(
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
-                                        ),
-                                        color: Color(0x8A000000),
-                                        letterSpacing: 0.0,
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                  overflow: TextOverflow.ellipsis,
+                                  containerImageRow.status ?? 'Pending',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
                             ),
-                            expanded: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                        ),
+                        // Flag Action Icon (if allowed)
+                        if (containerImageRow.allowFlagging == true &&
+                            containerImageRow.status != 'Flagged')
+                          Positioned(
+                            top: 10.0,
+                            left: 10.0,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16.0),
+                              onTap: () async {
+                                await ImageTable().update(
+                                  data: {
+                                    'status': 'Flagged',
+                                  },
+                                  matchingRows: (rows) => rows.eqOrNull(
+                                    'image_id',
+                                    containerImageRow.imageId,
+                                  ),
+                                );
+                                safeSetState(() {});
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 5.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD32F2F),
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x33000000),
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.flag_rounded,
+                                      color: Colors.white,
+                                      size: 14.0,
+                                    ),
+                                    const SizedBox(width: 4.0),
+                                    Text(
+                                      'Flag Decision',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        // Bottom Metadata Bar
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0,
+                              vertical: 8.0,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.80),
+                                ],
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 FutureBuilder<List<UserRow>>(
                                   future: UserTable().querySingleRow(
                                     queryFn: (q) => q.eqOrNull(
                                       'user_id',
-                                      containerImageRow?.updatedBy,
+                                      containerImageRow.imgUploader,
                                     ),
                                   ),
                                   builder: (context, snapshot) {
-                                    // Customize what your widget looks like when it's loading.
-                                    if (!snapshot.hasData) {
-                                      return Center(
-                                        child: SizedBox(
-                                          width: 50.0,
-                                          height: 50.0,
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    List<UserRow> rowUserRowList =
-                                        snapshot.data!;
-
-                                    final rowUserRow = rowUserRowList.isNotEmpty
-                                        ? rowUserRowList.first
+                                    final uploader = snapshot.data?.isNotEmpty == true
+                                        ? snapshot.data!.first
                                         : null;
-
                                     return Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            Icon(
-                                              Icons.verified_outlined,
-                                              color: Colors.black,
-                                              size: 25.0,
-                                            ),
-                                            Text(
-                                              containerImageRow?.updatedBy !=
-                                                          null &&
-                                                      containerImageRow
-                                                              ?.updatedBy !=
-                                                          ''
-                                                  ? valueOrDefault<String>(
-                                                      rowUserRow?.userName,
-                                                      'user_name',
-                                                    )
-                                                  : 'Not yet Verified',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleLarge
-                                                  .override(
-                                                    font:
-                                                        GoogleFonts.interTight(
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .titleLarge
-                                                              .fontStyle,
-                                                    ),
-                                                    color: Colors.black,
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontWeight,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .titleLarge
-                                                            .fontStyle,
-                                                  ),
-                                            ),
-                                          ].divide(SizedBox(width: 5.0)),
+                                        const Icon(
+                                          Icons.person_rounded,
+                                          color: Colors.white,
+                                          size: 16.0,
                                         ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            FaIcon(
-                                              FontAwesomeIcons.clock,
-                                              color: Colors.black,
-                                              size: 15.0,
-                                            ),
-                                            Text(
-                                              dateTimeFormat(
-                                                  "Md",
-                                                  containerImageRow!
-                                                      .updatedAt!),
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontWeight,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primaryText,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                            ),
-                                          ].divide(SizedBox(width: 5.0)),
+                                        const SizedBox(width: 4.0),
+                                        Text(
+                                          uploader?.userName ?? 'Resident',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ],
                                     );
                                   },
                                 ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      30.0, 0.0, 0.0, 0.0),
-                                  child: Text(
-                                    valueOrDefault<String>(
-                                      containerImageRow?.remark != null &&
-                                              containerImageRow?.remark != ''
-                                          ? containerImageRow?.remark
-                                          : 'No remarks',
-                                      'No remarks',
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .labelLarge
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelLarge
-                                                    .fontWeight,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelLarge
-                                                    .fontStyle,
-                                          ),
-                                          letterSpacing: 0.0,
-                                          fontWeight:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelLarge
-                                                  .fontWeight,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelLarge
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                                Divider(
-                                  thickness: 2.0,
-                                  color: Colors.black,
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Theme(
-                                          data: ThemeData(
-                                            checkboxTheme: CheckboxThemeData(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.0),
-                                              ),
-                                            ),
-                                            unselectedWidgetColor: Colors.black,
-                                          ),
-                                          child: Checkbox(
-                                            value: _model
-                                                    .checkboxRecyclingValue1 ??=
-                                                containerImageRow!
-                                                    .isSegregated!,
-                                            onChanged: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : (newValue) async {
-                                                    safeSetState(() => _model
-                                                            .checkboxRecyclingValue1 =
-                                                        newValue!);
-                                                  },
-                                            side: (Colors.black != null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: Colors.black!,
-                                                  )
-                                                : null,
-                                            activeColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            checkColor: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : FlutterFlowTheme.of(context)
-                                                    .info,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Segregated',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ],
+                                    const Icon(
+                                      Icons.access_time_rounded,
+                                      color: Colors.white70,
+                                      size: 14.0,
                                     ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Theme(
-                                          data: ThemeData(
-                                            checkboxTheme: CheckboxThemeData(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.0),
-                                              ),
-                                            ),
-                                            unselectedWidgetColor: Colors.black,
-                                          ),
-                                          child: Checkbox(
-                                            value: _model
-                                                    .checkboxRecyclingValue2 ??=
-                                                containerImageRow!
-                                                    .categoryRecycling!,
-                                            onChanged: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : (newValue) async {
-                                                    safeSetState(() => _model
-                                                            .checkboxRecyclingValue2 =
-                                                        newValue!);
-                                                  },
-                                            side: (Colors.black != null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: Colors.black!,
-                                                  )
-                                                : null,
-                                            activeColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            checkColor: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : FlutterFlowTheme.of(context)
-                                                    .info,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Recyclable',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ],
+                                    const SizedBox(width: 4.0),
+                                    Text(
+                                      dateTimeFormat(
+                                          "Md", containerImageRow.createdAt),
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 11.5,
+                                      ),
                                     ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Theme(
-                                          data: ThemeData(
-                                            checkboxTheme: CheckboxThemeData(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.0),
-                                              ),
-                                            ),
-                                            unselectedWidgetColor: Colors.black,
-                                          ),
-                                          child: Checkbox(
-                                            value: _model.checkboxBiodeValue ??=
-                                                containerImageRow!
-                                                    .categoryBiode!,
-                                            onChanged: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : (newValue) async {
-                                                    safeSetState(() => _model
-                                                            .checkboxBiodeValue =
-                                                        newValue!);
-                                                  },
-                                            side: (Colors.black != null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: Colors.black!,
-                                                  )
-                                                : null,
-                                            activeColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            checkColor: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : FlutterFlowTheme.of(context)
-                                                    .info,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Biodegradable',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Theme(
-                                          data: ThemeData(
-                                            checkboxTheme: CheckboxThemeData(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.0),
-                                              ),
-                                            ),
-                                            unselectedWidgetColor: Colors.black,
-                                          ),
-                                          child: Checkbox(
-                                            value:
-                                                _model.checkboxNonbiodeValue ??=
-                                                    containerImageRow!
-                                                        .categoryNonbiode!,
-                                            onChanged: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : (newValue) async {
-                                                    safeSetState(() => _model
-                                                            .checkboxNonbiodeValue =
-                                                        newValue!);
-                                                  },
-                                            side: (Colors.black != null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: Colors.black!,
-                                                  )
-                                                : null,
-                                            activeColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            checkColor: (containerImageRow
-                                                        ?.imgUploader ==
-                                                    currentUserUid)
-                                                ? null
-                                                : FlutterFlowTheme.of(context)
-                                                    .info,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Non-Biodegradable',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ].divide(SizedBox(height: 5.0)),
+                                  ],
                                 ),
-                              ].divide(SizedBox(height: 5.0)),
-                            ),
-                            theme: ExpandableThemeData(
-                              tapHeaderToExpand: true,
-                              tapBodyToExpand: false,
-                              tapBodyToCollapse: false,
-                              headerAlignment:
-                                  ExpandablePanelHeaderAlignment.center,
-                              hasIcon: true,
-                              expandIcon: FontAwesomeIcons.expandAlt.data,
-                              collapseIcon: Icons.close_fullscreen,
-                              iconColor: Colors.black,
+                              ],
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14.0),
+
+                  // Waste Category Chips Row
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      _buildPillChip(
+                        label: 'Segregated',
+                        isActive: containerImageRow.isSegregated == true,
+                        activeColor: const Color(0xFF31A11F),
+                        icon: Icons.check_circle_rounded,
+                      ),
+                      _buildPillChip(
+                        label: 'Recyclable',
+                        isActive: containerImageRow.categoryRecycling == true,
+                        activeColor: const Color(0xFF2E78A6),
+                        icon: Icons.recycling_rounded,
+                      ),
+                      _buildPillChip(
+                        label: 'Biodegradable',
+                        isActive: containerImageRow.categoryBiode == true,
+                        activeColor: const Color(0xFF70BF5A),
+                        icon: Icons.eco_rounded,
+                      ),
+                      _buildPillChip(
+                        label: 'Non-Bio',
+                        isActive: containerImageRow.categoryNonbiode == true,
+                        activeColor: const Color(0xFF546E7A),
+                        icon: Icons.delete_outline_rounded,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14.0),
+
+                  // Expandable Detailed Description Panel
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF2F2F2),
+                      borderRadius: BorderRadius.circular(16.0),
+                      border: Border.all(
+                        color: const Color(0xFFD5F2E2),
+                        width: 1.0,
                       ),
                     ),
-                    if (containerImageRow?.status == 'Flagged' ||
-                        containerImageRow?.status == 'Rejected' ||
-                        containerImageRow?.status == 'Unsegregated')
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: FFButtonWidget(
-                          onPressed: () async {
-                            await showModalBottomSheet(
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.viewInsetsOf(context),
-                                child: CDisputeDecisionWidget(
-                                  imageRef: containerImageRow!,
-                                ),
-                              ),
-                            );
-                          },
-                          text: 'Dispute Decision',
-                          icon: const Icon(
-                            Icons.gavel_rounded,
-                            size: 18.0,
-                            color: Colors.white,
-                          ),
-                          options: FFButtonOptions(
-                            width: double.infinity,
-                            height: 42.0,
-                            color: const Color(0xFFD32F2F),
-                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                  font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                                  color: Colors.white,
-                                ),
-                            elevation: 2.0,
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                      ),
-                    if (containerImageRow?.status == 'Disputed')
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF8E1),
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(color: const Color(0xFFFFB300)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                    child: ExpandableNotifier(
+                      controller: _model.expandableExpandableController,
+                      child: ExpandablePanel(
+                        header: Row(
                           children: [
-                            const Icon(Icons.hourglass_top, color: Color(0xFFFF8F00), size: 18.0),
+                            const Icon(
+                              Icons.description_rounded,
+                              color: Color(0xFF2E78A6),
+                              size: 20.0,
+                            ),
                             const SizedBox(width: 8.0),
                             Text(
-                              'Dispute Pending Verifier Review',
-                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                                    color: const Color(0xFFFF8F00),
-                                  ),
+                              'Verification Notes & Audit',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2E78A6),
+                              ),
                             ),
                           ],
                         ),
+                        collapsed: Text(
+                          containerImageRow.remark?.isNotEmpty == true
+                              ? containerImageRow.remark!
+                              : 'Tap to view verifier remarks and detailed timestamps.',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.0,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        expanded: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8.0),
+                            FutureBuilder<List<UserRow>>(
+                              future: UserTable().querySingleRow(
+                                queryFn: (q) => q.eqOrNull(
+                                  'user_id',
+                                  containerImageRow.updatedBy,
+                                ),
+                              ),
+                              builder: (context, snapshot) {
+                                final verifier = snapshot.data?.isNotEmpty == true
+                                    ? snapshot.data!.first
+                                    : null;
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.verified_user_rounded,
+                                          color: Color(0xFF31A11F),
+                                          size: 16.0,
+                                        ),
+                                        const SizedBox(width: 4.0),
+                                        Text(
+                                          containerImageRow.updatedBy?.isNotEmpty == true
+                                              ? (verifier?.userName ?? 'Verifier')
+                                              : 'Automated AI Detection',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (containerImageRow.updatedAt != null)
+                                      Text(
+                                        dateTimeFormat("Md", containerImageRow.updatedAt!),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.0,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8.0),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10.0),
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Text(
+                                containerImageRow.remark?.isNotEmpty == true
+                                    ? containerImageRow.remark!
+                                    : 'No additional notes provided.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.0,
+                                  color: Colors.black87,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        theme: const ExpandableThemeData(
+                          tapHeaderToExpand: true,
+                          tapBodyToExpand: false,
+                          tapBodyToCollapse: false,
+                          headerAlignment:
+                              ExpandablePanelHeaderAlignment.center,
+                          hasIcon: true,
+                          iconColor: Color(0xFF2E78A6),
+                        ),
                       ),
-                  ].divide(SizedBox(height: 15.0)),
-                ),
+                    ),
+                  ),
+
+                  // Dispute Decision Button (if flagged, rejected, or unsegregated)
+                  if (containerImageRow.status == 'Flagged' ||
+                      containerImageRow.status == 'Rejected' ||
+                      containerImageRow.status == 'Unsegregated')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: FFButtonWidget(
+                        onPressed: () async {
+                          await showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            context: context,
+                            builder: (context) => Padding(
+                              padding: MediaQuery.viewInsetsOf(context),
+                              child: CDisputeDecisionWidget(
+                                imageRef: containerImageRow,
+                              ),
+                            ),
+                          );
+                        },
+                        text: 'Dispute Verification Decision',
+                        icon: const Icon(
+                          Icons.gavel_rounded,
+                          size: 18.0,
+                          color: Colors.white,
+                        ),
+                        options: FFButtonOptions(
+                          width: double.infinity,
+                          height: 48.0,
+                          color: const Color(0xFFD32F2F),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          elevation: 2.0,
+                          borderRadius: BorderRadius.circular(22.0),
+                        ),
+                      ),
+                    ),
+
+                  // Dispute Pending Banner (if disputed)
+                  if (containerImageRow.status == 'Disputed')
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 14.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 12.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF8E1),
+                        borderRadius: BorderRadius.circular(16.0),
+                        border: Border.all(
+                          color: const Color(0xFFFFB300),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.hourglass_top_rounded,
+                            color: Color(0xFFFF8F00),
+                            size: 20.0,
+                          ),
+                          const SizedBox(width: 8.0),
+                          Text(
+                            'Dispute Pending Verifier Review',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFFF8F00),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPillChip({
+    required String label,
+    required bool isActive,
+    required Color activeColor,
+    required IconData icon,
+  }) {
+    final color = isActive ? activeColor : Colors.black38;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+      decoration: BoxDecoration(
+        color: isActive
+            ? activeColor.withValues(alpha: 0.12)
+            : const Color(0xFFEEEEEE),
+        borderRadius: BorderRadius.circular(20.0),
+        border: Border.all(
+          color: isActive
+              ? activeColor.withValues(alpha: 0.4)
+              : Colors.black12,
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14.0,
+            color: color,
+          ),
+          const SizedBox(width: 5.0),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11.5,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

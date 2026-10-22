@@ -70,25 +70,57 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
           child: Stack(
             children: [
               Container(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).tertiary,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF2F2F2),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 15.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 0.0),
                   child: SingleChildScrollView(
                     primary: false,
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.asset(
-                            'assets/images/Horizontal_Logo.png',
-                            width: double.infinity,
-                            height: 150.0,
-                            fit: BoxFit.fitWidth,
-                          ),
+                        // Top Brand Header Bar with Back Button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: () => context.safePop(),
+                              child: Container(
+                                width: 40.0,
+                                height: 40.0,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFD5F2E2),
+                                    width: 1.0,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0D000000),
+                                      blurRadius: 4.0,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_back_rounded,
+                                  color: Color(0xFF2E78A6),
+                                  size: 20.0,
+                                ),
+                              ),
+                            ),
+                            Image.asset(
+                              'assets/images/Horizontal_Logo.png',
+                              height: 42.0,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 40.0),
+                          ],
                         ),
+                        const SizedBox(height: 12.0),
                         StreamBuilder<List<ImageRow>>(
                           stream: _model.containerSupabaseStream ??= SupaFlow
                               .client
@@ -145,11 +177,22 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                 return Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: Color(0xFFDFF1F1),
-                                borderRadius: BorderRadius.circular(10.0),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.0),
+                                border: Border.all(
+                                  color: const Color(0xFFD5F2E2),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0D000000),
+                                    blurRadius: 8.0,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(15.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: SingleChildScrollView(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.max,
@@ -2411,10 +2454,15 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                   ),
                 ),
               ),
-              wrapWithModel(
-                model: _model.cBottomBarModel,
-                updateCallback: () => safeSetState(() {}),
-                child: CBottomBarWidget(),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: wrapWithModel(
+                  model: _model.cBottomBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const CBottomBarWidget(
+                    activeRoute: 'P_Images_ViewAll',
+                  ),
+                ),
               ),
             ],
           ),

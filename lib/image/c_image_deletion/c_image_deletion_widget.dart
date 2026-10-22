@@ -1,13 +1,10 @@
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'c_image_deletion_model.dart';
 export 'c_image_deletion_model.dart';
 
@@ -27,6 +24,7 @@ class CImageDeletionWidget extends StatefulWidget {
 
 class _CImageDeletionWidgetState extends State<CImageDeletionWidget> {
   late CImageDeletionModel _model;
+  bool _isDeleting = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -38,237 +36,251 @@ class _CImageDeletionWidgetState extends State<CImageDeletionWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => CImageDeletionModel());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    _model.checkboxValue ??= true;
   }
 
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
+  }
+
+  Future<void> _handleDelete() async {
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      if (widget.imageRef?.imageId != null) {
+        await ImageTable().delete(
+          matchingRows: (rows) => rows.eq(
+            'image_id',
+            widget.imageRef!.imageId!,
+          ),
+        );
+      }
+
+      if (_model.checkboxValue == true &&
+          widget.userSubtableRef?.userPoints != null &&
+          widget.imageRef?.imgUploader != null) {
+        await UserSubtableTable().update(
+          data: {
+            'user_points': functions.minusPoints(
+              widget.userSubtableRef!.userPoints!,
+              50,
+            ),
+          },
+          matchingRows: (rows) => rows.eq(
+            'user_idRef',
+            widget.imageRef!.imgUploader,
+          ),
+        );
+      }
+
+      final refLink = widget.imageRef?.imgReferenceLink;
+      if (refLink != null && refLink.isNotEmpty) {
+        await deleteSupabaseFileFromPublicUrl(refLink);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Waste record deleted successfully.'),
+            backgroundColor: Color(0xFF31A11F),
+          ),
+        );
+        Navigator.pop(context);
+        context.goNamed(PImagesViewAllWidget.routeName);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting image: $e'),
+            backgroundColor: const Color(0xFFD32F2F),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: AlignmentDirectional(0.0, 0.0),
-      child: InkWell(
-        splashColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () async {
-          Navigator.pop(context);
-        },
-        child: Container(
-          width: 250.0,
-          height: 375.0,
-          decoration: BoxDecoration(
-            color: Color(0xFFE8EDF2),
-            borderRadius: BorderRadius.circular(25.0),
-            border: Border.all(
-              color: Colors.black,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image.asset(
-                  'assets/images/Horizontal_Logo.png',
-                  width: double.infinity,
-                  height: 105.0,
-                  fit: BoxFit.fitHeight,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 340.0),
+            padding: const EdgeInsets.all(22.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24.0),
+              border: Border.all(
+                color: const Color(0xFFD5F2E2),
+                width: 1.5,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x24000000),
+                  blurRadius: 20.0,
+                  offset: Offset(0, 8),
                 ),
-              ),
-              Divider(
-                thickness: 2.0,
-                color: Colors.black,
-              ),
-              Text(
-                'Deleting this image content\nis irreversible.\nProceed carefully.',
-                textAlign: TextAlign.center,
-                style: FlutterFlowTheme.of(context).labelMedium.override(
-                      font: GoogleFonts.inter(
-                        fontWeight:
-                            FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
-                      fontWeight:
-                          FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                      fontStyle:
-                          FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                    ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Theme(
-                    data: ThemeData(
-                      checkboxTheme: CheckboxThemeData(
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                      ),
-                      unselectedWidgetColor: Colors.black,
-                    ),
-                    child: Checkbox(
-                      value: _model.checkboxValue ??= true,
-                      onChanged: (newValue) async {
-                        safeSetState(() => _model.checkboxValue = newValue!);
-                      },
-                      side: (Colors.black != null)
-                          ? BorderSide(
-                              width: 2,
-                              color: Colors.black!,
-                            )
-                          : null,
-                      activeColor: FlutterFlowTheme.of(context).primary,
-                      checkColor: FlutterFlowTheme.of(context).info,
-                    ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Danger Badge
+                Container(
+                  width: 58.0,
+                  height: 58.0,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFEBEE),
+                    shape: BoxShape.circle,
                   ),
-                  Text(
-                    'Is the image unrelated?',
-                    style: FlutterFlowTheme.of(context).titleSmall.override(
-                          font: GoogleFonts.interTight(
-                            fontWeight: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .fontWeight,
-                            fontStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .fontStyle,
-                          ),
-                          letterSpacing: 0.0,
-                          fontWeight: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .fontWeight,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                        ),
+                  child: const Icon(
+                    Icons.delete_forever_rounded,
+                    color: Color(0xFFD32F2F),
+                    size: 32.0,
                   ),
-                ],
-              ),
-              Divider(
-                thickness: 2.0,
-                color: Colors.black,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  FFButtonWidget(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                    },
-                    text: 'Cancel',
-                    icon: Icon(
-                      Icons.close_outlined,
-                      size: 15.0,
-                    ),
-                    options: FFButtonOptions(
-                      height: 40.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: Color(0xFF263B6A),
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
-                      elevation: 0.0,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional(-1.0, 0.0),
-                    child: FFButtonWidget(
-                      onPressed: () async {
-                        await ImageTable().delete(
-                          matchingRows: (rows) => rows.eqOrNull(
-                            'image_id',
-                            widget!.imageRef?.imageId,
-                          ),
-                        );
-                        if (_model.checkboxValue!) {
-                          await UserSubtableTable().update(
-                            data: {
-                              'user_points': functions.minusPoints(
-                                  widget!.userSubtableRef!.userPoints!, 50),
-                            },
-                            matchingRows: (rows) => rows.eqOrNull(
-                              'user_idRef',
-                              widget!.imageRef?.imgUploader,
-                            ),
-                          );
-                        }
-                        await deleteSupabaseFileFromPublicUrl(
-                            widget!.imageRef!.imgReferenceLink);
+                ),
+                const SizedBox(height: 14.0),
 
-                        context.goNamed(PImagesViewAllWidget.routeName);
-                      },
-                      text: 'Delete',
-                      icon: Icon(
-                        Icons.edit_note,
-                        size: 15.0,
-                      ),
-                      options: FFButtonOptions(
-                        height: 40.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: Color(0xFFC44545),
-                        textStyle:
-                            FlutterFlowTheme.of(context).titleSmall.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .fontStyle,
-                                  ),
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
+                // Title
+                Text(
+                  'Delete Waste Image?',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.comfortaa(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2E78A6),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+
+                // Description
+                Text(
+                  'Deleting this waste submission is permanent and irreversible. The image file will be removed from storage.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: Colors.black54,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 14.0),
+
+                // Unrelated Penalty Checkbox Tile
+                InkWell(
+                  borderRadius: BorderRadius.circular(12.0),
+                  onTap: () {
+                    setState(() {
+                      _model.checkboxValue = !(_model.checkboxValue ?? true);
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10.0,
+                      vertical: 8.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: const Color(0xFFFFB74D),
+                        width: 1.0,
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: _model.checkboxValue ?? true,
+                          activeColor: const Color(0xFFD32F2F),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              _model.checkboxValue = val ?? true;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Mark as unrelated waste\n(-50 points deduction)',
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFE65100),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ].divide(SizedBox(height: 15.0)).around(SizedBox(height: 15.0)),
+                ),
+                const SizedBox(height: 20.0),
+
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: FFButtonWidget(
+                        onPressed: () => Navigator.pop(context),
+                        text: 'Cancel',
+                        options: FFButtonOptions(
+                          height: 44.0,
+                          color: const Color(0xFFF2F2F2),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          elevation: 0.0,
+                          borderRadius: BorderRadius.circular(20.0),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFCBD5E1),
+                            width: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                      child: FFButtonWidget(
+                        onPressed: _isDeleting ? null : _handleDelete,
+                        text: _isDeleting ? 'Deleting...' : 'Delete',
+                        icon: const Icon(
+                          Icons.delete_rounded,
+                          size: 16.0,
+                          color: Colors.white,
+                        ),
+                        options: FFButtonOptions(
+                          height: 44.0,
+                          color: const Color(0xFFD32F2F),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          elevation: 1.0,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
