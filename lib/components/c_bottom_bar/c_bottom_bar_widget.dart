@@ -303,7 +303,7 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
         _buildNavItem(
           context: context,
           icon: Icons.admin_panel_settings_rounded,
-          label: 'Admin',
+          label: 'Dashboard',
           routeName: PageAdminDashboardWidget.routeName,
           routePath: PageAdminDashboardWidget.routePath,
           onTap: () => _onTabTapped(
@@ -327,18 +327,6 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
         const SizedBox(width: 58.0),
         _buildNavItem(
           context: context,
-          icon: Icons.calendar_month_rounded,
-          label: 'Schedules',
-          routeName: PDatesViewAllWidget.routeName,
-          routePath: PDatesViewAllWidget.routePath,
-          onTap: () => _onTabTapped(
-            context,
-            PDatesViewAllWidget.routeName,
-            PDatesViewAllWidget.routePath,
-          ),
-        ),
-        _buildNavItem(
-          context: context,
           icon: Icons.group_rounded,
           label: 'Users',
           routeName: PageUserManagementWidget.routeName,
@@ -347,6 +335,18 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
             context,
             PageUserManagementWidget.routeName,
             PageUserManagementWidget.routePath,
+          ),
+        ),
+        _buildNavItem(
+          context: context,
+          icon: Icons.person_rounded,
+          label: 'Profile',
+          routeName: PageProfileWidget.routeName,
+          routePath: PageProfileWidget.routePath,
+          onTap: () => _onTabTapped(
+            context,
+            PageProfileWidget.routeName,
+            PageProfileWidget.routePath,
           ),
         ),
       ];
@@ -393,7 +393,7 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
         ),
         _buildNavItem(
           context: context,
-          icon: Icons.person_rounded,
+          icon: isGuest ? Icons.login_rounded : Icons.person_rounded,
           label: isGuest ? 'Sign In' : 'Profile',
           routeName: isGuest
               ? LandingPageWidget.routeName
