@@ -1,12 +1,10 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'page_verify_email_model.dart';
 export 'page_verify_email_model.dart';
 
@@ -31,26 +29,72 @@ class PageVerifyEmailWidget extends StatefulWidget {
 
 class _PageVerifyEmailWidgetState extends State<PageVerifyEmailWidget> {
   late PageVerifyEmailModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PageVerifyEmailModel());
-
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  Future<void> _handleCreateAccount() async {
+    if (widget.userPassword != widget.userConfirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Passwords don't match!"),
+          backgroundColor: Color(0xFFDC2626),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      GoRouter.of(context).prepareAuthEvent();
+
+      final user = await authManager.createAccountWithEmail(
+        context,
+        widget.userEmail!,
+        widget.userPassword!,
+      );
+
+      if (user == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      if (!mounted) return;
+      context.goNamedAuth(PageSignUpWidget.routeName, context.mounted);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account creation error: $e'),
+            backgroundColor: const Color(0xFFDC2626),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final email = widget.userEmail ?? 'your email';
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -58,185 +102,147 @@ class _PageVerifyEmailWidgetState extends State<PageVerifyEmailWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: theme.primaryBackground,
         body: SafeArea(
           top: true,
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Color(0xFFE8EDF2),
-            ),
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(25.0, 0.0, 25.0, 0.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 50.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Email Verification',
-                            textAlign: TextAlign.center,
-                            style: FlutterFlowTheme.of(context)
-                                .headlineLarge
-                                .override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .headlineLarge
-                                        .fontStyle,
-                                  ),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .headlineLarge
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineLarge
-                                      .fontStyle,
-                                ),
-                          ),
-                          Text(
-                            'Click the button below to verify your email !',
-                            textAlign: TextAlign.start,
-                            style: FlutterFlowTheme.of(context)
-                                .labelLarge
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .labelLarge
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelLarge
-                                        .fontStyle,
-                                  ),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .labelLarge
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelLarge
-                                      .fontStyle,
-                                ),
-                          ),
-                        ].divide(SizedBox(height: 10.0)),
-                      ),
-                    ),
-                    FFButtonWidget(
-                      onPressed: () async {
-                        GoRouter.of(context).prepareAuthEvent();
-                        if (widget!.userPassword! !=
-                            widget!.userConfirmPassword!) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Passwords don\'t match!',
-                              ),
-                            ),
-                          );
-                          return;
-                        }
-
-                        final user = await authManager.createAccountWithEmail(
-                          context,
-                          widget!.userEmail!,
-                          widget!.userPassword!,
-                        );
-                        if (user == null) {
-                          return;
-                        }
-
-                        context.goNamedAuth(
-                            PageSignUpWidget.routeName, context.mounted);
-                      },
-                      text: 'Verify Email',
-                      icon: Icon(
-                        Icons.email_outlined,
-                        size: 15.0,
-                      ),
-                      options: FFButtonOptions(
-                        width: double.infinity,
-                        height: 50.23,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: Color(0xFF6984A9),
-                        textStyle:
-                            FlutterFlowTheme.of(context).displayMedium.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .displayMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .displayMedium
-                                        .fontStyle,
-                                  ),
-                                  color: Color(0xFFE8EDF2),
-                                  fontSize: 15.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .displayMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .displayMedium
-                                      .fontStyle,
-                                ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    FFButtonWidget(
-                      onPressed: () async {
-                        context.goNamed(PageSignUpWidget.routeName);
-                      },
-                      text: 'Sign Up',
-                      icon: Icon(
-                        Icons.send_outlined,
-                        size: 15.0,
-                      ),
-                      options: FFButtonOptions(
-                        width: double.infinity,
-                        height: 50.73,
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: Color(0xFF263B6A),
-                        textStyle:
-                            FlutterFlowTheme.of(context).displayMedium.override(
-                                  font: GoogleFonts.interTight(
-                                    fontWeight: FlutterFlowTheme.of(context)
-                                        .displayMedium
-                                        .fontWeight,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .displayMedium
-                                        .fontStyle,
-                                  ),
-                                  color: Color(0xFFE8EDF2),
-                                  fontSize: 16.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .displayMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .displayMedium
-                                      .fontStyle,
-                                ),
-                        elevation: 0.0,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ].divide(SizedBox(height: 10.0)),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top bar with back button
+                FlutterFlowIconButton(
+                  borderColor: theme.accent4.withValues(alpha: 0.35),
+                  borderRadius: 20.0,
+                  buttonSize: 40.0,
+                  fillColor: Colors.white,
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    color: theme.primaryText,
+                    size: 20.0,
+                  ),
+                  onPressed: () async => context.safePop(),
                 ),
-              ),
+
+                const SizedBox(height: 16.0),
+
+                // Brand Logo Header
+                const Center(
+                  child: CBrandLogoWidget(
+                    fontSize: 34.0,
+                    showSubtitle: true,
+                    subtitle: 'Smart Community Waste Management',
+                  ),
+                ),
+
+                const SizedBox(height: 28.0),
+
+                // Elevated Verification Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24.0),
+                    border: Border.all(
+                      color: theme.accent4.withValues(alpha: 0.3),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      theme.designToken.shadow.sm,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Circular Icon
+                      Container(
+                        padding: const EdgeInsets.all(18.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD5F2E2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.mark_email_unread_rounded,
+                          size: 44.0,
+                          color: Color(0xFF31A11F),
+                        ),
+                      ),
+                      const SizedBox(height: 18.0),
+
+                      Text(
+                        'Email Verification',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.comfortaa(
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF013448),
+                        ),
+                      ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'We are ready to register your account with:',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.0,
+                          color: theme.secondaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 6.0),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 6.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA3C9D9).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Text(
+                          email,
+                          style: GoogleFonts.inter(
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF2E78A6),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      Text(
+                        'Click below to finalize registration. A verification link will be sent to your inbox to confirm your resident identity.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.0,
+                          color: theme.secondaryText,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 24.0),
+
+                      // Complete Registration CTA (Button 2)
+                      EBasuraButton.button2(
+                        text: 'Complete Registration',
+                        width: double.infinity,
+                        height: 48.0,
+                        isLoading: _isLoading,
+                        iconData: Icons.check_circle_outline_rounded,
+                        onPressed: _handleCreateAccount,
+                      ),
+
+                      const SizedBox(height: 12.0),
+
+                      // Return to Sign Up Button (Button 1)
+                      EBasuraButton.button1(
+                        text: 'Back to Sign Up',
+                        width: double.infinity,
+                        height: 44.0,
+                        onPressed: () async {
+                          context.goNamed(PageSignUpWidget.routeName);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
