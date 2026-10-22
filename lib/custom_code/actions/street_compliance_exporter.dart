@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
@@ -89,6 +89,63 @@ class StreetComplianceExporter {
     }
   }
 
+  /// Exports complete ground-truth dual-evaluation dataset for Chapter 5 empirical research
+  /// (Confusion Matrix, Cohen's Kappa, and Audit Latency).
+  static Future<void> exportEvaluationDatasetCSV({
+    required BuildContext context,
+    required List<ImageRow> images,
+  }) async {
+    try {
+      final List<List<dynamic>> csvData = [
+        [
+          'Image ID',
+          'Street Name',
+          'Moderation Status',
+          'AI Classification',
+          'AI Waste Type',
+          'AI Confidence (%)',
+          'Admin ID',
+          'Admin Classification (Ground Truth)',
+          'Admin Waste Type',
+          'Verification Status',
+          'Audit Latency (Seconds)',
+          'Created At',
+          'Verified At',
+        ],
+        ...images.map((img) => [
+              img.imageId ?? 'N/A',
+              img.imgStreetNameRef,
+              img.status ?? 'Non-Verified',
+              img.aiClassification ?? 'Unclassified',
+              img.aiWasteType ?? 'Unidentified',
+              img.aiConfidenceScore ?? 0.0,
+              img.adminId ?? 'Unassigned',
+              img.adminClassification ?? 'Pending',
+              img.adminWasteType ?? 'Pending',
+              img.verificationStatus ?? 'pending',
+              img.verificationTimeSeconds ?? 0.0,
+              img.createdAt.toIso8601String(),
+              img.verifiedAt?.toIso8601String() ?? 'N/A',
+            ]),
+      ];
+
+      final String csvString = const ListToCsvConverter().convert(csvData);
+      final List<int> bytes = utf8.encode(csvString);
+      final String fileName =
+          'EBasura_Chapter5_Evaluation_Dataset_' + DateTime.now().millisecondsSinceEpoch.toString() + '.csv';
+
+      await _downloadOrSaveFile(
+        context: context,
+        bytes: bytes,
+        fileName: fileName,
+        mimeType: 'text/csv',
+        fileTitle: 'Chapter 5 Empirical Dataset Exported',
+      );
+    } catch (e) {
+      _showErrorSnackBar(context, 'Failed to generate evaluation dataset CSV: ' + e.toString());
+    }
+  }
+
   /// Generates visual compliance summary report (PDF/Text document format)
   static Future<void> exportPDF({
     required BuildContext context,
@@ -143,7 +200,7 @@ class StreetComplianceExporter {
         pdfReport.writeln('----------------------------------------------------');
       }
 
-      pdfReport.writeln('\nEnd of Compliance Report — EBasura Waste Management Platform');
+      pdfReport.writeln('\nEnd of Compliance Report â€” EBasura Waste Management Platform');
 
       final List<int> bytes = utf8.encode(pdfReport.toString());
       final String fileName =

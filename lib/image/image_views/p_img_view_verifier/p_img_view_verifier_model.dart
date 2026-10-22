@@ -1,4 +1,4 @@
-import '/auth/supabase_auth/auth_util.dart';
+﻿import '/auth/supabase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
@@ -32,6 +32,7 @@ class PImgViewVerifierModel extends FlutterFlowModel<PImgViewVerifierWidget> {
       apiResponseHolder[index] = updateFn(apiResponseHolder[index]);
 
   bool? reverified = false;
+  DateTime? auditOpenTimestamp;
 
   ///  State fields for stateful widgets in this page.
 

@@ -1,4 +1,4 @@
-import '/auth/supabase_auth/auth_util.dart';
+﻿import '/auth/supabase_auth/auth_util.dart';
 import '/auth/role_util.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
 import '/backend/api_requests/api_calls.dart';
@@ -42,6 +42,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PImgViewVerifierModel());
+    _model.auditOpenTimestamp = DateTime.now();
 
     _model.textFieldRemarksFocusNode ??= FocusNode();
 
@@ -563,8 +564,8 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                       ),
                                                       child: Text(
                                                         containerImageRow.status == 'Verified'
-                                                            ? '✓ Verified'
-                                                            : '⏳ Non-Verified',
+                                                            ? 'âœ“ Verified'
+                                                            : 'â³ Non-Verified',
                                                         style: const TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 11.0,
@@ -788,7 +789,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                       borderRadius: BorderRadius.circular(6.0),
                                                     ),
                                                     child: Text(
-                                                      containerImageRow.isSegregated == true ? '✓ Segregated' : '✗ Not Segregated',
+                                                      containerImageRow.isSegregated == true ? 'âœ“ Segregated' : 'âœ— Not Segregated',
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 11.0,
@@ -2169,10 +2170,33 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                         ? _model.textFieldRemarksTextController!.text
                                                                         : 'Verified by official';
 
-                                                                    // 1. Update Image record to Verified
+                                                                    // 1. Calculate Audit Latency & Agreement
+                                                                    final elapsedSeconds = DateTime.now()
+                                                                        .difference(_model.auditOpenTimestamp ?? DateTime.now())
+                                                                        .inMilliseconds / 1000.0;
+
+                                                                    final isAgreement = (finalSegregated == (containerImageRow.isSegregated ?? false)) &&
+                                                                        (finalRecycling == (containerImageRow.categoryRecycling ?? false)) &&
+                                                                        (finalBiode == (containerImageRow.categoryBiode ?? false)) &&
+                                                                        (finalNonBiode == (containerImageRow.categoryNonbiode ?? false));
+                                                                    final verStatus = isAgreement ? 'verified' : 'corrected';
+
+                                                                    final adminTypes = <String>[];
+                                                                    if (finalRecycling) adminTypes.add('Recyclable');
+                                                                    if (finalBiode) adminTypes.add('Biodegradable');
+                                                                    if (finalNonBiode) adminTypes.add('Non-Biodegradable');
+                                                                    final adminWasteTypeStr = adminTypes.isNotEmpty ? adminTypes.join(', ') : 'Unidentified';
+
+                                                                    // Update Image record to Verified
                                                                     await ImageTable().update(
                                                                       data: {
                                                                         'status': 'Verified',
+                                                                        'verification_status': verStatus,
+                                                                        'admin_id': currentUserUid,
+                                                                        'admin_classification': finalSegregated ? 'Segregated' : 'Unsegregated',
+                                                                        'admin_waste_type': adminWasteTypeStr,
+                                                                        'verification_time_seconds': elapsedSeconds,
+                                                                        'verified_at': DateTime.now().toUtc().toIso8601String(),
                                                                         'remark': finalRemark,
                                                                         'updated_by': currentUserUid,
                                                                         'updated_at': DateTime.now().toIso8601String(),

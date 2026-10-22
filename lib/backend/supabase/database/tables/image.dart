@@ -1,4 +1,4 @@
-import '../database.dart';
+﻿import '../database.dart';
 
 class ImageTable extends SupabaseTable<ImageRow> {
   @override
@@ -9,7 +9,7 @@ class ImageTable extends SupabaseTable<ImageRow> {
 }
 
 class ImageRow extends SupabaseDataRow {
-  ImageRow(Map<String, dynamic> data) : super(data);
+  ImageRow(super.data);
 
   @override
   SupabaseTable get table => ImageTable();
@@ -63,4 +63,42 @@ class ImageRow extends SupabaseDataRow {
   DateTime? get createdAtDate => getField<DateTime>('created_atDate');
   set createdAtDate(DateTime? value) =>
       setField<DateTime>('created_atDate', value);
+
+  // Dual-Column Evaluation Fields (Thesis Chapter 5 Empirical Research)
+  String? get aiClassification => getField<String>('ai_classification');
+  set aiClassification(String? value) =>
+      setField<String>('ai_classification', value);
+
+  String? get aiWasteType => getField<String>('ai_waste_type');
+  set aiWasteType(String? value) => setField<String>('ai_waste_type', value);
+
+  double? get aiConfidenceScore => getField<double>('ai_confidence_score');
+  set aiConfidenceScore(double? value) =>
+      setField<double>('ai_confidence_score', value);
+
+  dynamic get aiRawJson => getField<dynamic>('ai_raw_json');
+  set aiRawJson(dynamic value) => setField<dynamic>('ai_raw_json', value);
+
+  String? get adminId => getField<String>('admin_id');
+  set adminId(String? value) => setField<String>('admin_id', value);
+
+  String? get adminClassification => getField<String>('admin_classification');
+  set adminClassification(String? value) =>
+      setField<String>('admin_classification', value);
+
+  String? get adminWasteType => getField<String>('admin_waste_type');
+  set adminWasteType(String? value) =>
+      setField<String>('admin_waste_type', value);
+
+  String? get verificationStatus => getField<String>('verification_status');
+  set verificationStatus(String? value) =>
+      setField<String>('verification_status', value);
+
+  double? get verificationTimeSeconds =>
+      getField<double>('verification_time_seconds');
+  set verificationTimeSeconds(double? value) =>
+      setField<double>('verification_time_seconds', value);
+
+  DateTime? get verifiedAt => getField<DateTime>('verified_at');
+  set verifiedAt(DateTime? value) => setField<DateTime>('verified_at', value);
 }

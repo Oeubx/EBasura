@@ -1,4 +1,4 @@
-import '/auth/supabase_auth/auth_util.dart';
+﻿import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -79,7 +79,8 @@ class _CDisputeDecisionWidgetState extends State<CDisputeDecisionWidget> {
 
       await ImageTable().update(
         data: {
-          'status': 'Disputed',
+          'status': 'Flagged',
+          'verification_status': 'disputed',
           'remark': updatedRemark,
           'updated_by': currentUserUid,
           'updated_at': DateTime.now().toIso8601String(),

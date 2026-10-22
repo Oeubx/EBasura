@@ -28,9 +28,12 @@ Documents the presentation layers through which users inspect past uploads, expl
 - **Parameters**: `imageIDref` (`ImageRow` Supabase reference).
 - **Capabilities**:
   - High-resolution zoom inspection of the waste photograph.
-  - Displays raw AI attributes: `valid_waste_image`, `recyclable`, `segregated`, `biodegradable`.
-  - Moderation controls: Approve/Verify status or Flag as invalid.
-
+  - Dual-Column Evaluation: Compares AI findings (`ai_classification`, `ai_waste_type`, `ai_confidence_score`) against Ground-Truth Admin overrides (`admin_classification`, `admin_waste_type`, `admin_id`).
+  - Audit Latency Timer: Automatically records inspection duration (`verification_time_seconds`) starting when the screen opens (`initState`) until decision dispatch.
+  - Moderation Outcomes:
+    - **Verify (Agreement)**: Admin confirms AI findings $\to$ `status = 'Verified'`, `verification_status = 'verified'`. Awards gamification points.
+    - **Verify (Correction)**: Admin corrects AI findings $\to$ `status = 'Verified'`, `verification_status = 'corrected'`. Awards points and logs correction for Chapter 5 Confusion Matrix evaluation.
+    - **Flag**: Suspicious/fraudulent submission $\to$ `status = 'Flagged'`, `verification_status = 'rejected'`. Zero points.
 ### 2.4 Informational Dialog (`CImageInformationalDialogWidget`)
 - **Location**: `lib/image/c_image_informational_dialog/`
 - Displays explanation of classification badges (e.g. why an item is deemed non-segregated or non-biodegradable) to educate users.

@@ -25,19 +25,23 @@ flowchart TD
         B --> C["Client Byte Downscaling\n& Base64 Encoding"]
     end
 
-    subgraph VisionInference["2. Gemini AI Multimodal Evaluation"]
+    subgraph VisionInference["2. Gemini AI Multimodal Evaluation & Guardrail"]
         C --> D["AuthScanCall / GuestScanCall\n(Google Gemini 2.5 Flash REST API)"]
-        D --> E{"Visual Injection &\nValidity Guardrail"}
-        E -- "Adversarial or Not Waste" --> F["Output: 5x 'false'\n(Auto-Quarantine Flag)"]
+        D --> E{"Rule 6 Guardrail &\nImage Quality Check"}
+        E -- "Blurry / Dark / Unclear\n(Attempts 1 & 2)" --> B
+        E -- "Attempt 3 Hard Cap" --> F_Fallback{"Resident Decision"}
+        F_Fallback -- "Option A" --> F_Manual["Submit for Manual Inspection\n(status: Non-Verified, verification_status: pending)"]
+        F_Fallback -- "Option B" --> F_Cancel["Start Over / Retake Cancelled"]
+        E -- "Visual Injection / Adversarial" --> F_Inj["Quarantine Auto-Flag\n(status: Flagged, verification_status: rejected)"]
         E -- "Valid Waste Photo" --> G["Output: 5 Structured Lines\n(valid, recyclable, segregated, biode, non_biode)"]
     end
 
-    subgraph PersistencePipeline["3. Persistence & Cloud Storage"]
-        F & G --> H["Upload JPEG to Supabase Storage\n(Bucket: Image_Bucket/{street_name}/)"]
-        H --> I["Insert Record to Supabase 'Image' Table"]
-        I --> J{"Routing Branch"}
-        J -- "valid_waste == true" --> K["status = 'Non-Verified'\n(Pending Official Desk Audit)"]
-        J -- "valid_waste == false" --> L["status = 'Flagged'\n(Quarantined Moderation Queue)"]
+    subgraph PersistencePipeline["3. Dual-Evaluation Persistence & Cloud Storage"]
+        F_Manual & F_Inj & G --> H["Upload JPEG to Supabase Storage\n(Bucket: Image_Bucket/{street_name}/)"]
+        H --> I["Insert Record to Supabase 'Image' Table\n(Dual Schema: ai_* and admin_* columns)"]
+        I --> J{"Moderation Route"}
+        J -- "Valid AI Scan / Manual Review" --> K["status = 'Non-Verified'\nverification_status = 'pending'"]
+        J -- "Quarantined / Non-Waste" --> L["status = 'Flagged'\nverification_status = 'rejected'"]
     end
 
     subgraph UserFeedback["4. Gamification & Resident UI"]
@@ -178,11 +182,16 @@ await ImageTable().insert({
   'img_reference_link': publicUrl,
   'created_at': supaSerialize<DateTime>(functions.getCurrentTime(getCurrentTimestamp)),
   'status': isValidWaste ? 'Non-Verified' : 'Flagged',
+  'verification_status': isValidWaste ? 'pending' : 'rejected',
+  'ai_classification': isSegregated ? 'Segregated' : 'Unsegregated',
+  'ai_waste_type': dominantWasteType,
+  'ai_confidence_score': confidenceScore,
   'created_atDate': supaSerialize<DateTime>(functions.getCurrentTime(getCurrentTimestamp)),
   'isSegregated': isSegregated,
   'category_recycling': isRecyclable,
   'category_biode': isBiode,
   'category_nonbiode': isNonBiode,
+  'allowFlagging': isValidWaste,
   'remark': isValidWaste ? null : 'Auto-flagged: Invalid waste or prompt injection detected',
 });
 ```
@@ -222,5 +231,5 @@ await ImageTable().insert({
 | :--- | :--- | :--- |
 | **Network Timeout / API Offline** | `apiResult.succeeded == false` | Displays friendly dialog prompt: *"Could not scan waste. Please check connection and try again."* Leaves local photo intact for retry. |
 | **Visual Prompt Injection** | `valid_waste_image == false` with all tags `false` | Scored as adversarial; persisted directly to `status = 'Flagged'` queue for audit log. |
-| **Dark or Blurry Capture** | `valid_waste_image == false` | Prompt injection guard trips; quarantined to `status = 'Flagged'` with remark `'Unreadable/Blurry'`. |
+| **Dark or Blurry Capture** | `valid_waste_image == false` | **Rule 6 Retake Guardrail**: Prompts retake (attempts 1 & 2). At attempt 3 hard cap, offers Option A (Manual Barangay Inspection with `verification_status: 'pending'`) or Option B (Start Over). |
 | **Storage Upload Interruption** | `downloadUrls.isEmpty` | Throws explicit exception, catches error safely, surfaces snackbar notice to user without corrupting database. |

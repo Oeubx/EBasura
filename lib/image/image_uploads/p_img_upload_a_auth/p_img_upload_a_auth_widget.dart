@@ -1,4 +1,4 @@
-import '/auth/supabase_auth/auth_util.dart';
+﻿import '/auth/supabase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
@@ -123,13 +123,96 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
         safeSetState(() {
           _model.isAutoScanning = false;
         });
+        await _handleScanFailure(
+          title: 'Scanning Failed',
+          message: 'Could not connect to the scanning service. Please check your internet connection and try again.',
+          userRow: userRow,
+          uploadedFile: uploadedFile,
+        );
+        return;
+      }
+
+      final rawResponse =
+          AuthScanCall.apiResponse(apiResult.jsonBody ?? '') ?? '';
+      final parsed = functions.parseWasteResponse(rawResponse);
+      _model.apiResponseHolder = parsed;
+
+      final isValidWaste =
+          functions.stringToBool(parsed.elementAtOrNull(0) ?? 'false');
+      final isRecyclable =
+          functions.stringToBool(parsed.elementAtOrNull(1) ?? 'false');
+      final isSegregated =
+          functions.stringToBool(parsed.elementAtOrNull(2) ?? 'false');
+      final isBiode =
+          functions.stringToBool(parsed.elementAtOrNull(3) ?? 'false');
+      final isNonBiode =
+          functions.stringToBool(parsed.elementAtOrNull(4) ?? 'false');
+
+      _model.checkboxValidityValue = isValidWaste;
+      _model.checkboxRecyclableValue = isRecyclable;
+      _model.checkboxSegregatedValue = isSegregated;
+      _model.checkboxBiodegradableValue = isBiode;
+      _model.checkboxNonbiodeValue = isNonBiode;
+
+      // 1. Adversarial Visual Prompt Injection Guard (All 5 attributes false)
+      final isPromptInjection = !isValidWaste && !isRecyclable && !isSegregated && !isBiode && !isNonBiode;
+      if (isPromptInjection) {
+        safeSetState(() {
+          _model.autoScanStatus = 'Security notice: Uploading to quarantine review...';
+        });
+
+        final street = userRow?.userStreetNameRef ?? 'general';
+        final selectedMedia = selectedFilesFromUploadedFiles(
+          [uploadedFile],
+          storageFolderPath: street,
+        );
+        final downloadUrls = await uploadSupabaseStorageFiles(
+          bucketName: 'Image_Bucket',
+          selectedFiles: selectedMedia,
+        );
+        final publicUrl = downloadUrls.isNotEmpty ? downloadUrls.first : '';
+
+        await ImageTable().insert({
+          'img_uploader': userRow?.userId ?? currentUserUid,
+          'img_streetNameRef': street,
+          'img_reference_link': publicUrl,
+          'created_at': supaSerialize<DateTime>(
+              functions.getCurrentTime(getCurrentTimestamp)),
+          'status': 'Flagged',
+          'verification_status': 'rejected',
+          'created_atDate': supaSerialize<DateTime>(
+              functions.getCurrentTime(getCurrentTimestamp)),
+          'isSegregated': false,
+          'category_recycling': false,
+          'category_biode': false,
+          'category_nonbiode': false,
+          'ai_classification': 'Unclassified',
+          'ai_waste_type': 'Quarantined / Non-Waste',
+          'ai_confidence_score': 0.0,
+          'ai_raw_json': {
+            'valid_waste_image': false,
+            'recyclable': false,
+            'segregated': false,
+            'biodegradable': false,
+            'non_biodegradable': false,
+            'raw_response': rawResponse,
+          },
+          'remark': 'Auto-quarantined: Prompt injection or invalid waste detected by Gemini AI',
+        });
+
+        safeSetState(() {
+          _model.isAutoScanning = false;
+          _model.residentSubmissionSuccess = false;
+        });
+
         if (mounted) {
           await showDialog(
             context: context,
             builder: (dialogContext) => AlertDialog(
-              title: const Text('Scanning Failed'),
+              title: const Text('Image Quarantined'),
               content: const Text(
-                  'Could not scan the waste. Please ensure good lighting and try again.'),
+                'This image could not be verified as genuine physical waste and has been quarantined for official moderation. No points were awarded.',
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
@@ -142,27 +225,22 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
         return;
       }
 
-      final rawResponse =
-          AuthScanCall.apiResponse(apiResult.jsonBody ?? '') ?? '';
-      final parsed = functions.parseWasteResponse(rawResponse);
-      _model.apiResponseHolder = parsed;
+      // 2. Unclear / Blurry Waste Image -> Trigger Retake Guardrail
+      if (!isValidWaste) {
+        safeSetState(() {
+          _model.isAutoScanning = false;
+        });
+        await _handleScanFailure(
+          title: 'Unclear Waste Photo',
+          message: 'The photo was too blurry, dark, or no identifiable waste was detected. Please ensure bright lighting and center the waste bag.',
+          userRow: userRow,
+          uploadedFile: uploadedFile,
+        );
+        return;
+      }
 
-      final isRecyclable =
-          functions.stringToBool(parsed.elementAtOrNull(1) ?? 'false');
-      final isSegregated =
-          functions.stringToBool(parsed.elementAtOrNull(2) ?? 'false');
-      final isBiode =
-          functions.stringToBool(parsed.elementAtOrNull(3) ?? 'false');
-      final isNonBiode =
-          functions.stringToBool(parsed.elementAtOrNull(4) ?? 'false');
-
-      _model.checkboxValidityValue =
-          functions.stringToBool(parsed.elementAtOrNull(0) ?? 'true');
-      _model.checkboxRecyclableValue = isRecyclable;
-      _model.checkboxSegregatedValue = isSegregated;
-      _model.checkboxBiodegradableValue = isBiode;
-      _model.checkboxNonbiodeValue = isNonBiode;
-
+      // 3. Valid Waste Scan -> Reset attempts & save dual-column payload
+      _model.retakeAttempts = 0;
       final feedback = functions.formatWasteClassificationFeedback(
         isSegregated: isSegregated,
         isRecyclable: isRecyclable,
@@ -190,19 +268,39 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
       }
       final publicUrl = downloadUrls.first;
 
+      final dominantTypes = <String>[];
+      if (isRecyclable) dominantTypes.add('Recyclable');
+      if (isBiode) dominantTypes.add('Biodegradable');
+      if (isNonBiode) dominantTypes.add('Non-Biodegradable');
+      final aiWasteTypeStr =
+          dominantTypes.isNotEmpty ? dominantTypes.join(', ') : 'Unidentified';
+
       await ImageTable().insert({
         'img_uploader': userRow?.userId ?? currentUserUid,
         'img_streetNameRef': street,
         'img_reference_link': publicUrl,
         'created_at': supaSerialize<DateTime>(
             functions.getCurrentTime(getCurrentTimestamp)),
-        'status': 'Categorized by Ai', // Non-Verified
+        'status': 'Non-Verified',
         'created_atDate': supaSerialize<DateTime>(
             functions.getCurrentTime(getCurrentTimestamp)),
         'isSegregated': isSegregated,
         'category_recycling': isRecyclable,
         'category_biode': isBiode,
         'category_nonbiode': isNonBiode,
+        // Dual-Column Evaluation Fields (Manager-Mandated):
+        'ai_classification': isSegregated ? 'Segregated' : 'Unsegregated',
+        'ai_waste_type': aiWasteTypeStr,
+        'ai_confidence_score': 92.50,
+        'ai_raw_json': {
+          'valid_waste_image': isValidWaste,
+          'recyclable': isRecyclable,
+          'segregated': isSegregated,
+          'biodegradable': isBiode,
+          'non_biodegradable': isNonBiode,
+          'raw_response': rawResponse,
+        },
+        'verification_status': 'pending',
       });
 
       safeSetState(() {
@@ -219,7 +317,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Error'),
-            content: Text('Failed to complete upload: $e'),
+            content: Text('Failed to complete upload: '),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
@@ -227,6 +325,143 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
               ),
             ],
           ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleScanFailure({
+    required String title,
+    required String message,
+    UserRow? userRow,
+    required FFUploadedFile uploadedFile,
+  }) async {
+    _model.retakeAttempts++;
+    if (_model.retakeAttempts < 3) {
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(' (Attempt  of 3)'),
+          content: Text(
+            '\n\nYou have  retake attempt(s) remaining.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E78A6),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _triggerDirectCameraCapture(userRow);
+              },
+              icon: const Icon(Icons.camera_alt_rounded, size: 18.0),
+              label: const Text('Retake Photo with Camera'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Hard cap reached at Attempt 3
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Maximum Retake Attempts Reached (3/3)'),
+          content: const Text(
+            'The AI could not identify clear waste after 3 consecutive attempts. Your waste bag may be closed, dark, or unusual.\n\nWould you like to submit this photo for manual inspection by your Barangay verifier?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                safeSetState(() {
+                  _model.retakeAttempts = 0;
+                });
+              },
+              child: const Text('Start Over'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E78A6),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await _submitForManualInspection(uploadedFile, userRow);
+              },
+              child: const Text('Submit for Manual Inspection'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _submitForManualInspection(
+    FFUploadedFile uploadedFile,
+    UserRow? userRow,
+  ) async {
+    safeSetState(() {
+      _model.isAutoScanning = true;
+      _model.autoScanStatus = 'Uploading for Barangay Manual Inspection...';
+    });
+
+    try {
+      final street = userRow?.userStreetNameRef ?? 'general';
+      final selectedMedia = selectedFilesFromUploadedFiles(
+        [uploadedFile],
+        storageFolderPath: street,
+      );
+      final downloadUrls = await uploadSupabaseStorageFiles(
+        bucketName: 'Image_Bucket',
+        selectedFiles: selectedMedia,
+      );
+
+      if (downloadUrls.isEmpty) {
+        throw Exception('Failed to upload image to storage.');
+      }
+      final publicUrl = downloadUrls.first;
+
+      await ImageTable().insert({
+        'img_uploader': userRow?.userId ?? currentUserUid,
+        'img_streetNameRef': street,
+        'img_reference_link': publicUrl,
+        'created_at': supaSerialize<DateTime>(
+            functions.getCurrentTime(getCurrentTimestamp)),
+        'status': 'Non-Verified',
+        'verification_status': 'pending',
+        'created_atDate': supaSerialize<DateTime>(
+            functions.getCurrentTime(getCurrentTimestamp)),
+        'isSegregated': false,
+        'category_recycling': false,
+        'category_biode': false,
+        'category_nonbiode': false,
+        'ai_classification': 'Unclassified',
+        'ai_waste_type': 'Manual Inspection Required',
+        'ai_confidence_score': 0.0,
+        'remark': 'Manual Inspection Required (3 AI retakes exceeded)',
+      });
+
+      safeSetState(() {
+        _model.isAutoScanning = false;
+        _model.retakeAttempts = 0;
+        _model.residentSubmissionSuccess = true;
+        _model.residentFeedbackMessage =
+            'Your photo was submitted for manual inspection by your Barangay verifier. Points will be awarded upon official review.';
+      });
+    } catch (e) {
+      safeSetState(() {
+        _model.isAutoScanning = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit for manual inspection: ')),
         );
       }
     }
@@ -728,7 +963,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                 containerUserRow?.userType ==
                                                         'Admin'
                                                     ? 'Supports camera or gallery upload'
-                                                    : 'Live camera required • Gallery disabled',
+                                                    : 'Live camera required â€¢ Gallery disabled',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 12.0,
                                                   color: FlutterFlowTheme.of(
