@@ -2,8 +2,8 @@
 
 > **Document Status**: Canonical New UI Comparative Specification (Part 2)  
 > **Backlog Reference**: `[EBASURA-M0-F1]` (FlutterFlow Core Engine & Theme Provider) / `[EBASURA-M10-F2]` (Shared UI Components)  
-> **Authority**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md) / [`docs/brand_docs.md`](brand_docs.md)  
-> **Baseline Audit Reference**: [`docs/EBASURA_OLD_UI_DOCUMENTATION_AND_AUDIT.md`](EBASURA_OLD_UI_DOCUMENTATION_AND_AUDIT.md)
+> **Authority**: [`docs/design_system/brand_and_design_system.md`](brand_and_design_system.md) / [`docs/brand_docs.md`](brand_docs.md)  
+> **Baseline Audit Reference**: [`docs/old_ui_audit.md`](old_ui_audit.md)
 
 ---
 
@@ -16,7 +16,7 @@ Guided by the brand identity derived from the design board, this specification t
 ### Core Transformation Tenets
 1. **Color Tokenization**: Eradicate all hardcoded hex literals (`#263B6A`, `#DFF1F1`, `#E8EDF2`) in favor of the 6 canonical brand tokens (`#2E78A6`, `#A3C9D9`, `#D5F2E2`, `#31A11F`, `#70BF5A`, `#F2F2F2`).
 2. **Typographic Hierarchy**: Establish a clear separation of concerns between **Brand Identity** (`Comfortaa`) and **User Interface** (`Inter` / `Inter Tight`).
-3. **Pill Component Geometry**: Unify all buttons, input chips, and status badges under the standardized **Buttons 1–4 pill system** (20.0px–22.0px corner radius) with subtle drop shadows (`FFShadows.sm` / `md`).
+3. **Pill Component Geometry**: Unify all buttons, input chips, and status badges under the standardized **Buttons 1â€“4 pill system** (20.0pxâ€“22.0px corner radius) with subtle drop shadows (`FFShadows.sm` / `md`).
 4. **Fluid, Responsive Containers**: Replace rigid, fixed-height boxes (`500px`, `525px`) with a responsive 16.0px base grid that adapts smoothly across all screen sizes.
 5. **Role-Tailored Architecture**: Provide dedicated, persona-specific interfaces for **Residents**, **Guests**, **Collection Crews** (dedicated `/pageCrewDashboard` route), and **Administrators**.
 
@@ -29,7 +29,7 @@ Guided by the brand identity derived from the design board, this specification t
 | **Color Spectrum** | Hardcoded `#263B6A`, `#DFF1F1`, `#E8EDF2`, `#6984A9`, `#A0D585`. | 6 Canonical Tokens: `#2E78A6` (Ocean Blue), `#A3C9D9` (Sky Blue), `#D5F2E2` (Mint Tint), `#31A11F` (Eco Green), `#70BF5A` (Leaf Green), `#F2F2F2` (Neutral Canvas). | Replaces muddy greys and unbranded blues with fresh, eco-civic colors that reinforce environmental action. |
 | **Brand Identity** | Raster PNG banner (`Horizontal_Logo.png`) consuming 150px height. | Vector wordmark using **`Comfortaa`** (`FontWeight.w700`) + eco leaf badge icon (`Icons.eco_rounded`). | Crisp rendering at all pixel densities; recovers 100px+ of vertical viewport space on every screen. |
 | **Interface Fonts** | Ad-hoc inline overrides chaining `.fontWeight` and `.fontStyle`. | **`Inter` / `Inter Tight`** type scale: `displayLarge` (64px), `headlineMedium` (28px), `titleMedium` (18px), `labelLarge` (16px), `bodyMedium` (14px), `bodySmall` (12px). | High x-height, tall apertures, maximum legibility on mobile screens, zero redundant style overrides. |
-| **Button Geometry** | Rectangular with mismatched radii (8px, 10px, 12px, 15px, 75px). | **Pill Geometry (20.0px–22.0px radius)** across all buttons matching Buttons 1–4 specs. | Consistent touch targets, modern aesthetic, and instant visual affordance. |
+| **Button Geometry** | Rectangular with mismatched radii (8px, 10px, 12px, 15px, 75px). | **Pill Geometry (20.0pxâ€“22.0px radius)** across all buttons matching Buttons 1â€“4 specs. | Consistent touch targets, modern aesthetic, and instant visual affordance. |
 | **Elevation & Depth** | Heavy `elevation: 15.0` on landing page; raw inline `BoxShadow`. | Standardized tokens: `FFShadows.sm` (blur 3px, dy 1px) and `FFShadows.md` (blur 6px, dy 3px) at 10% black opacity. | Soft, natural depth without dark visual clutter or rendering performance overhead. |
 | **Container Sizing** | Fixed heights (`height: 500.0`, `height: 525.0`); random paddings (10, 14, 15, 25px). | **16px Fluid Grid System**: Auto-sizing `shrinkWrap` cards, 16.0px horizontal screen margins, 16.0px card radii. | Completely eliminates viewport clipping and double scrollbars across small phones and large tablets. |
 | **Iconography** | Fragmented blend of Material Icons and FontAwesome (`Icons.person_3` + `FontAwesomeIcons.list`). | **Unified Material Symbols set** (20px / 24px) with semantic active (`#2E78A6`) and muted (`#4E4E4E`) color bindings. | Visual weight parity, consistent bounding boxes, and cohesive civic iconography. |
@@ -60,7 +60,7 @@ Guided by the brand identity derived from the design board, this specification t
 
 ---
 
-### 3.1. Landing Page (`LandingPageWidget` — `/landingPage`)
+### 3.1. Landing Page (`LandingPageWidget` â€” `/landingPage`)
 
 #### Old UI (Baseline)
 - Background: Muddy grey `Color(0xFFE8EDF2)`.
@@ -75,7 +75,7 @@ Guided by the brand identity derived from the design board, this specification t
 - **Brand Header**: Reusable `EBasuraBrandLogo` widget:
   - Font: `Comfortaa`, 36.0px, `FontWeight.w700`, color `#013448`.
   - Accent: Leaf green badge (`#31A11F`) with subtitle *"Smart Community Waste Management"* in `Inter`, 14.0px.
-- **Interactive Button Stack (Buttons 1–4 Pill System)**:
+- **Interactive Button Stack (Buttons 1â€“4 Pill System)**:
   - **Sign Up Button (Button 2 Spec)**:
     - Background: `#2E78A6` (Deep Ocean Blue)
     - Text: Pure White `#FFFFFF`, `Inter`, 16.0px, `FontWeight.w600`
@@ -94,7 +94,7 @@ Guided by the brand identity derived from the design board, this specification t
 
 ---
 
-### 3.2. Resident Dashboard (`PageHomepageWidget` — `/pageHomepage`)
+### 3.2. Resident Dashboard (`PageHomepageWidget` â€” `/pageHomepage`)
 
 #### Old UI (Baseline)
 - Screen wrapped in `Color(0xFFE8EDF2)` containing 150px static PNG logo.
@@ -108,17 +108,17 @@ Guided by the brand identity derived from the design board, this specification t
   - Right: Quick profile avatar and notification bell (`Icons.notifications_outlined` in `#2E78A6`).
 - **Hero Greeting Card**:
   - Background: Soft `#D5F2E2` (Mint Tint) with 16.0px radius.
-  - Greeting: *"Hello, [User Name] 👋"* in `Inter Tight`, 20.0px bold (`#013448`).
-  - Subtitle: *"Barangay Central • Street Zone 4"* in `Inter`, 13.0px (`#4E4E4E`).
+  - Greeting: *"Hello, [User Name] ðŸ‘‹"* in `Inter Tight`, 20.0px bold (`#013448`).
+  - Subtitle: *"Barangay Central â€¢ Street Zone 4"* in `Inter`, 13.0px (`#4E4E4E`).
 - **Gamified Points & Streak Bar**:
   - Highlight Container: `#FFFFFF` card with `#31A11F` left border accent.
   - Points Tally: **`340 Eco Points`** highlighted in `#31A11F` bold.
-  - Active Streak: Chip in `#70BF5A` (Leaf Green) with fire icon: *"5-Day Streak 🔥"*.
+  - Active Streak: Chip in `#70BF5A` (Leaf Green) with fire icon: *"5-Day Streak ðŸ”¥"*.
 - **Next Collection Countdown Card**:
   - Background: `#FFFFFF` card with `FFShadows.sm`.
   - Left icon: `Icons.local_shipping_rounded` in a `#A3C9D9` circular badge.
-  - Details: *"Next Pickup: Tomorrow, 8:00 AM • Biodegradable"*.
-- **Primary Action (Scan Waste CTA — Button 2 Spec)**:
+  - Details: *"Next Pickup: Tomorrow, 8:00 AM â€¢ Biodegradable"*.
+- **Primary Action (Scan Waste CTA â€” Button 2 Spec)**:
   - Full-width pill button: Background `#2E78A6`, icon `Icons.photo_camera_rounded`, label *"Scan Waste to Earn Points"*, 22.0px radius.
 
 ---
@@ -138,7 +138,7 @@ Guided by the brand identity derived from the design board, this specification t
     - Text: *"You are viewing in Guest Mode. Sign in or sign up to save points and earn badges."*
     - Action: Compact pill button (Button 3 spec) in `#A3C9D9` with text *"Sign In"*, navigating to `/pageSignIn`.
 - **Preview Chips**:
-  - Points Card displays sample state: *"Preview Mode — Earn up to +25 pts per scan"*.
+  - Points Card displays sample state: *"Preview Mode â€” Earn up to +25 pts per scan"*.
 - **Graceful Auth Intercept**:
   - When a guest completes a waste scan, the AI results are shown immediately (e.g. *"Recyclable: Plastic Bottle"*), followed by an attractive bottom sheet modal:
     - Title: *"Want to claim your +25 points?"* in `Comfortaa`.
@@ -146,7 +146,7 @@ Guided by the brand identity derived from the design board, this specification t
 
 ---
 
-### 3.4. Dedicated Crew Route (`PageCrewDashboardWidget` — `/pageCrewDashboard`)
+### 3.4. Dedicated Crew Route (`PageCrewDashboardWidget` â€” `/pageCrewDashboard`)
 
 #### Old UI (Baseline)
 - **Zero interface existed**. Collection crew members were forced into the resident gamification dashboard.
@@ -154,21 +154,21 @@ Guided by the brand identity derived from the design board, this specification t
 #### New UI (Specification)
 - **Route URL**: `/pageCrewDashboard` (Authorized via `RoleService.isCrew(userType)`).
 - **Shift Status Bar**:
-  - Header displaying: Truck ID (e.g. *"Truck #04 — Crew Lead: Roberto M."*).
+  - Header displaying: Truck ID (e.g. *"Truck #04 â€” Crew Lead: Roberto M."*).
   - Interactive Status Toggle: Pill chips for `[ Idle ]`, `[ En Route ]`, `[ In Progress ]`, `[ Completed ]` using `#2E78A6` active states.
 - **Street Collection Checklist**:
   - Interactive card list of assigned streets for today's pickup schedule:
-    - Card: Street Name (e.g., *"Rizal Avenue"*) + Scheduled Window (*"8:00 AM – 10:00 AM"*).
+    - Card: Street Name (e.g., *"Rizal Avenue"*) + Scheduled Window (*"8:00 AM â€“ 10:00 AM"*).
     - Progress Meter: Visual indicator showing *4 / 6 Streets Completed* in `#31A11F`.
-    - Action: Button 4 (Mint Eco Pill) labeled *"Mark Collected ✓"*.
+    - Action: Button 4 (Mint Eco Pill) labeled *"Mark Collected âœ“"*.
 - **Quick Route Incident Logger**:
-  - Button 3 (Sky Blue Pill) labeled *"Report Route Blockage / Hazard ⚠️"*, opening a fast photo+note report dialog.
+  - Button 3 (Sky Blue Pill) labeled *"Report Route Blockage / Hazard âš ï¸"*, opening a fast photo+note report dialog.
 - **Center Scan Integration**:
   - The bottom bar center camera FAB routes directly to collection verification mode.
 
 ---
 
-### 3.5. Admin Command Center (`PageAdminDashboardWidget` — `/pageAdminDashboard`)
+### 3.5. Admin Command Center (`PageAdminDashboardWidget` â€” `/pageAdminDashboard`)
 
 #### Old UI (Baseline)
 - 5 static full-width teal boxes (`#DFF1F1`) with black text and zero system metrics.
@@ -190,7 +190,7 @@ Guided by the brand identity derived from the design board, this specification t
 
 ---
 
-### 3.6. Leaderboard & Gamification (`PageLeaderboardWidget` — `/pageLeaderboard`)
+### 3.6. Leaderboard & Gamification (`PageLeaderboardWidget` â€” `/pageLeaderboard`)
 
 #### Old UI (Baseline)
 - Hardcoded `height: 500.0` card with pale teal fill (`#DFF1F1`) and 25.0px radius.
@@ -203,7 +203,7 @@ Guided by the brand identity derived from the design board, this specification t
   - 2nd Place: Silver badge in `#A3C9D9`.
   - 3rd Place: Bronze badge in `#D5F2E2`.
 - **Sticky Current User Rank Card**:
-  - Pinned card at bottom of leaderboard: *"Your Rank: #14 • 340 pts • 20 pts to Level Up"*.
+  - Pinned card at bottom of leaderboard: *"Your Rank: #14 â€¢ 340 pts â€¢ 20 pts to Level Up"*.
 - **Guest State**:
   - Top 5 preview visible, user position displays friendly lock chip: *"Sign in to join the leaderboard"*.
 
@@ -260,7 +260,7 @@ This table provides the exact replacement mapping from old legacy values to new 
 | *(None - Missing)* | `FlutterFlowTheme.ecoPrimary` | `#31A11F` | Vibrant Eco Green: Recyclable badges, verified records, eco CTAs. |
 | `Color(0xFFE8EDF2)` | `FlutterFlowTheme.primaryBackground` | `#F2F2F2` | Clean Canvas Neutral: Default screen surface, scaffold base (Button 1). |
 | `Color(0xFF000000)` (text) | `FlutterFlowTheme.primaryText` | `#013448` | Deep slate charcoal text providing WCAG AAA compliance on light surfaces. |
-| `BorderRadius.circular(8.0)` | `FFRadius.pill` | `22.0px` | Standardized pill geometry for all buttons (Buttons 1–4). |
+| `BorderRadius.circular(8.0)` | `FFRadius.pill` | `22.0px` | Standardized pill geometry for all buttons (Buttons 1â€“4). |
 | `elevation: 15.0` | `FFShadows.sm` / `FFShadows.md` | `blur: 3 / 6` | Subtle, clean elevation with 10% black opacity (`Color(0x1A000000)`). |
 | `buttonSize: 125.0` | Standardized Camera FAB | `54.0px` | Balanced center floating action button. |
 | `height: 500.0 / 525.0` | Fluid responsive layout | Auto (`shrinkWrap`) | Eliminates fixed-height container clipping. |

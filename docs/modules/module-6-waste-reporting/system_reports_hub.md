@@ -1,8 +1,8 @@
 # System Street Reports Hub & Dual-Page Architecture
 
 > **Feature Backlog Reference**: `[EBASURA-M6-F1]` (Reports Directory & Feed) / `[EBASURA-M4-F3]` (Category Filter Hub & Feeds)  
-> **Brand & Design System Compliance**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md)  
-> **Target Platforms**: Flutter (Android/iOS) • Supabase Database (`Report`, `Street`, `Image`)  
+> **Brand & Design System Compliance**: [`docs/brand_and_design_system.md`](../../design_system/brand_and_design_system.md)  
+> **Target Platforms**: Flutter (Android/iOS) â€¢ Supabase Database (`Report`, `Street`, `Image`)  
 
 ---
 
@@ -15,22 +15,22 @@ flowchart TD
     Nav["Admin Command Center / Dashboard ('Reports')"] --> Page1["Page 1: System Street Reports Hub\n(PReportSystemWidget / /pReportSystem)"]
     
     subgraph Page1Sub["Page 1: System Street Reports Hub"]
-        Banner["Top Hero Banner:\n• Dynamic Counter: Total Created Reports\n• 'VIEW REPORTS >' Button"]
-        FilterBar["Street Filtering Bar:\n• Search Bar (Realtime Text Query)\n• Street Dropdown Filter ('All Streets' / Per Street)\n• Sort Chips: A-Z, Pending Moderation First, Most Uploads"]
-        StreetCards["Per-Street Metric Cards:\n• Street Name (Leftmost) & Total Images (Rightmost)\n• Non-Verified vs. Verified Counts\n• Upload Velocity (Uploads Today & in Past Hour)\n• Last Updated By & Last Updated Time\n• 'VIEW ALL' Action Button"]
+        Banner["Top Hero Banner:\nâ€¢ Dynamic Counter: Total Created Reports\nâ€¢ 'VIEW REPORTS >' Button"]
+        FilterBar["Street Filtering Bar:\nâ€¢ Search Bar (Realtime Text Query)\nâ€¢ Street Dropdown Filter ('All Streets' / Per Street)\nâ€¢ Sort Chips: A-Z, Pending Moderation First, Most Uploads"]
+        StreetCards["Per-Street Metric Cards:\nâ€¢ Street Name (Leftmost) & Total Images (Rightmost)\nâ€¢ Non-Verified vs. Verified Counts\nâ€¢ Upload Velocity (Uploads Today & in Past Hour)\nâ€¢ Last Updated By & Last Updated Time\nâ€¢ 'VIEW ALL' Action Button"]
     end
     
     Banner -->|"Taps 'VIEW REPORTS >'"| Page2["Page 2: Collection Reports Directory\n(PReportViewAllWidget / /pReportViewAll)"]
     
     subgraph Page2Sub["Page 2: Original Collection Reports"]
-        CRUD["Preserved Collection CRUD:\n• Browse Past Collection Audits\n• Create Report (CReportCreationWidget)\n• View/Edit Single Report (PReportViewOneWidget)\n• Delete Report (CReportDeletionWidget)\n• View Conducted Images (CReportViewImagesWidget)"]
+        CRUD["Preserved Collection CRUD:\nâ€¢ Browse Past Collection Audits\nâ€¢ Create Report (CReportCreationWidget)\nâ€¢ View/Edit Single Report (PReportViewOneWidget)\nâ€¢ Delete Report (CReportDeletionWidget)\nâ€¢ View Conducted Images (CReportViewImagesWidget)"]
         ReturnBtn["'< Return' Navigation Button"]
     end
     
     ReturnBtn -->|"Pops back to"| Page1
     
-    StreetCards -->|"Taps 'VIEW ALL'"| Gallery["Moderation Image Gallery\n(PImagesViewAllWidget / /pImagesViewAll)\n• Pre-filtered: Street = Card Street\n• Tab: Non-Verified Queue\n• Active Street Filter Badge: 'Filtered by Street: [Street] ✕'"]
-    Gallery -->|"Taps Waste Image"| Verifier["Image Verifier & Inspector\n(PImgViewVerifierWidget)\n• Gemini AI Re-scan\n• Audit & Re-verification"]
+    StreetCards -->|"Taps 'VIEW ALL'"| Gallery["Moderation Image Gallery\n(PImagesViewAllWidget / /pImagesViewAll)\nâ€¢ Pre-filtered: Street = Card Street\nâ€¢ Tab: Non-Verified Queue\nâ€¢ Active Street Filter Badge: 'Filtered by Street: [Street] âœ•'"]
+    Gallery -->|"Taps Waste Image"| Verifier["Image Verifier & Inspector\n(PImgViewVerifierWidget)\nâ€¢ Gemini AI Re-scan\nâ€¢ Audit & Re-verification"]
 ```
 
 ---
@@ -64,7 +64,7 @@ flowchart TD
      - Left column: Dynamic count of all collection reports in `ReportTable` with loading skeleton state.
      - Right column: **`VIEW REPORTS >`** pill button (Button 2 spec: `#2E78A6` solid with white text).
   2. **Filtering & Sorting Bar**:
-     - Real-time search field with instant clear (`✕`) button.
+     - Real-time search field with instant clear (`âœ•`) button.
      - Street selection dropdown populated dynamically from `StreetTable`.
      - Horizontal sorting chips (A-Z, Pending Moderation First, Most Uploads).
   3. **Main Street Cards Feed**:
@@ -72,7 +72,7 @@ flowchart TD
      - Street Name (Bold `InterTight`, 17px) & Total Images Uploaded pill badge (`#A3C9D9`).
      - Non-Verified Tally Container (Soft Red `#FDE8E8` container, `#C44545` accent).
      - Verified Tally Container (Soft Mint `#D5F2E2` container, `#31A11F` Eco Green accent).
-     - Upload Velocity indicator (`~X uploads/day • Peak: Y uploads/hour`).
+     - Upload Velocity indicator (`~X uploads/day â€¢ Peak: Y uploads/hour`).
      - Audit attribution (`Last updated by: [User] (X time ago)`).
      - **`VIEW ALL`** pill button linking to the deep-filtered moderation feed.
 
@@ -98,8 +98,8 @@ context.pushNamed(
    - `_model.selectedTabIndex = 0` (Non-Verified Tab)
    - `_model.activeQuickFilter = 'All'`
 3. **Active Street Filter Badge**:
-   - Renders a reactive badge above the image grid feed: `Filtered by Street: [Street] ✕`.
-   - Tapping `✕` resets `_model.selectedStreet = 'All'` and triggers `_model.resetStream()`.
+   - Renders a reactive badge above the image grid feed: `Filtered by Street: [Street] âœ•`.
+   - Tapping `âœ•` resets `_model.selectedStreet = 'All'` and triggers `_model.resetStream()`.
 
 ---
 
@@ -107,11 +107,11 @@ context.pushNamed(
 
 ### 4.1 Data Pipeline per Street
 ```text
-Total Images Uploaded = |{img ∈ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase()}|
-Verified Images       = |{img ∈ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() ∧ img.status == 'Verified'}|
+Total Images Uploaded = |{img âˆˆ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase()}|
+Verified Images       = |{img âˆˆ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() âˆ§ img.status == 'Verified'}|
 Non-Verified Images   = Total Images Uploaded - Verified Images
-Uploads Today         = |{img ∈ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() ∧ img.createdAt ≥ startOfToday}|
-Uploads Last Hour     = |{img ∈ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() ∧ img.createdAt ≥ (now - 1 hour)}|
+Uploads Today         = |{img âˆˆ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() âˆ§ img.createdAt â‰¥ startOfToday}|
+Uploads Last Hour     = |{img âˆˆ Images | img.streetName.toLowerCase() == street.streetName.toLowerCase() âˆ§ img.createdAt â‰¥ (now - 1 hour)}|
 ```
 
 ### 4.2 Case-Insensitive Street Deduplication

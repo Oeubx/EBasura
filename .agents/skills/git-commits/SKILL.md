@@ -12,7 +12,7 @@ description: Drafts or executes backlog-linked conventional git commit messages 
 1. Read `AGENTS.md` at the root of the repository.
 2. Search and consult `docs/backlogs/EBASURA_Sprint_Backlogs_Commit_Reference.md` to map changes to the appropriate `[EBASURA-M#-F#]` feature code.
 3. Review corresponding module documentation under `docs/modules/` for context if needed.
-4. **Brand Design Alignment**: If changes touch any UI components, views, widgets, or theme tokens, verify compliance with [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
+4. **Brand Design Alignment**: If changes touch any UI components, views, widgets, or theme tokens, verify compliance with [`docs/design_system/brand_and_design_system.md`](../../docs/design_system/brand_and_design_system.md).
 
 ---
 

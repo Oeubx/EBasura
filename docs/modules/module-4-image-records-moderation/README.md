@@ -24,5 +24,4 @@ Module 4 manages the persistence, browsing, filtering, and moderation of scanned
 - **[`image_views_and_history.md`](image_views_and_history.md)**: Specifications for personal scan galleries, public image feeds, verifier audit screens, and modal dialogs.
 - **[`image_filtering_and_moderation.md`](image_filtering_and_moderation.md)**: Specifications for categorized filter queries (AI classified, segregated, unsegregated, flagged, verified), admin review queues, and image deletion cascades.
 - **[`optimizations.md`](optimizations.md)**: Architectural modernization specifications, dynamic filtering engine, stream lifecycle fixes, infinite pagination, and code deduplication rationales.
-- **[`EBASURA_IMAGE_CATEGORY_TRANSITION.md`](../../EBASURA_IMAGE_CATEGORY_TRANSITION.md)**: Canonical specification for consolidating image categories into the strict Tri-State lifecycle: Non-Verified, Verified, and Flagged.
-
+- **[`category_tri_state_transition.md`](../../ai_vision/category_tri_state_transition.md)**: Canonical specification for consolidating image categories into the strict Tri-State lifecycle: Non-Verified, Verified, and Flagged.

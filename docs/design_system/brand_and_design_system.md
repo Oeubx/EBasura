@@ -31,12 +31,12 @@ The color system is derived directly from the 6-column swatch spectrum:
 
 | Swatch Column | Hex Code | RGB | HSL | Flutter Token Name | Semantic Purpose & Usage |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Col 1** | `#2E78A6` | `(46, 120, 166)` | `(203°, 57%, 42%)` | `accent3` / `brandBlue` | **Deep Slate Ocean Blue**: Primary brand solid, prominent CTA buttons, primary tab highlights, navigation headers. |
-| **Col 2** | `#A3C9D9` | `(163, 201, 217)` | `(198°, 43%, 75%)` | `accent4` / `skyTint` | **Soft Sky Blue**: Secondary controls (Button 3), selected chips, card borders, subtle informational containers. |
-| **Col 3** | `#D5F2E2` | `(213, 242, 226)` | `(147°, 56%, 89%)` | `secondaryBackground` / `mintTint` | **Pale Mint Sage**: Card backdrops, soft button backgrounds (Button 4), eco-badge containers, status pills. |
-| **Col 4** | `#31A11F` | `(49, 161, 31)` | `(112°, 68%, 38%)` | `ecoPrimary` / `wasteGreen` | **Vibrant Eco Green**: AI recyclable detection badge, success states, verified waste report badges, eco-action buttons. |
-| **Col 5** | `#70BF5A` | `(112, 191, 90)` | `(107°, 45%, 55%)` | `ecoSecondary` / `leafGreen` | **Fresh Leaf Green**: Gamification points counter, active streak indicators, organic category markers. |
-| **Col 6** | `#F2F2F2` | `(242, 242, 242)` | `(0°, 0%, 95%)` | `primaryBackground` / `surfaceLight` | **Clean Canvas Neutral**: Default screen surface, scaffold background, elevated card base (Button 1 background). |
+| **Col 1** | `#2E78A6` | `(46, 120, 166)` | `(203Â°, 57%, 42%)` | `accent3` / `brandBlue` | **Deep Slate Ocean Blue**: Primary brand solid, prominent CTA buttons, primary tab highlights, navigation headers. |
+| **Col 2** | `#A3C9D9` | `(163, 201, 217)` | `(198Â°, 43%, 75%)` | `accent4` / `skyTint` | **Soft Sky Blue**: Secondary controls (Button 3), selected chips, card borders, subtle informational containers. |
+| **Col 3** | `#D5F2E2` | `(213, 242, 226)` | `(147Â°, 56%, 89%)` | `secondaryBackground` / `mintTint` | **Pale Mint Sage**: Card backdrops, soft button backgrounds (Button 4), eco-badge containers, status pills. |
+| **Col 4** | `#31A11F` | `(49, 161, 31)` | `(112Â°, 68%, 38%)` | `ecoPrimary` / `wasteGreen` | **Vibrant Eco Green**: AI recyclable detection badge, success states, verified waste report badges, eco-action buttons. |
+| **Col 5** | `#70BF5A` | `(112, 191, 90)` | `(107Â°, 45%, 55%)` | `ecoSecondary` / `leafGreen` | **Fresh Leaf Green**: Gamification points counter, active streak indicators, organic category markers. |
+| **Col 6** | `#F2F2F2` | `(242, 242, 242)` | `(0Â°, 0%, 95%)` | `primaryBackground` / `surfaceLight` | **Clean Canvas Neutral**: Default screen surface, scaffold background, elevated card base (Button 1 background). |
 
 ### Supporting Text & Dark Neutral Tokens
 - **Primary Text (`#013448` / `#2C3947`)**: Deep slate charcoal providing WCAG AAA compliance on `#F2F2F2`, `#D5F2E2`, and `#A3C9D9`.
@@ -82,8 +82,8 @@ flowchart TD
   - Splash screen headline
   - Milestone unlock titles ("Level Up!", "Master Recycler")
 - **Standard Scale**:
-  - Brand Logo Display: `32px – 40px`, Weight: `FontWeight.w700` (Bold)
-  - Hero Brand Title: `24px – 28px`, Weight: `FontWeight.w600` (Semi-Bold)
+  - Brand Logo Display: `32px â€“ 40px`, Weight: `FontWeight.w700` (Bold)
+  - Hero Brand Title: `24px â€“ 28px`, Weight: `FontWeight.w600` (Semi-Bold)
 
 ### 3.2. Interface Typography: Inter / Inter Tight
 - **Typeface**: `GoogleFonts.inter()` & `GoogleFonts.interTight()`
@@ -241,7 +241,7 @@ FFButtonWidget(
 
 ## 7. Migration & Rollout Checklist
 
-1. [x] **Documentation Created**: `docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md` capturing board swatches and typography.
+1. [x] **Documentation Created**: `docs/design_system/brand_and_design_system.md` capturing board swatches and typography.
 2. [ ] **Theme Token Registration**: Add `ecoPrimary` (`#31A11F`) and `ecoSecondary` (`#70BF5A`) getters to `lib/flutter_flow/flutter_flow_theme.dart`.
 3. [ ] **Brand Wordmark Integration**: Update app header and splash screen to use `GoogleFonts.comfortaa()` for the EBasura wordmark.
-4. [ ] **Button Style Harmonization**: Standardize button border radii to 16px–22px pill geometry matching Buttons 1–4.
+4. [ ] **Button Style Harmonization**: Standardize button border radii to 16pxâ€“22px pill geometry matching Buttons 1â€“4.

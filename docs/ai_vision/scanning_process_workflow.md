@@ -9,7 +9,7 @@
 > - `[EBASURA-M3-F3]` (5-Attribute Classification Evaluator)  
 > - `[EBASURA-M3-F4]` (Visual Prompt Injection Guard)  
 > - `[EBASURA-M3-F6]` (Camera Framing Overlay & Retake Pipeline)  
-> **Design Authority**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md)  
+> **Design Authority**: [`docs/brand_and_design_system.md`](brand_and_design_system.md)  
 > **Module Source**: [`docs/modules/module-3-ai-waste-scanning/README.md`](modules/module-3-ai-waste-scanning/README.md)
 
 ---
@@ -68,7 +68,7 @@ To ensure rapid response times over cellular connections (4G/5G) and maintain pr
     mediaSource: MediaSource.camera,
   );
   ```
-- **Compression Profile**: `imageQuality: 80` produces standard JPEG buffers averaging **120 KB – 280 KB**, down from raw camera buffers of 4 MB – 8 MB.
+- **Compression Profile**: `imageQuality: 80` produces standard JPEG buffers averaging **120 KB â€“ 280 KB**, down from raw camera buffers of 4 MB â€“ 8 MB.
 
 ### 2.2 Base64 Encoding
 Gemini REST `generateContent` endpoints accept image payloads inlined as base64 string data within `inline_data` parts. The custom action [`imageConversionToBase64String`](file:///c:/BiboyStuffs/EBasura/lib/custom_code/actions/image_conversion_to_base64_string.dart) serializes the byte array:

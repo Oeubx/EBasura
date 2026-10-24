@@ -3,7 +3,7 @@
 > **Document Status**: Canonical Baseline UI Audit (Part 1)  
 > **Backlog Reference**: `[EBASURA-M0-F1]` (FlutterFlow Core Engine & Theme Provider) / `[EBASURA-M10-F2]` (Shared UI Components)  
 > **Target Release**: EBasura 2.1+ Visual Overhaul Baseline  
-> **Complements**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md) (Part 2 Target Design System)
+> **Complements**: [`docs/design_system/brand_and_design_system.md`](brand_and_design_system.md) (Part 2 Target Design System)
 
 ---
 
@@ -41,7 +41,7 @@ A primary source of layout fragility across the application is the reliance on r
 | [`page_view_sub_features_widget.dart`](../lib/page_view_sub_features/page_view_sub_features_widget.dart#L91) | Sub-Features Tab Container | `height: 525.0` | Disconnects the bottom tab view from the device viewport, causing double scrollbars. |
 | [`landing_page_widget.dart`](../lib/auth_entry_pages/landing_page/landing_page_widget.dart#L89) | Auth CTA Buttons | `height: 50.0` | Fixed button heights restrict dynamic localization if button text wraps to two lines. |
 | [`c_bottom_bar_widget.dart`](../lib/components/c_bottom_bar/c_bottom_bar_widget.dart#L58) | Bottom Navigation Dock | `height: 75.0` | Unresponsive height that fails to account for Android system gesture insets and iPhone home indicators. |
-| Multiple Screens | Horizontal Logo Container | `height: 150.0` | Wastes 20–25% of the primary mobile viewport on a non-interactive static image banner. |
+| Multiple Screens | Horizontal Logo Container | `height: 150.0` | Wastes 20â€“25% of the primary mobile viewport on a non-interactive static image banner. |
 
 ### 2.2. Inconsistent Screen Padding & Margins
 Screen paddings vary unpredictably across views rather than adhering to a standardized 16.0px or 24.0px grid:
@@ -105,7 +105,7 @@ The application lacks a unified button component system:
 - **Landing Page**: Buttons are rectangular with an 8.0px radius (`width: 275.0`, `height: 50.0`).
 - **Auth Forms**: Submit buttons use a 10.0px radius with full-width constraints.
 - **Admin Dashboard**: Buttons are styled as massive full-width cards with 15.0px radii and heavy internal padding.
-- **Brand Board Requirement**: All buttons must adhere to the **Pill Geometry** (20.0px–22.0px corner radius) established in Buttons 1–4.
+- **Brand Board Requirement**: All buttons must adhere to the **Pill Geometry** (20.0pxâ€“22.0px corner radius) established in Buttons 1â€“4.
 
 ### 4.2. Elevation & Drop Shadows
 - **Excessive Blur on Landing Page**: Landing page buttons specify `elevation: 15.0`, casting an overly dark, unrefined drop shadow (`#000000` at high spread) that looks dated.
@@ -202,7 +202,7 @@ The guest experience suffers from several visual and functional regressions:
 | :--- | :--- | :--- |
 | **Containers** | Fixed heights (`500px`, `525px`), random paddings (`10`, `14`, `15`, `25px`), radii from `4` to `75px`. | Auto-sizing layouts, 16px fluid grid, standardized 16px card radii and 22px pill geometry. |
 | **Typography** | No `Comfortaa`; raw `Inter Tight` chained overrides; PNG wordmarks. | **`Comfortaa`** exclusively for wordmark/identity; **`Inter`** scale for UI body and labels. |
-| **Buttons** | Rectangular 8px/10px buttons; heavy 15px shadows; oversized 125px camera. | **Buttons 1–4**: 22px pill radius, crisp contrast, 54px sleek camera FAB, `FFShadows.sm`/`md`. |
+| **Buttons** | Rectangular 8px/10px buttons; heavy 15px shadows; oversized 125px camera. | **Buttons 1â€“4**: 22px pill radius, crisp contrast, 54px sleek camera FAB, `FFShadows.sm`/`md`. |
 | **Colors** | Hardcoded `#263B6A`, `#DFF1F1`, `#E8EDF2`; missing eco greens. | Standardized 6 tokens: `#2E78A6`, `#A3C9D9`, `#D5F2E2`, `#31A11F`, `#70BF5A`, `#F2F2F2`. |
 | **Icons** | Mixed Material and FontAwesome; disparate stroke weights. | Unified Material Symbols set with 20px / 24px standard sizes and semantic color states. |
 | **Roles** | Broken guest bar; zero Crew interface; static 5-box Admin dashboard. | **Dedicated `/pageCrewDashboard` route**, friendly guest preview banner, and KPI-driven Admin console. |

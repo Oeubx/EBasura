@@ -7,7 +7,7 @@
 > - `[EBASURA-M4-F2]` (Verifier Inspection, Ground-Truth Audit View & Latency Benchmarks)  
 > - `[EBASURA-M0-F2]` (Supabase Client, Relational Tables & Backend Infrastructure)  
 > **Source Academic Foundation**: `Ebasura all concept keeps updating no.1.docx` (Rules 5, 6, 9 & Chapter 5 Empirical Evaluation Framework)  
-> **Design Authority**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md)
+> **Design Authority**: [`docs/brand_and_design_system.md`](docs/brand_and_design_system.md)
 
 ---
 
@@ -47,7 +47,7 @@ flowchart TD
     subgraph SupabaseCloud["Supabase Relational Database (Module 0 & 4)"]
         I --> J[("Image Table")]
         F --> J
-        J --> K["Populate AI Evaluation Columns:\n• ai_classification\n• ai_waste_type\n• ai_confidence_score\n• ai_raw_json\n• verification_status = 'pending'\n• Legacy columns (isSegregated, status)"]
+        J --> K["Populate AI Evaluation Columns:\nâ€¢ ai_classification\nâ€¢ ai_waste_type\nâ€¢ ai_confidence_score\nâ€¢ ai_raw_json\nâ€¢ verification_status = 'pending'\nâ€¢ Legacy columns (isSegregated, status)"]
     end
 
     subgraph AdminDeskAudit["Admin Moderation Queue (Module 4 & 9)"]
@@ -57,7 +57,7 @@ flowchart TD
         N -->|Confirms AI Finding| O["verification_status = 'verified'\nadmin_classification = AI classification\nadmin_waste_type = AI waste type"]
         N -->|Corrects AI Finding| P["verification_status = 'corrected'\nadmin_classification = Admin ground-truth\nadmin_waste_type = Admin ground-truth"]
         N -->|Flags / Rejects Spam| Q["verification_status = 'rejected'\nallowFlagging = false"]
-        O & P & Q --> R["Record Metrics:\n• admin_id = currentUserUid\n• verification_time_seconds = Δt\n• verified_at = NOW()"]
+        O & P & Q --> R["Record Metrics:\nâ€¢ admin_id = currentUserUid\nâ€¢ verification_time_seconds = Î”t\nâ€¢ verified_at = NOW()"]
         R --> J
         O & P --> S["Award Gamification Points\n(+25 to +100 Pts to Resident)"]
     end
@@ -65,7 +65,7 @@ flowchart TD
     subgraph AcademicResearchDataset["Chapter 5 Empirical Research Dataset"]
         R --> T[("Ground-Truth Evaluation Dataset")]
         T --> U["Confusion Matrices\n(Segregated vs Unsegregated\nRecyclable / Biode / Non-Biode)"]
-        T --> V["Inter-Rater Reliability\nCohen's Kappa (κ)"]
+        T --> V["Inter-Rater Reliability\nCohen's Kappa (Îº)"]
         T --> W["Operational Efficiency Benchmarks\nAudit Latency (3-5s vs Door-to-Door)"]
     end
 ```
@@ -364,7 +364,7 @@ In `_executeResidentAutoPipeline`:
 
 ## 7. UI/UX Design System Compliance
 
-All new elements adhere strictly to [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md):
+All new elements adhere strictly to [`docs/brand_and_design_system.md`](docs/brand_and_design_system.md):
 
 1. **Typography Hierarchy**:
    - **Comfortaa**: Preserved strictly for header brand wordmark.
@@ -425,7 +425,7 @@ flutter test test/unit/
 3. Open the pending submission. Note the current time.
 4. Spend ~5 seconds inspecting the image.
 5. Case A (Confirm): Leave AI findings unchanged and tap **Verify**.
-   - In Supabase: verify `verification_status = 'verified'`, `verification_time_seconds ≈ 5.0`, and `admin_classification` matches `ai_classification`.
+   - In Supabase: verify `verification_status = 'verified'`, `verification_time_seconds â‰ˆ 5.0`, and `admin_classification` matches `ai_classification`.
 6. Case B (Correction): On another image, toggle segregation from True $\to$ False and tap **Verify**.
    - In Supabase: verify `verification_status = 'corrected'`, and `admin_classification = 'Unsegregated'`.
 

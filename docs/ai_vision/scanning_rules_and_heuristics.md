@@ -11,7 +11,7 @@
 > - `[EBASURA-M3-F4]` (Visual Prompt Injection Guard)  
 > - `[EBASURA-M3-F5]` (Scan Revalidation & Dev Pipeline)  
 > **Source Module**: [`docs/modules/module-3-ai-waste-scanning/README.md`](modules/module-3-ai-waste-scanning/README.md)  
-> **Brand & Design Authority**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md)
+> **Brand & Design Authority**: [`docs/brand_and_design_system.md`](brand_and_design_system.md)
 
 ---
 
@@ -323,5 +323,5 @@ The technical audit identified three key architectural opportunities detailed in
 - **Modernization Plan**: If `valid_waste_image` is `false`, immediately route the record to `status = 'Flagged'` with a remark `Auto-flagged: Invalid waste or prompt injection detected`, or present a retake dialog without saving to the database.
 
 ### 8.3 Client-Side Image Pre-Compression (`EBASURA-M3-F0`)
-- **Current Limitation**: Full-resolution camera images converted to Base64 produce strings of 5MB–10MB, causing unnecessary bandwidth usage and memory pressure.
+- **Current Limitation**: Full-resolution camera images converted to Base64 produce strings of 5MBâ€“10MB, causing unnecessary bandwidth usage and memory pressure.
 - **Modernization Plan**: Enforce 1024px maximum dimensions and JPEG 80% compression before base64 encoding to maintain payload sizes below 300KB.

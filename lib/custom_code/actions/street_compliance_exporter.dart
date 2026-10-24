@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';

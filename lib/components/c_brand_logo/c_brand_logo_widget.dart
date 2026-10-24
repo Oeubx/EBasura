@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Reusable canonical Brand Wordmark widget using Comfortaa typography
-/// matching docs/brand_docs.md and docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md.
+/// matching docs/design_system/README.md and docs/design_system/brand_and_design_system.md.
 class CBrandLogoWidget extends StatelessWidget {
   const CBrandLogoWidget({
     super.key,

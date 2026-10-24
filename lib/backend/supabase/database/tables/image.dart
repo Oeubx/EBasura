@@ -1,4 +1,4 @@
-﻿import '../database.dart';
+import '../database.dart';
 
 class ImageTable extends SupabaseTable<ImageRow> {
   @override

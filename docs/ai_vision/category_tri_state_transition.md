@@ -10,7 +10,7 @@
 > - `[EBASURA-M4-F4]` (Flagged & Quarantined Moderation Queue)  
 > - `[EBASURA-M9-F5]` (Admin Filtered Images Hub)  
 > - `[EBASURA-M0-F2]` (Supabase Relational Database & Migrations)  
-> **Design Authority**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md)  
+> **Design Authority**: [`docs/brand_and_design_system.md`](brand_and_design_system.md)  
 > **Module Source**: [`docs/modules/module-4-image-records-moderation/README.md`](modules/module-4-image-records-moderation/README.md)
 
 ---
@@ -35,21 +35,21 @@ Under the new architecture:
 |                                                                                                   |
 |   1. MODERATION LIFECYCLE (Column: status)                                                        |
 |      ------------------------------------------------------------------------------------------   |
-|      • Non-Verified : Ingested from resident upload; pending official verifier audit.            |
-|      • Verified     : Audited & approved by official; community points finalized.                 |
-|      • Flagged      : Quarantined for prompt injection, fraud, invalid non-waste, or reports.     |
+|      â€¢ Non-Verified : Ingested from resident upload; pending official verifier audit.            |
+|      â€¢ Verified     : Audited & approved by official; community points finalized.                 |
+|      â€¢ Flagged      : Quarantined for prompt injection, fraud, invalid non-waste, or reports.     |
 |                                                                                                   |
 |   2. PHYSICAL WASTE ATTRIBUTES (Boolean Columns - Independent of Status)                          |
 |      ------------------------------------------------------------------------------------------   |
-|      • isSegregated       : true (single stream/properly isolated) | false (mixed refuse)         |
-|      • category_recycling : true (plastics, metals, glass, paper)  | false                        |
-|      • category_biode     : true (organics, food scraps, yard)     | false                        |
-|      • category_nonbiode  : true (styrofoam, electronics, rubber)  | false                        |
+|      â€¢ isSegregated       : true (single stream/properly isolated) | false (mixed refuse)         |
+|      â€¢ category_recycling : true (plastics, metals, glass, paper)  | false                        |
+|      â€¢ category_biode     : true (organics, food scraps, yard)     | false                        |
+|      â€¢ category_nonbiode  : true (styrofoam, electronics, rubber)  | false                        |
 |                                                                                                   |
 |   3. DISPUTE SUB-STATE (Metadata & Remarks)                                                       |
 |      ------------------------------------------------------------------------------------------   |
-|      • remark             : Tagged with '[DISPUTE - category]: explanation'                       |
-|      • allowFlagging      : true (eligible for resident flag/dispute) | false                     |
+|      â€¢ remark             : Tagged with '[DISPUTE - category]: explanation'                       |
+|      â€¢ allowFlagging      : true (eligible for resident flag/dispute) | false                     |
 +---------------------------------------------------------------------------------------------------+
 ```
 
@@ -305,4 +305,4 @@ flowchart LR
 ### Phase 5: Verification & Testing
 1. Run `flutter analyze` to ensure 0 static errors.
 2. Verify route navigation for `/pImagesViewAll`, `/pImagesViewAllVerified`, `/pImagesViewAllFlagged`, `/pImagesViewAllAi`.
-3. Validate visual token consistency against [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
+3. Validate visual token consistency against [`docs/brand_and_design_system.md`](brand_and_design_system.md).

@@ -3,7 +3,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Canonical Button Style Variants defined in docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md
+/// Canonical Button Style Variants defined in docs/design_system/brand_and_design_system.md
 enum EBasuraButtonStyle {
   /// Button 1: Neutral Canvas (#F2F2F2), Dark Text (#013448), Pill Radius, subtle shadow
   button1Neutral,

@@ -35,7 +35,7 @@ class AppStateNotifier extends ChangeNotifier {
 
 ## 3. Theming & Design System Tokens (`FlutterFlowTheme`)
 Located at `lib/flutter_flow/flutter_flow_theme.dart`:
-- Master Design System & Swatches: see [`../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](../../EBASURA_BRAND_AND_DESIGN_SYSTEM.md) and [`../../brand_docs.md`](../../brand_docs.md).
+- Master Design System & Swatches: see [`../../design_system/brand_and_design_system.md`](../../design_system/brand_and_design_system.md) and [`../../design_system/README.md`](../../design_system/README.md).
 - Provides tokenized theme engine with the 6 canonical color tokens:
   - `accent3` / `brandBlue`: `#2E78A6` (Deep Slate Ocean Blue).
   - `accent4` / `skyTint`: `#A3C9D9` (Soft Sky Blue Tint).
@@ -46,7 +46,7 @@ Located at `lib/flutter_flow/flutter_flow_theme.dart`:
   - `primaryText`: `#013448` (Deep Slate Charcoal for WCAG AAA compliance).
   - `success`: `#31A11F` (Aligned with canonical Eco Green).
 - Design Tokens (`FFDesignTokens`):
-  - `FFRadius`: `sm: 8.0`, `md: 16.0`, `pill: 22.0` (standard pill geometry for Buttons 1–4), `lg: 24.0`, `full: 9999.0`.
+  - `FFRadius`: `sm: 8.0`, `md: 16.0`, `pill: 22.0` (standard pill geometry for Buttons 1â€“4), `lg: 24.0`, `full: 9999.0`.
   - `FFSpacing`: `xs: 4.0`, `sm: 8.0`, `md: 16.0`, `lg: 24.0`, `xl: 32.0`.
   - `FFShadows`: Standardized 10% black shadows (`Color(0x1A000000)`).
 - Typography presets: `displayLarge`, `displayMedium`, `headlineLarge`, `titleMedium`, `labelMedium`, and `bodyMedium`.

@@ -10,7 +10,7 @@ Use this skill when starting a new session or beginning work on EBasura.
 ## Pre-flight Checklist
 
 1. Read `AGENTS.md` at the root of the workspace.
-2. For any UI or frontend tasks, review `docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`.
+2. For any UI or frontend tasks, review `docs/design_system/brand_and_design_system.md`.
 3. Verify Flutter SDK availability:
    ```powershell
    flutter --version
@@ -31,7 +31,7 @@ Emit this concise status block before writing code or running large workflows:
 Loaded:
   project:       EBasura (Flutter + Supabase + Gemini AI)
   guidelines:    AGENTS.md
-  brand docs:    docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md (for UI/Frontend)
+  brand docs:    docs/design_system/brand_and_design_system.md (for UI/Frontend)
   commit skill:  .agents/skills/git-commits/SKILL.md (for all code changes)
   branch:        <current_branch>
   env status:    <configured_or_missing_env.json>

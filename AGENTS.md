@@ -11,8 +11,9 @@
 
 ## Canonical Documentation & Backlogs
 
-- **Brand Identity & Design System**: [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md) *(Mandatory reference for all UI/frontend work)*
+- **Brand Identity & Design System**: [`docs/design_system/brand_and_design_system.md`](docs/design_system/brand_and_design_system.md) *(Mandatory reference for all UI/frontend work)*
 - **Sprint Backlogs & Commit Reference**: [`docs/backlogs/EBASURA_Sprint_Backlogs_Commit_Reference.md`](docs/backlogs/EBASURA_Sprint_Backlogs_Commit_Reference.md)
+- **Access Control & Permissions**: [`docs/access_control/README.md`](docs/access_control/README.md)
 - **Modular Technical Specifications**:
   - **Module 0**: [`docs/modules/module-0-core-architecture/README.md`](docs/modules/module-0-core-architecture/README.md)
   - **Module 1**: [`docs/modules/module-1-auth-identity/README.md`](docs/modules/module-1-auth-identity/README.md)
@@ -46,7 +47,7 @@
    - Maintain clean code passing `flutter analyze` with 0 errors.
    - Keep relative imports consistent within `lib/`.
 6. **UI & Frontend Design Mandate**:
-   - For **EVERY UI/frontend change, layout adjustment, component creation, or styling update**, agents **MUST ALWAYS** refer to [`docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md`](docs/EBASURA_BRAND_AND_DESIGN_SYSTEM.md).
+   - For **EVERY UI/frontend change, layout adjustment, component creation, or styling update**, agents **MUST ALWAYS** refer to [`docs/design_system/brand_and_design_system.md`](docs/design_system/brand_and_design_system.md).
    - Enforce the 6 canonical color tokens: `#2E78A6` (Ocean Blue), `#A3C9D9` (Sky Blue), `#D5F2E2` (Mint Tint), `#31A11F` (Eco Green), `#70BF5A` (Leaf Green), `#F2F2F2` (Neutral Canvas).
    - Enforce the dual-font hierarchy: **Comfortaa** exclusively for Brand Logo, wordmark, and splash/achievement identity; **Inter** / **Inter Tight** for all User Interface controls, buttons, forms, labels, and body text.
    - Enforce pill button geometries (16.0–22.0px radius) and high-contrast button styles (Buttons 1–4 specs).
@@ -68,4 +69,3 @@ The following repository skills are available in `.agents/skills/`:
 | `project-verification` | "verify", "run tests", "check project", "verify build" | Executes standard Flutter quality checks (`flutter analyze`, `flutter test`). |
 | `workspace-onboarding` | "start working on", "work on EBasura", "onboard" | Emits pre-flight environment check (Flutter SDK, env setup, brand docs). |
 | `apk-release` | "build apk", "release apk", "create apk", "package release" | Packages release APK with env secrets, versions, hashes, and updates release docs. |
-
