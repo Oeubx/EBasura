@@ -94,6 +94,7 @@ The center Floating Action Button (FAB) dynamically redirects based on role:
 
 For complete lists of accessible features, route identifiers, and step-by-step navigation instructions for each role, consult the dedicated guides below:
 
-1. 📖 **[`guest_access.md`](guest_access.md)** — Comprehensive guide for Guest users, unauthenticated exploration, guest scanning, and auth conversion gates.
-2. 📖 **[`resident_access.md`](resident_access.md)** — Comprehensive guide for Community Residents, camera flows, points & badges, waste reporting, and account management.
-3. 📖 **[`admin_access.md`](admin_access.md)** — Comprehensive guide for Barangay Administrators, KPI dashboards, moderation galleries, user role editing, schedule authoring, and security audits.
+1. 📊 **[`crud_matrix.md`](crud_matrix.md)** — Master CRUD & USE Action Matrix across all 8 platform modules with operation-level checkmarks and Supabase table mappings.
+2. 📖 **[`guest_access.md`](guest_access.md)** — Comprehensive guide for Guest users, unauthenticated exploration, guest scanning, and auth conversion gates.
+3. 📖 **[`resident_access.md`](resident_access.md)** — Comprehensive guide for Community Residents, camera flows, points & badges, waste reporting, and account management.
+4. 📖 **[`admin_access.md`](admin_access.md)** — Comprehensive guide for Barangay Administrators, KPI dashboards, moderation galleries, user role editing, schedule authoring, and security audits.
