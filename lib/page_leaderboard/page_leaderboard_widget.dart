@@ -367,75 +367,73 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
   }
 
   Widget _buildGuestBanner(BuildContext context, FlutterFlowTheme theme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F1F8),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16.0),
+      child: InkWell(
+        onTap: () => context.pushNamed(LandingPageWidget.routeName),
         borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color: const Color(0xFFA3C9D9),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10.0),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.military_tech_rounded,
-              color: Color(0xFF2E78A6),
-              size: 24.0,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F1F8),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(
+              color: const Color(0xFFA3C9D9),
+              width: 1.0,
             ),
           ),
-          const SizedBox(width: 12.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Join the Rankings',
-                  style: GoogleFonts.comfortaa(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF013448),
-                  ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 2.0),
-                Text(
-                  'Sign in to earn points from verified waste scanning and climb the community board.',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    color: const Color(0xFF475569),
-                    height: 1.3,
-                  ),
+                child: const Icon(
+                  Icons.military_tech_rounded,
+                  color: Color(0xFF2E78A6),
+                  size: 20.0,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10.0),
-          FFButtonWidget(
-            onPressed: () async =>
-                context.pushNamed(LandingPageWidget.routeName),
-            text: 'Sign In',
-            options: FFButtonOptions(
-              height: 36.0,
-              padding: const EdgeInsets.symmetric(horizontal: 14.0),
-              color: const Color(0xFF2E78A6),
-              textStyle: GoogleFonts.inter(
-                fontSize: 12.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
               ),
-              elevation: 0.0,
-              borderRadius: BorderRadius.circular(18.0),
-            ),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Join the Rankings',
+                      style: GoogleFonts.comfortaa(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF013448),
+                      ),
+                    ),
+                    const SizedBox(height: 2.0),
+                    Text(
+                      'Tap here to sign in & climb the community board.',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Color(0xFF2E78A6),
+                size: 14.0,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

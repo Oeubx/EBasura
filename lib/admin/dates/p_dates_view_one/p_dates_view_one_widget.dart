@@ -34,13 +34,33 @@ class _PDatesViewOneWidgetState extends State<PDatesViewOneWidget> {
   late PDatesViewOneModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSaving = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PDatesViewOneModel());
     _model.descriptionFocusNode ??= FocusNode();
+    _checkAdminAccess();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  Future<void> _checkAdminAccess() async {
+    final role = await RoleService.fetchCurrentUserRole();
+    if (!mounted) return;
+    if (role != UserRole.admin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Access restricted: Only administrators can modify collection schedules.'),
+          backgroundColor: Color(0xFFDC2626),
+        ),
+      );
+      context.safePop();
+    } else {
+      setState(() {
+        _isAdmin = true;
+      });
+    }
   }
 
   @override
@@ -52,6 +72,17 @@ class _PDatesViewOneWidgetState extends State<PDatesViewOneWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+
+    if (!_isAdmin) {
+      return Scaffold(
+        backgroundColor: theme.primaryBackground,
+        body: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E78A6)),
+          ),
+        ),
+      );
+    }
 
     return GestureDetector(
       onTap: () {
@@ -579,6 +610,18 @@ class _PDatesViewOneWidgetState extends State<PDatesViewOneWidget> {
                               onPressed: _isSaving
                                   ? null
                                   : () async {
+                                      final role = await RoleService.fetchCurrentUserRole();
+                                      if (role != UserRole.admin) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Unauthorized: Only administrators can update collection schedules.'),
+                                              backgroundColor: Color(0xFFDC2626),
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
                                       setState(() => _isSaving = true);
                                       try {
                                         final startVal = _model.datePicked1 ??

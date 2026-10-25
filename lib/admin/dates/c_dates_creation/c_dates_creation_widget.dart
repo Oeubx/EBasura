@@ -488,6 +488,19 @@ class _CDatesCreationWidgetState extends State<CDatesCreationWidget> {
                           return;
                         }
 
+                        final role = await RoleService.fetchCurrentUserRole();
+                        if (role != UserRole.admin) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Unauthorized: Only administrators can create collection schedules.'),
+                                backgroundColor: Color(0xFFDC2626),
+                              ),
+                            );
+                          }
+                          return;
+                        }
                         setState(() => _isCreating = true);
                         try {
                           await CollectionTable().insert({

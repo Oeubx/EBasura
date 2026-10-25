@@ -1,3 +1,4 @@
+import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
@@ -63,6 +64,7 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
   List<_StreetReportSummary> _buildSummaries({
     required List<StreetRow> streets,
     required List<ImageRow> images,
+    Map<String, String> userNames = const {},
   }) {
     final now = DateTime.now();
     final startOfToday = DateTime(now.year, now.month, now.day);
@@ -118,21 +120,29 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
       String lastUpdatedBy = 'No updates yet';
       DateTime? lastUpdatedTime;
 
+      String resolveName(String? raw) {
+        if (raw == null || raw.trim().isEmpty) return 'Barangay Admin';
+        if (raw == currentUserUid) return 'You';
+        if (userNames.containsKey(raw)) return userNames[raw]!;
+        if (!raw.contains('-') && raw.length < 30) return raw;
+        return 'Barangay Admin';
+      }
+
       if (streetImages.isNotEmpty) {
         final latestImg = streetImages.first;
         if (latestImg.updatedBy != null && latestImg.updatedBy!.isNotEmpty) {
-          lastUpdatedBy = latestImg.updatedBy!;
+          lastUpdatedBy = resolveName(latestImg.updatedBy);
         } else if (streetRow?.lastUpdatedBy != null &&
             streetRow!.lastUpdatedBy!.isNotEmpty) {
-          lastUpdatedBy = streetRow.lastUpdatedBy!;
+          lastUpdatedBy = resolveName(streetRow.lastUpdatedBy);
         } else if (latestImg.imgUploader.isNotEmpty) {
-          lastUpdatedBy = latestImg.imgUploader;
+          lastUpdatedBy = resolveName(latestImg.imgUploader);
         }
         lastUpdatedTime = latestImg.updatedAt ?? latestImg.createdAt;
       } else if (streetRow != null) {
         if (streetRow.lastUpdatedBy != null &&
             streetRow.lastUpdatedBy!.isNotEmpty) {
-          lastUpdatedBy = streetRow.lastUpdatedBy!;
+          lastUpdatedBy = resolveName(streetRow.lastUpdatedBy);
         }
         lastUpdatedTime = streetRow.lastUpdatedTime ?? streetRow.createdAt;
       }
@@ -237,23 +247,40 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                                           ascending: false),
                                     ),
                                     builder: (context, imageSnapshot) {
-                                      if (!streetSnapshot.hasData ||
-                                          !imageSnapshot.hasData) {
-                                        return const Center(
-                                          child: Padding(
-                                            padding: EdgeInsets.all(40.0),
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                        );
-                                      }
+                                      return FutureBuilder<List<UserRow>>(
+                                        future: UserTable().queryRows(
+                                          queryFn: (q) => q,
+                                        ),
+                                        builder: (context, userSnapshot) {
+                                          if (!streetSnapshot.hasData ||
+                                              !imageSnapshot.hasData ||
+                                              !userSnapshot.hasData) {
+                                            return const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(40.0),
+                                                child: CircularProgressIndicator(),
+                                              ),
+                                            );
+                                          }
 
-                                      final streets =
-                                          streetSnapshot.data ?? [];
-                                      final images = imageSnapshot.data ?? [];
-                                      final summaries = _buildSummaries(
-                                        streets: streets,
-                                        images: images,
-                                      );
+                                          final streets =
+                                              streetSnapshot.data ?? [];
+                                          final images = imageSnapshot.data ?? [];
+                                          final users = userSnapshot.data ?? [];
+                                          final Map<String, String> userNames = {
+                                            for (final u in users)
+                                              if (u.userId != null)
+                                                u.userId!: (u.userName != null &&
+                                                        u.userName!.trim().isNotEmpty &&
+                                                        u.userName != 'EBasura User')
+                                                    ? u.userName!
+                                                    : (u.userEmail?.split('@').first ?? 'User')
+                                          };
+                                          final summaries = _buildSummaries(
+                                            streets: streets,
+                                            images: images,
+                                            userNames: userNames,
+                                          );
 
                                       // Filter based on search query & dropdown
                                       final filteredSummaries =
@@ -295,6 +322,8 @@ class _PReportSystemWidgetState extends State<PReportSystemWidget> {
                                             context: context,
                                             summary: item,
                                           );
+                                        },
+                                      );
                                         },
                                       );
                                     },

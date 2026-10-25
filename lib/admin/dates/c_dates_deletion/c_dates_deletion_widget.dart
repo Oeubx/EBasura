@@ -1,3 +1,4 @@
+import '/auth/role_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -122,6 +123,19 @@ class _CDatesDeletionWidgetState extends State<CDatesDeletionWidget> {
                     onPressed: _isDeleting
                         ? null
                         : () async {
+                            final role = await RoleService.fetchCurrentUserRole();
+                            if (role != UserRole.admin) {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Unauthorized: Only administrators can delete collection schedules.'),
+                                    backgroundColor: Color(0xFFDC2626),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
                             setState(() => _isDeleting = true);
                             try {
                               await CollectionTable().delete(

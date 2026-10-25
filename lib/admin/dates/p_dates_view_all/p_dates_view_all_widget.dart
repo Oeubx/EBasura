@@ -1,4 +1,5 @@
 import '/admin/dates/c_dates_creation/c_dates_creation_widget.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
@@ -25,13 +26,29 @@ class _PDatesViewAllWidgetState extends State<PDatesViewAllWidget> {
   late PDatesViewAllModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PDatesViewAllModel());
-
+    _resolveUserRole();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  Future<void> _resolveUserRole() async {
+    if (currentUserUid.isEmpty) {
+      if (mounted && _isAdmin) {
+        setState(() => _isAdmin = false);
+      }
+      return;
+    }
+    final role = await RoleService.fetchCurrentUserRole();
+    if (mounted && (_isAdmin != (role == UserRole.admin))) {
+      setState(() {
+        _isAdmin = (role == UserRole.admin);
+      });
+    }
   }
 
   @override
@@ -196,17 +213,19 @@ class _PDatesViewAllWidgetState extends State<PDatesViewAllWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   borderRadius: BorderRadius.circular(16.0),
-                                  onTap: () async {
-                                    context.pushNamed(
-                                      PDatesViewOneWidget.routeName,
-                                      queryParameters: {
-                                        'collectionRef': serializeParam(
-                                          listViewCollectionRow,
-                                          ParamType.SupabaseRow,
-                                        ),
-                                      }.withoutNulls,
-                                    );
-                                  },
+                                  onTap: _isAdmin
+                                      ? () async {
+                                          context.pushNamed(
+                                            PDatesViewOneWidget.routeName,
+                                            queryParameters: {
+                                              'collectionRef': serializeParam(
+                                                listViewCollectionRow,
+                                                ParamType.SupabaseRow,
+                                              ),
+                                            }.withoutNulls,
+                                          );
+                                        }
+                                      : null,
                                   child: Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
@@ -342,11 +361,12 @@ class _PDatesViewAllWidgetState extends State<PDatesViewAllWidget> {
                                                   ],
                                                 ),
                                               ),
-                                              Icon(
-                                                Icons.chevron_right_rounded,
-                                                color: theme.secondaryText,
-                                                size: 22.0,
-                                              ),
+                                              if (_isAdmin)
+                                                Icon(
+                                                  Icons.chevron_right_rounded,
+                                                  color: theme.secondaryText,
+                                                  size: 22.0,
+                                                ),
                                             ],
                                           ),
                                           if ((listViewCollectionRow
@@ -403,11 +423,12 @@ class _PDatesViewAllWidgetState extends State<PDatesViewAllWidget> {
                   ),
                 ),
               ),
-              Align(
-                alignment: const AlignmentDirectional(1.0, 1.0),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      0.0, 0.0, 20.0, 96.0),
+              if (_isAdmin)
+                Align(
+                  alignment: const AlignmentDirectional(1.0, 1.0),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 20.0, 96.0),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22.0),

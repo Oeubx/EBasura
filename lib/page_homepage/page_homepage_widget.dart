@@ -23,12 +23,29 @@ class PageHomepageWidget extends StatefulWidget {
 class _PageHomepageWidgetState extends State<PageHomepageWidget> {
   late PageHomepageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PageHomepageModel());
+    _resolveUserRole();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  Future<void> _resolveUserRole() async {
+    if (currentUserUid.isEmpty) {
+      if (mounted && _isAdmin) {
+        setState(() => _isAdmin = false);
+      }
+      return;
+    }
+    final role = await RoleService.fetchCurrentUserRole();
+    if (mounted && (_isAdmin != (role == UserRole.admin))) {
+      setState(() {
+        _isAdmin = (role == UserRole.admin);
+      });
+    }
   }
 
   @override
@@ -110,64 +127,74 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
   }
 
   Widget _buildGuestBanner(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEBF4F8),
+    final theme = FlutterFlowTheme.of(context);
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16.0),
+      child: InkWell(
+        onTap: () => context.pushNamed(LandingPageWidget.routeName),
         borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color: FlutterFlowTheme.of(context).accent4,
-          width: 1.0,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEBF4F8),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(
+              color: theme.accent4,
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 34.0,
+                height: 34.0,
+                decoration: BoxDecoration(
+                  color: theme.accent4.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.login_rounded,
+                  color: theme.accent3,
+                  size: 18.0,
+                ),
+              ),
+              const SizedBox(width: 10.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Exploring as Guest',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.0,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryText,
+                      ),
+                    ),
+                    Text(
+                      'Tap here to sign in & save your eco points.',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.0,
+                        color: theme.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: theme.accent3,
+                size: 14.0,
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36.0,
-            height: 36.0,
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).accent4.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.info_outline_rounded,
-              color: FlutterFlowTheme.of(context).accent3,
-              size: 20.0,
-            ),
-          ),
-          const SizedBox(width: 10.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Exploring as Guest',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
-                    color: FlutterFlowTheme.of(context).primaryText,
-                  ),
-                ),
-                Text(
-                  'Sign in to save points, claim rewards & track streaks.',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.0,
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8.0),
-          EBasuraButton.button3(
-            text: 'Sign In',
-            height: 34.0,
-            onPressed: () async {
-              context.pushNamed(LandingPageWidget.routeName);
-            },
-          ),
-        ],
       ),
     );
   }
@@ -674,15 +701,19 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
                 final item = collections[index];
                 return InkWell(
                   onTap: () async {
-                    context.pushNamed(
-                      PDatesViewOneWidget.routeName,
-                      queryParameters: {
-                        'collectionRef': serializeParam(
-                          item,
-                          ParamType.SupabaseRow,
-                        ),
-                      }.withoutNulls,
-                    );
+                    if (_isAdmin) {
+                      context.pushNamed(
+                        PDatesViewOneWidget.routeName,
+                        queryParameters: {
+                          'collectionRef': serializeParam(
+                            item,
+                            ParamType.SupabaseRow,
+                          ),
+                        }.withoutNulls,
+                      );
+                    } else {
+                      context.pushNamed(PDatesViewAllWidget.routeName);
+                    }
                   },
                   borderRadius: BorderRadius.circular(16.0),
                   child: EBasuraCard(
