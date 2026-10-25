@@ -7,6 +7,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/index.dart';
+import '/flutter_flow/upload_data.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'page_profile_model.dart';
@@ -17,11 +19,13 @@ class _ProfileBundle {
     required this.user,
     required this.subtable,
     required this.badge,
+    required this.streets,
   });
 
   final UserRow? user;
   final UserSubtableRow? subtable;
   final BadgeRow? badge;
+  final List<StreetRow> streets;
 }
 
 class PageProfileWidget extends StatefulWidget {
@@ -43,6 +47,10 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PageProfileModel());
+    _model.reportSubjectTextController ??= TextEditingController();
+    _model.reportSubjectFocusNode ??= FocusNode();
+    _model.reportDescTextController ??= TextEditingController();
+    _model.reportDescFocusNode ??= FocusNode();
     _profileFuture = _loadProfileData();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -74,7 +82,16 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
       badge = badgeRes.firstOrNull;
     }
 
-    return _ProfileBundle(user: user, subtable: subtable, badge: badge);
+    final streetsRes = await StreetTable().queryRows(
+      queryFn: (q) => q.order('street_name', ascending: true),
+    );
+
+    return _ProfileBundle(
+      user: user,
+      subtable: subtable,
+      badge: badge,
+      streets: streetsRes,
+    );
   }
 
   @override
@@ -184,6 +201,13 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                                 theme: theme,
                                 points: points,
                                 badgeText: badgeText,
+                              ),
+                              const SizedBox(height: 16.0),
+                              _buildIncidentReportingSection(
+                                context: context,
+                                theme: theme,
+                                user: user,
+                                streets: data.streets,
                               ),
                               const SizedBox(height: 20.0),
                               _buildActionButtons(context, theme),
@@ -659,4 +683,487 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
       ),
     );
   }
+
+  Widget _buildIncidentReportingSection({
+    required BuildContext context,
+    required FlutterFlowTheme theme,
+    required UserRow? user,
+    required List<StreetRow> streets,
+  }) {
+    final streetOptions = streets.map((s) => s.streetName).toList();
+    if (streetOptions.isEmpty && (user?.userStreetNameRef?.isNotEmpty ?? false)) {
+      streetOptions.add(user!.userStreetNameRef!);
+    }
+    final initialStreet = _model.reportStreetValue ??
+        (streetOptions.contains(user?.userStreetNameRef)
+            ? user?.userStreetNameRef
+            : streetOptions.firstOrNull);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1.0,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8.0,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F1F8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.campaign_rounded,
+                      color: Color(0xFF2E78A6),
+                      size: 20.0,
+                    ),
+                  ),
+                  const SizedBox(width: 10.0),
+                  Text(
+                    'Report Waste Incident',
+                    style: GoogleFonts.comfortaa(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w700,
+                      color: theme.primaryText,
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  context.pushNamed(PReportViewAllWidget.routeName);
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'View All',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2E78A6),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16.0,
+                      color: Color(0xFF2E78A6),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6.0),
+          Text(
+            'Notify barangay crew of uncollected waste or community hazards.',
+            style: GoogleFonts.inter(
+              fontSize: 11.0,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 14.0),
+
+          // Subject Field
+          Text(
+            'Subject',
+            style: GoogleFonts.inter(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          TextFormField(
+            controller: _model.reportSubjectTextController,
+            focusNode: _model.reportSubjectFocusNode,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: 'e.g. Uncollected garbage, illegal dumping',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 13.0,
+                color: const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFF2E78A6), width: 1.5),
+              ),
+            ),
+            style: GoogleFonts.inter(fontSize: 13.0, color: const Color(0xFF0F172A)),
+          ),
+          const SizedBox(height: 12.0),
+
+          // Street Selector
+          Text(
+            'Street / Location',
+            style: GoogleFonts.inter(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: initialStreet,
+                hint: Text(
+                  'Select street location',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.0,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.arrow_drop_down_rounded,
+                  color: Color(0xFF2E78A6),
+                ),
+                items: streetOptions.map((st) {
+                  return DropdownMenuItem<String>(
+                    value: st,
+                    child: Text(
+                      st,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.0,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  safeSetState(() {
+                    _model.reportStreetValue = val;
+                  });
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12.0),
+
+          // Description Field
+          Text(
+            'Description',
+            style: GoogleFonts.inter(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          TextFormField(
+            controller: _model.reportDescTextController,
+            focusNode: _model.reportDescFocusNode,
+            maxLines: 3,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: 'Describe the location details and waste condition...',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 13.0,
+                color: const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: const BorderSide(color: Color(0xFF2E78A6), width: 1.5),
+              ),
+            ),
+            style: GoogleFonts.inter(fontSize: 13.0, color: const Color(0xFF0F172A)),
+          ),
+          const SizedBox(height: 12.0),
+
+          // Photo Box Field
+          Text(
+            'Incident Photo (Optional)',
+            style: GoogleFonts.inter(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF334155),
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          if (_model.reportUploadedFile.bytes != null &&
+              _model.reportUploadedFile.bytes!.isNotEmpty)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.0),
+                  child: Image.memory(
+                    _model.reportUploadedFile.bytes!,
+                    width: double.infinity,
+                    height: 140.0,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8.0,
+                  right: 8.0,
+                  child: InkWell(
+                    onTap: () {
+                      safeSetState(() {
+                        _model.reportUploadedFile =
+                            FFUploadedFile(bytes: Uint8List.fromList([]));
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6.0),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 18.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            InkWell(
+              onTap: () async {
+                final selectedMedia = await selectMediaWithSourceBottomSheet(
+                  context: context,
+                  maxWidth: 1024.0,
+                  maxHeight: 1024.0,
+                  imageQuality: 80,
+                  allowPhoto: true,
+                );
+                if (selectedMedia != null &&
+                    selectedMedia.every((m) =>
+                        validateFileFormat(m.storagePath, context))) {
+                  safeSetState(() {
+                    _model.reportUploadedFile = FFUploadedFile(
+                      name: selectedMedia.first.storagePath.split('/').last,
+                      bytes: selectedMedia.first.bytes,
+                      originalFilename: selectedMedia.first.originalFilename,
+                    );
+                  });
+                }
+              },
+              borderRadius: BorderRadius.circular(12.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(
+                    color: const Color(0xFFA3C9D9),
+                    width: 1.2,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.add_a_photo_rounded,
+                      color: Color(0xFF2E78A6),
+                      size: 26.0,
+                    ),
+                    const SizedBox(height: 6.0),
+                    Text(
+                      'Tap to take or choose incident photo',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF2E78A6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 16.0),
+
+          // Submit Button
+          if (_model.isSubmittingReport)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E78A6)),
+                ),
+              ),
+            )
+          else
+            FFButtonWidget(
+              onPressed: () async {
+                final subject = _model.reportSubjectTextController?.text.trim() ?? '';
+                final desc = _model.reportDescTextController?.text.trim() ?? '';
+                final street = initialStreet ?? 'Unspecified Street';
+
+                if (subject.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Please enter an incident subject.',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      backgroundColor: const Color(0xFFDC2626),
+                    ),
+                  );
+                  return;
+                }
+                if (desc.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Please provide an incident description.',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                      backgroundColor: const Color(0xFFDC2626),
+                    ),
+                  );
+                  return;
+                }
+
+                safeSetState(() => _model.isSubmittingReport = true);
+                try {
+                  String? uploadedImageUrl;
+                  if (_model.reportUploadedFile.bytes != null &&
+                      _model.reportUploadedFile.bytes!.isNotEmpty) {
+                    final timestamp = DateTime.now().millisecondsSinceEpoch;
+                    final filename = 'report_.jpg';
+                    final selectedFile = SelectedFile(
+                      storagePath: 'Reports/',
+                      bytes: _model.reportUploadedFile.bytes!,
+                      originalFilename:
+                          _model.reportUploadedFile.originalFilename.isNotEmpty
+                              ? _model.reportUploadedFile.originalFilename
+                              : filename,
+                    );
+                    final downloadUrls = await uploadSupabaseStorageFiles(
+                      bucketName: 'Image_Bucket',
+                      selectedFiles: [selectedFile],
+                    );
+                    if (downloadUrls.isNotEmpty) {
+                      uploadedImageUrl = downloadUrls.first;
+                    }
+                  }
+
+                  await ReportTable().insert({
+                    'report_subject': subject,
+                    'report_description': desc,
+                    'report_streetNameRef': street,
+                    'reporter_userRef': currentUserUid,
+                    'report_status': 'Pending',
+                    'report_conductedDate': supaSerialize<DateTime>(
+                        functions.getCurrentTime(getCurrentTimestamp)),
+                    'created_at': supaSerialize<DateTime>(
+                        functions.getCurrentTime(getCurrentTimestamp)),
+                    'report_image_link': uploadedImageUrl,
+                  });
+
+                  _model.reportSubjectTextController?.clear();
+                  _model.reportDescTextController?.clear();
+                  _model.reportUploadedFile =
+                      FFUploadedFile(bytes: Uint8List.fromList([]));
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Incident report submitted successfully! Barangay crew has been notified.',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        backgroundColor: const Color(0xFF31A11F),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Failed to submit report. Please try again.',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                        backgroundColor: const Color(0xFFDC2626),
+                      ),
+                    );
+                  }
+                } finally {
+                  safeSetState(() => _model.isSubmittingReport = false);
+                }
+              },
+              text: 'Submit Report',
+              icon: const Icon(
+                Icons.send_rounded,
+                size: 16.0,
+                color: Colors.white,
+              ),
+              options: FFButtonOptions(
+                width: double.infinity,
+                height: 48.0,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                color: const Color(0xFF2E78A6),
+                textStyle: GoogleFonts.inter(
+                  fontSize: 13.0,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+                elevation: 0.0,
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
 }

@@ -193,13 +193,18 @@ class _CBottomBarWidgetState extends State<CBottomBarWidget> {
         child: InkWell(
           onTap: () async {
             if (currentUserUid.isEmpty) {
-              context.pushNamed(PImgUploadAGuestWidget.routeName);
+              context.pushNamed(
+                PImgUploadAGuestWidget.routeName,
+                queryParameters: {
+                  'autoTriggerCamera': serializeParam(true, ParamType.bool),
+                }.withoutNulls,
+              );
             } else {
-              final isResident = _currentRole != UserRole.admin;
+              final isResidentOnly = _currentRole == UserRole.resident;
               context.pushNamed(
                 PImgUploadAAuthWidget.routeName,
                 queryParameters: {
-                  if (isResident)
+                  if (isResidentOnly)
                     'autoTriggerCamera': serializeParam(true, ParamType.bool),
                 }.withoutNulls,
               );

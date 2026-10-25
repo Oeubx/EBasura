@@ -318,7 +318,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: PImgUploadAGuestWidget.routeName,
           path: PImgUploadAGuestWidget.routePath,
-          builder: (context, params) => PImgUploadAGuestWidget(),
+          builder: (context, params) => PImgUploadAGuestWidget(
+            autoTriggerCamera: params.getParam<bool>(
+              'autoTriggerCamera',
+              ParamType.bool,
+            ) ?? false,
+          ),
         ),
         FFRoute(
           name: PageFilteredImagesWidget.routeName,

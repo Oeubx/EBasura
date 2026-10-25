@@ -415,7 +415,12 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
               ),
               onPressed: () async {
                 if (isGuest) {
-                  context.pushNamed(PImgUploadAGuestWidget.routeName);
+                  context.pushNamed(
+                    PImgUploadAGuestWidget.routeName,
+                    queryParameters: {
+                      'autoTriggerCamera': serializeParam(true, ParamType.bool),
+                    }.withoutNulls,
+                  );
                 } else {
                   context.pushNamed(
                     PImgUploadAAuthWidget.routeName,

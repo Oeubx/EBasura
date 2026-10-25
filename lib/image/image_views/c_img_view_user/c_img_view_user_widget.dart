@@ -461,7 +461,12 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                                         ),
                                         const SizedBox(width: 4.0),
                                         Text(
-                                          uploader?.userName ?? 'Resident',
+                                          uploader?.userName ??
+                                              ((containerImageRow.imgUploader == null ||
+                                                      containerImageRow.imgUploader ==
+                                                          '00000000-0000-0000-0000-000000000000')
+                                                  ? 'Guest'
+                                                  : 'Resident'),
                                           style: GoogleFonts.inter(
                                             color: Colors.white,
                                             fontSize: 12.0,

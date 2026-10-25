@@ -31,6 +31,11 @@ class PImgUploadAGuestModel extends FlutterFlowModel<PImgUploadAGuestWidget> {
 
   ///  State fields for stateful widgets in this page.
 
+  bool autoTriggeredOnce = false;
+  bool isSavingToDb = false;
+  bool isUploadRecorded = false;
+  String? savedPublicUrl;
+
   bool isDataUploading_imgUploadAGuest = false;
   FFUploadedFile uploadedLocalFile_imgUploadAGuest =
       FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');

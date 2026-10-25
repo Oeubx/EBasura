@@ -1,4 +1,6 @@
 import '/backend/api_requests/api_calls.dart';
+import '/backend/supabase/supabase.dart';
+import '/index.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -18,7 +20,12 @@ import 'p_img_upload_a_guest_model.dart';
 export 'p_img_upload_a_guest_model.dart';
 
 class PImgUploadAGuestWidget extends StatefulWidget {
-  const PImgUploadAGuestWidget({super.key});
+  const PImgUploadAGuestWidget({
+    super.key,
+    this.autoTriggerCamera = false,
+  });
+
+  final bool autoTriggerCamera;
 
   static String routeName = 'P_ImgUpload_A_Guest';
   static String routePath = '/pImgUploadAGuest';
@@ -37,7 +44,281 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
     super.initState();
     _model = createModel(context, () => PImgUploadAGuestModel());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.autoTriggerCamera && !_model.autoTriggeredOnce) {
+        _model.autoTriggeredOnce = true;
+        await _triggerDirectCameraCapture();
+      } else {
+        safeSetState(() {});
+      }
+    });
+  }
+
+  Future<void> _triggerDirectCameraCapture() async {
+    try {
+      final selectedMedia = await selectMedia(
+        maxWidth: 1024.0,
+        maxHeight: 1024.0,
+        imageQuality: 80,
+        mediaSource: MediaSource.camera,
+      );
+
+      if (selectedMedia == null || selectedMedia.isEmpty) {
+        return;
+      }
+
+      final media = selectedMedia.first;
+      final uploadedFile = FFUploadedFile(
+        name: media.storagePath.split('/').last,
+        bytes: media.bytes,
+        height: media.dimensions?.height,
+        width: media.dimensions?.width,
+        blurHash: media.blurHash,
+        originalFilename: media.originalFilename,
+      );
+
+      safeSetState(() {
+        _model.uploadedLocalFile_imgUploadAGuest = uploadedFile;
+        _model.apiResponseHolder = [];
+        _model.isUploadRecorded = false;
+        _model.savedPublicUrl = null;
+      });
+    } catch (e) {
+      debugPrint('Error triggering direct camera for guest: ');
+    }
+  }
+
+  Future<void> _saveGuestScanToSupabase() async {
+    if (_model.uploadedLocalFile_imgUploadAGuest.bytes == null ||
+        _model.uploadedLocalFile_imgUploadAGuest.bytes!.isEmpty) {
+      return;
+    }
+    safeSetState(() => _model.isSavingToDb = true);
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filename = 'guest_.jpg';
+      final selectedFile = SelectedFile(
+        storagePath: 'Guest/',
+        bytes: _model.uploadedLocalFile_imgUploadAGuest.bytes!,
+        originalFilename:
+            _model.uploadedLocalFile_imgUploadAGuest.originalFilename.isNotEmpty
+                ? _model.uploadedLocalFile_imgUploadAGuest.originalFilename
+                : filename,
+      );
+      final downloadUrls = await uploadSupabaseStorageFiles(
+        bucketName: 'Image_Bucket',
+        selectedFiles: [selectedFile],
+      );
+      if (downloadUrls.isNotEmpty) {
+        _model.savedPublicUrl = downloadUrls.first;
+        final isValidWaste = functions.stringToBool(
+            _model.apiResponseHolder.elementAtOrNull(0) ?? 'false');
+        final isRecyclable = functions.stringToBool(
+            _model.apiResponseHolder.elementAtOrNull(1) ?? 'false');
+        final isSegregated = functions.stringToBool(
+            _model.apiResponseHolder.elementAtOrNull(2) ?? 'false');
+        final isBiode = functions.stringToBool(
+            _model.apiResponseHolder.elementAtOrNull(3) ?? 'false');
+        final isNonBiode = functions.stringToBool(
+            _model.apiResponseHolder.elementAtOrNull(4) ?? 'false');
+
+        final dominantTypes = <String>[];
+        if (isRecyclable) dominantTypes.add('Recyclable');
+        if (isBiode) dominantTypes.add('Biodegradable');
+        if (isNonBiode) dominantTypes.add('Non-Biodegradable');
+        final aiWasteTypeStr = dominantTypes.isNotEmpty
+            ? dominantTypes.join(', ')
+            : 'Unidentified';
+
+        await ImageTable().insert({
+          'img_uploader': null,
+          'img_streetNameRef': 'Guest Upload',
+          'img_reference_link': _model.savedPublicUrl,
+          'created_at': supaSerialize<DateTime>(
+              functions.getCurrentTime(getCurrentTimestamp)),
+          'status': 'Non-Verified',
+          'verification_status': 'pending',
+          'created_atDate': supaSerialize<DateTime>(
+              functions.getCurrentTime(getCurrentTimestamp)),
+          'isSegregated': isSegregated,
+          'category_recycling': isRecyclable,
+          'category_biode': isBiode,
+          'category_nonbiode': isNonBiode,
+          'ai_classification': isSegregated ? 'Segregated' : 'Unsegregated',
+          'ai_waste_type': aiWasteTypeStr,
+          'ai_confidence_score': 90.00,
+          'ai_raw_json': {
+            'valid_waste_image': isValidWaste,
+            'recyclable': isRecyclable,
+            'segregated': isSegregated,
+            'biodegradable': isBiode,
+            'non_biodegradable': isNonBiode,
+            'uploader_role': 'Guest',
+          },
+        });
+        _model.isUploadRecorded = true;
+      }
+    } catch (e) {
+      debugPrint('Guest scan save error: ');
+    } finally {
+      safeSetState(() => _model.isSavingToDb = false);
+    }
+  }
+
+  Widget _buildGuestParticipationNotice(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8.0),
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD5F2E2),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: const Color(0xFFA3C9D9),
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 6.0,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6.0),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2E78A6),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: Colors.white,
+              size: 18.0,
+            ),
+          ),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Guest Participation Recorded',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF013448),
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.inter(
+                      fontSize: 12.0,
+                      color: const Color(0xFF1E293B),
+                      height: 1.4,
+                    ),
+                    children: [
+                      const TextSpan(
+                        text:
+                            'Your participation is recorded, but you will not receive points. Please ',
+                      ),
+                      TextSpan(
+                        text: 'sign in',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2E78A6),
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            context.pushNamed(PageSignInWidget.routeName);
+                          },
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'read rules',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF2E78A6),
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            await showModalBottomSheet(
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              enableDrag: true,
+                              context: context,
+                              builder: (context) => const Padding(
+                                padding: EdgeInsets.zero,
+                                child: CImageInformationalDialogWidget(),
+                              ),
+                            );
+                          },
+                      ),
+                      const TextSpan(
+                        text: ' to earn rewards on verified scans.',
+                      ),
+                    ],
+                  ),
+                ),
+                if (_model.isSavingToDb) ...[
+                  const SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 14.0,
+                        height: 14.0,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.0,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF2E78A6)),
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'Recording participation...',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.0,
+                          fontStyle: FontStyle.italic,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else if (_model.isUploadRecorded) ...[
+                  const SizedBox(height: 6.0),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.cloud_done_rounded,
+                        size: 14.0,
+                        color: Color(0xFF31A11F),
+                      ),
+                      const SizedBox(width: 4.0),
+                      Text(
+                        'Saved as Guest Upload (Pending Review)',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF31A11F),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -542,6 +823,7 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                                   functions.getCurrentTime(
                                                       getCurrentTimestamp);
                                               safeSetState(() {});
+                                              await _saveGuestScanToSupabase();
                                             } else {
                                               await showDialog(
                                                 context: context,
@@ -1114,6 +1396,8 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                           _model.checkboxSegregatedValue = null;
                                           _model.checkboxBiodegradableValue = null;
                                           _model.checkboxNonbiodeValue = null;
+                                          _model.isUploadRecorded = false;
+                                          _model.savedPublicUrl = null;
                                         });
                                       },
                                       text: 'Clear / Rescan',
@@ -1145,6 +1429,7 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
                                         borderRadius: BorderRadius.circular(8.0),
                                       ),
                                     ),
+                                    _buildGuestParticipationNotice(context),
                                                 ].divide(SizedBox(height: 5.0)),
                                               ),
                                           ],

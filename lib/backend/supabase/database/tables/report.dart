@@ -9,7 +9,7 @@ class ReportTable extends SupabaseTable<ReportRow> {
 }
 
 class ReportRow extends SupabaseDataRow {
-  ReportRow(Map<String, dynamic> data) : super(data);
+  ReportRow(super.data);
 
   @override
   SupabaseTable get table => ReportTable();
@@ -25,18 +25,29 @@ class ReportRow extends SupabaseDataRow {
   set reportRemarks(String? value) => setField<String>('report_remarks', value);
 
   DateTime get reportConductedDate =>
-      getField<DateTime>('report_conductedDate')!;
+      getField<DateTime>('report_conductedDate') ?? DateTime.now();
   set reportConductedDate(DateTime value) =>
       setField<DateTime>('report_conductedDate', value);
 
-  String get reportStreetNameRef => getField<String>('report_streetNameRef')!;
+  String get reportStreetNameRef =>
+      getField<String>('report_streetNameRef') ?? '';
   set reportStreetNameRef(String value) =>
       setField<String>('report_streetNameRef', value);
 
-  String get reporterUserRef => getField<String>('reporter_userRef')!;
+  String get reporterUserRef => getField<String>('reporter_userRef') ?? '';
   set reporterUserRef(String value) =>
       setField<String>('reporter_userRef', value);
 
   DateTime? get createdAt => getField<DateTime>('created_at');
   set createdAt(DateTime? value) => setField<DateTime>('created_at', value);
+
+  String? get reportSubject => getField<String>('report_subject');
+  set reportSubject(String? value) => setField<String>('report_subject', value);
+
+  String? get reportImageLink => getField<String>('report_image_link');
+  set reportImageLink(String? value) =>
+      setField<String>('report_image_link', value);
+
+  String? get reportStatus => getField<String>('report_status');
+  set reportStatus(String? value) => setField<String>('report_status', value);
 }

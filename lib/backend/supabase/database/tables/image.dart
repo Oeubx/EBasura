@@ -17,8 +17,8 @@ class ImageRow extends SupabaseDataRow {
   String? get imageId => getField<String>('image_id');
   set imageId(String? value) => setField<String>('image_id', value);
 
-  String get imgUploader => getField<String>('img_uploader')!;
-  set imgUploader(String value) => setField<String>('img_uploader', value);
+  String get imgUploader => getField<String>('img_uploader') ?? 'guest';
+  set imgUploader(String? value) => setField<String>('img_uploader', value);
 
   String get imgStreetNameRef => getField<String>('img_streetNameRef')!;
   set imgStreetNameRef(String value) =>

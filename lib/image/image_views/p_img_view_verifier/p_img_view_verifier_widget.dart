@@ -328,7 +328,11 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                   String>(
                                                                 rowUserRow
                                                                     ?.userName,
-                                                                '>user_name',
+                                                                (containerImageRow?.imgUploader == null ||
+                                                                        containerImageRow?.imgUploader ==
+                                                                            '00000000-0000-0000-0000-000000000000')
+                                                                    ? 'Guest'
+                                                                    : 'Unknown User',
                                                               ),
                                                               style: FlutterFlowTheme
                                                                       .of(context)
@@ -1997,7 +2001,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                             imageRef:
                                                                                 containerImageRow!,
                                                                             userSubtableRef:
-                                                                                rowUserSubtableRow!,
+                                                                                rowUserSubtableRow,
                                                                           ),
                                                                         ),
                                                                       );
