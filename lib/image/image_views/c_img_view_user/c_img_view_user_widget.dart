@@ -139,6 +139,12 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
 
           final statusColor = _getStatusColor(containerImageRow.status);
           final statusIcon = _getStatusIcon(containerImageRow.status);
+          final isDisputed = containerImageRow.verificationStatus ==
+                  'disputed' ||
+              containerImageRow.status == 'Disputed' ||
+              (containerImageRow.remark?.startsWith('[DISPUTE') ?? false);
+          final canDispute =
+              !isDisputed && containerImageRow.status != 'Verified';
 
           return Container(
             width: double.infinity,
@@ -462,7 +468,8 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                                         const SizedBox(width: 4.0),
                                         Text(
                                           uploader?.userName ??
-                                              ((containerImageRow.imgUploader == null ||
+                                              ((containerImageRow.imgUploader == 'guest' ||
+                                                      containerImageRow.imgUploader.isEmpty ||
                                                       containerImageRow.imgUploader ==
                                                           '00000000-0000-0000-0000-000000000000')
                                                   ? 'Guest'
@@ -671,10 +678,8 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                     ),
                   ),
 
-                  // Dispute Decision Button (if flagged, rejected, or unsegregated)
-                  if (containerImageRow.status == 'Flagged' ||
-                      containerImageRow.status == 'Rejected' ||
-                      containerImageRow.status == 'Unsegregated')
+                  // Dispute Decision Button (visible for Non-Verified or Flagged)
+                  if (canDispute)
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: FFButtonWidget(
@@ -713,7 +718,7 @@ class _CImgViewUserWidgetState extends State<CImgViewUserWidget> {
                     ),
 
                   // Dispute Pending Banner (if disputed)
-                  if (containerImageRow.status == 'Disputed')
+                  if (isDisputed)
                     Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(top: 14.0),
