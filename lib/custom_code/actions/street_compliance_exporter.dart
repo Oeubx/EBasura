@@ -200,7 +200,7 @@ class StreetComplianceExporter {
         pdfReport.writeln('----------------------------------------------------');
       }
 
-      pdfReport.writeln('\nEnd of Compliance Report â€” EBasura Waste Management Platform');
+      pdfReport.writeln('\nEnd of Compliance Report — EBasura Waste Management Platform');
 
       final List<int> bytes = utf8.encode(pdfReport.toString());
       final String fileName =

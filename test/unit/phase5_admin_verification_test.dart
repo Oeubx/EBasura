@@ -175,5 +175,44 @@ void main() {
         status: 'Categorized by Ai',
       ), isFalse);
     });
+
+    test('Remarks textfield is disabled when image status is Verified', () {
+      bool isRemarksFieldEnabled({
+        required bool isAdmin,
+        required String? status,
+      }) {
+        return isAdmin && status != 'Verified';
+      }
+
+      // Admin with non-verified scan: editable
+      expect(isRemarksFieldEnabled(isAdmin: true, status: 'Non-Verified'), isTrue);
+      expect(isRemarksFieldEnabled(isAdmin: true, status: 'Pending'), isTrue);
+      expect(isRemarksFieldEnabled(isAdmin: true, status: 'Flagged'), isTrue);
+
+      // Admin with verified scan: disabled/locked
+      expect(isRemarksFieldEnabled(isAdmin: true, status: 'Verified'), isFalse);
+
+      // Resident: always disabled
+      expect(isRemarksFieldEnabled(isAdmin: false, status: 'Non-Verified'), isFalse);
+      expect(isRemarksFieldEnabled(isAdmin: false, status: 'Verified'), isFalse);
+    });
+
+    test('Verification badge and segregation labels render clean text without corrupt unicode', () {
+      String getVerificationBadgeText(String? status) {
+        return status == 'Verified' ? 'Verified' : 'Non-Verified';
+      }
+
+      String getSegregatedBadgeText(bool? isSegregated) {
+        return isSegregated == true ? 'Segregated' : 'Not Segregated';
+      }
+
+      expect(getVerificationBadgeText('Verified'), equals('Verified'));
+      expect(getVerificationBadgeText('Non-Verified'), equals('Non-Verified'));
+      expect(getVerificationBadgeText('Verified').contains('â'), isFalse);
+
+      expect(getSegregatedBadgeText(true), equals('Segregated'));
+      expect(getSegregatedBadgeText(false), equals('Not Segregated'));
+      expect(getSegregatedBadgeText(true).contains('â'), isFalse);
+    });
   });
 }

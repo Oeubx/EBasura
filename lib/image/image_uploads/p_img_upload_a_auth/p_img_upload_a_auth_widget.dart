@@ -963,7 +963,7 @@ class _PImgUploadAAuthWidgetState extends State<PImgUploadAAuthWidget> {
                                                 containerUserRow?.userType ==
                                                         'Admin'
                                                     ? 'Supports camera or gallery upload'
-                                                    : 'Live camera required â€¢ Gallery disabled',
+                                                    : 'Live camera required • Gallery disabled',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 12.0,
                                                   color: FlutterFlowTheme.of(

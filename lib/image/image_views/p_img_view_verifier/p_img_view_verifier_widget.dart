@@ -568,8 +568,8 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                       ),
                                                       child: Text(
                                                         containerImageRow.status == 'Verified'
-                                                            ? 'âœ“ Verified'
-                                                            : 'â³ Non-Verified',
+                                                            ? 'Verified'
+                                                            : 'Non-Verified',
                                                         style: const TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 11.0,
@@ -793,7 +793,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                       borderRadius: BorderRadius.circular(6.0),
                                                     ),
                                                     child: Text(
-                                                      containerImageRow.isSegregated == true ? 'âœ“ Segregated' : 'âœ— Not Segregated',
+                                                      containerImageRow.isSegregated == true ? 'Segregated' : 'Not Segregated',
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 11.0,
@@ -1749,7 +1749,9 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                               focusNode: _model
                                                   .textFieldRemarksFocusNode,
                                               autofocus: false,
-                                              enabled: isAdmin,
+                                              enabled: isAdmin &&
+                                                  containerImageRow?.status !=
+                                                      'Verified',
                                               obscureText: false,
                                               decoration: InputDecoration(
                                                 isDense: true,
@@ -1782,7 +1784,7 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                   .labelMedium
                                                                   .fontStyle,
                                                         ),
-                                                hintText: 'Leave a remark..',
+                                                hintText: containerImageRow?.status == 'Verified' ? 'Remarks locked (Record is Verified)' : 'Leave a remark..',
                                                 hintStyle:
                                                     FlutterFlowTheme.of(context)
                                                         .labelMedium
@@ -1816,6 +1818,18 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                     OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Colors.black,
+                                                    width: 1.0,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.0),
+                                                ),
+                                                disabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .alternate,
                                                     width: 1.0,
                                                   ),
                                                   borderRadius:
@@ -1856,7 +1870,12 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                           8.0),
                                                 ),
                                                 filled: true,
-                                                fillColor: Colors.white,
+                                                fillColor: (isAdmin &&
+                                                        containerImageRow
+                                                                ?.status !=
+                                                            'Verified')
+                                                    ? Colors.white
+                                                    : const Color(0xFFF1F4F8),
                                               ),
                                               style:
                                                   FlutterFlowTheme.of(context)
