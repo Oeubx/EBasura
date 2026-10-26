@@ -1075,9 +1075,17 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                   if (_model.reportUploadedFile.bytes != null &&
                       _model.reportUploadedFile.bytes!.isNotEmpty) {
                     final timestamp = DateTime.now().millisecondsSinceEpoch;
-                    final filename = 'report_.jpg';
+                    final ext = (_model.reportUploadedFile.originalFilename.isNotEmpty &&
+                            _model.reportUploadedFile.originalFilename.contains('.'))
+                        ? _model.reportUploadedFile.originalFilename.split('.').last
+                        : (_model.reportUploadedFile.name != null &&
+                                _model.reportUploadedFile.name!.contains('.'))
+                            ? _model.reportUploadedFile.name!.split('.').last
+                            : 'jpg';
+                    final filename =
+                        'report_${currentUserUid.isNotEmpty ? currentUserUid : "user"}_$timestamp.$ext';
                     final selectedFile = SelectedFile(
-                      storagePath: 'Reports/',
+                      storagePath: 'Reports/$filename',
                       bytes: _model.reportUploadedFile.bytes!,
                       originalFilename:
                           _model.reportUploadedFile.originalFilename.isNotEmpty
@@ -1099,6 +1107,7 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                     'report_streetNameRef': street,
                     'reporter_userRef': currentUserUid,
                     'report_status': 'Pending',
+                    'report_remarks': '',
                     'report_conductedDate': supaSerialize<DateTime>(
                         functions.getCurrentTime(getCurrentTimestamp)),
                     'created_at': supaSerialize<DateTime>(
@@ -1125,7 +1134,8 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                       ),
                     );
                   }
-                } catch (e) {
+                } catch (e, stackTrace) {
+                  debugPrint('Failed to submit report: $e\n$stackTrace');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

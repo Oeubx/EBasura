@@ -201,5 +201,35 @@ void main() {
       expect(report['report_status'], equals('Pending'));
       expect(report['report_image_link'], isNotNull);
     });
+
+    // ------------------------------------------------------------------------
+    // 5. Storage Path Construction Guards
+    // ------------------------------------------------------------------------
+    test('Storage path format for resident report and guest upload ensures proper object paths', () {
+      String buildReportStoragePath(String? uid, int timestamp, String? originalFilename) {
+        final ext = (originalFilename != null && originalFilename.contains('.'))
+            ? originalFilename.split('.').last
+            : 'jpg';
+        final user = (uid != null && uid.isNotEmpty) ? uid : 'user';
+        final filename = 'report_${user}_$timestamp.$ext';
+        return 'Reports/$filename';
+      }
+
+      String buildGuestStoragePath(int timestamp, String? originalFilename) {
+        final ext = (originalFilename != null && originalFilename.contains('.'))
+            ? originalFilename.split('.').last
+            : 'jpg';
+        final filename = 'guest_$timestamp.$ext';
+        return 'Guest/$filename';
+      }
+
+      final reportPath = buildReportStoragePath('usr-456', 1793008506460, 'incident.png');
+      expect(reportPath, equals('Reports/report_usr-456_1793008506460.png'));
+      expect(reportPath.endsWith('/'), isFalse);
+
+      final guestPath = buildGuestStoragePath(1793008506460, 'waste.jpg');
+      expect(guestPath, equals('Guest/guest_1793008506460.jpg'));
+      expect(guestPath.endsWith('/'), isFalse);
+    });
   });
 }

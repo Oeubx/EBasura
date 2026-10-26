@@ -96,9 +96,16 @@ class _PImgUploadAGuestWidgetState extends State<PImgUploadAGuestWidget> {
     safeSetState(() => _model.isSavingToDb = true);
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filename = 'guest_.jpg';
+      final ext = (_model.uploadedLocalFile_imgUploadAGuest.originalFilename.isNotEmpty &&
+              _model.uploadedLocalFile_imgUploadAGuest.originalFilename.contains('.'))
+          ? _model.uploadedLocalFile_imgUploadAGuest.originalFilename.split('.').last
+          : (_model.uploadedLocalFile_imgUploadAGuest.name != null &&
+                  _model.uploadedLocalFile_imgUploadAGuest.name!.contains('.'))
+              ? _model.uploadedLocalFile_imgUploadAGuest.name!.split('.').last
+              : 'jpg';
+      final filename = 'guest_$timestamp.$ext';
       final selectedFile = SelectedFile(
-        storagePath: 'Guest/',
+        storagePath: 'Guest/$filename',
         bytes: _model.uploadedLocalFile_imgUploadAGuest.bytes!,
         originalFilename:
             _model.uploadedLocalFile_imgUploadAGuest.originalFilename.isNotEmpty
