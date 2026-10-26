@@ -23,7 +23,7 @@ The master table below summarizes permissions across all 8 platform modules at a
 
 | Module / Domain | User Tier | USE | C (Create) | R (Read) | U (Update) | D (Delete) | Summary Scope & Boundaries |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **1. AI Waste Scanning & Image Records** | **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ | Real-time Gemini vision scan only; no data saved. |
+| **1. AI Waste Scanning & Image Records** | **Guest** | ✅ | ✅ | ❌ | ❌ | ❌ | Gemini vision scan; anonymous persistence to `Image_Bucket/Guest/` and `Image` table (0 pts). |
 | | **Resident** | ✅ | ✅ | ✅ | ✅ | ✅ | Full scan, upload, own photo history, dispute/flag. |
 | | **Crew** | ✅ | ✅ | ✅ | ✅ | ✅ | On-field scan, upload, own photo history, dispute. |
 | | **Admin** | ✅ | ✅ | ✅ | ✅ | ✅ | Full scan, full moderation, override, delete any. |
@@ -62,13 +62,13 @@ The master table below summarizes permissions across all 8 platform modules at a
 
 ### 3.1 Module 1: AI Waste Scanning & Image Records
 
-* **Target Supabase Tables**: `image_record`, `waste_item`  
-* **Storage Bucket**: `waste-images/`  
+* **Target Supabase Tables**: `Image`, `user`, `user_subtable`  
+* **Storage Bucket**: `Image_Bucket` (`Image_Bucket/{street}/`, `Image_Bucket/Guest/`)  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ | Center Camera FAB $\to$ `PImgUploadAGuestWidget` | Executes local Gemini REST API call; returns classification in memory; zero database or storage persistence. |
-| **Resident** | ✅ | ✅ | ✅ | ✅ | ✅ | Center Camera FAB $\to$ `PImgUploadAAuthWidget`<br/>Profile $\to$ `PImagesViewAllUserWidget`<br/>`CDisputeDecisionWidget` | **USE/C**: Uploads photo to storage, inserts `image_record`, awards points.<br/>**R**: Queries `image_record` where `uploader_id == currentUser.uid`.<br/>**U**: Submits dispute/flag (`allowFlagging == true`) to appeal wrong AI/verifier decisions.<br/>**D**: Deletes personal scan record via `c_image_deletion`. |
+| **Guest** | ✅ | ✅ | ❌ | ❌ | ❌ | Center Camera FAB $\to$ `PImgUploadAGuestWidget` | Executes Gemini vision call; uploads photo to `Image_Bucket/Guest/`; inserts `Image` record (`img_uploader: null`, `status: 'Non-Verified'`); awards 0 points to protect leaderboard integrity. |
+| **Resident** | ✅ | ✅ | ✅ | ✅ | ✅ | Center Camera FAB $\to$ `PImgUploadAAuthWidget`<br/>Profile $\to$ `PImagesViewAllUserWidget`<br/>`CDisputeDecisionWidget` | **USE/C**: Uploads photo to `Image_Bucket/{street}/`, inserts `Image` record (`status = 'Non-Verified'`), awards points.<br/>**R**: Queries `Image` where `img_uploader == currentUser.uid`.<br/>**U**: Submits dispute/flag (`allowFlagging == true`) to appeal wrong AI/verifier decisions.<br/>**D**: Deletes personal scan record via `c_image_deletion`. |
 | **Crew** | ✅ | ✅ | ✅ | ✅ | ✅ | Center Camera FAB $\to$ `PImgUploadAAuthWidget`<br/>Profile $\to$ `PImagesViewAllUserWidget` | **USE/C**: On-field waste scanning.<br/>**R/U/D**: Operates on own uploaded records; can dispute misclassifications. |
 | **Admin** | ✅ | ✅ | ✅ | ✅ | ✅ | Tab 2: Review $\to$ `PImagesViewAllWidget`<br/>`PImgViewVerifierWidget`<br/>`PageFilteredImagesWidget` | **USE/C**: Official calibration scans.<br/>**R**: Unrestricted `SELECT` on all community records.<br/>**U**: Verifies scans, overrides AI categories, confirms flags, awards/deducts points.<br/>**D**: Purges invalid, offensive, or duplicate community images. |
 
@@ -76,15 +76,15 @@ The master table below summarizes permissions across all 8 platform modules at a
 
 ### 3.2 Module 2: Waste Incident Reports
 
-* **Target Supabase Table**: `report`  
-* **Storage Bucket**: `report-attachments/`  
+* **Target Supabase Table**: `Report`  
+* **Storage Bucket**: `Image_Bucket/Reports/`  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
 | **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Explore $\to$ `PageViewSubFeaturesWidget`<br/>`PReportViewOneWidget` | **R**: Read-only public audit summaries and resolved community reports. Cannot submit or mutate. |
-| **Resident** | ❌ | ✅ | ✅ | ❌ | ❌ | Home $\to$ "Waste Reporting"<br/>`PReportSystemWidget`<br/>`PReportViewAllWidget` | **C**: Submits new incident with photo, street dropdown, description (`status = 'Pending'`).<br/>**R**: Reads community report feed and tracks personal report resolution status. |
-| **Crew** | ❌ | ✅ | ✅ | ✅ | ❌ | Bottom Bar $\to$ "Reports"<br/>`PReportViewAllWidget`<br/>`PReportSystemWidget` | **C**: Files roadside overflow or missed pickup incident while en route.<br/>**R**: Monitors route reports.<br/>**U**: Can flag incident as `'In Progress'` upon reaching site. |
-| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Waste Reports"<br/>`PReportViewOneWidget`<br/>`PReportSystemWidget` | **C**: Files official municipal waste audit reports.<br/>**R**: Inspects full report queue.<br/>**U**: Changes status (`Pending` $\to$ `In Progress` $\to$ `Resolved`) with action notes.<br/>**D**: Deletes false or duplicate incident complaints. |
+| **Resident** | ❌ | ✅ | ✅ | ❌ | ❌ | Profile $\to$ "Report Waste Incident"<br/>`PageProfileWidget`<br/>`PReportViewAllWidget` | **C**: Submits new incident with subject, photo (`Image_Bucket/Reports/`), street dropdown, and description (`report_status = 'Pending'`).<br/>**R**: Reads community report feed and tracks personal report resolution status. |
+| **Crew** | ❌ | ✅ | ✅ | ✅ | ❌ | Bottom Bar $\to$ "Reports"<br/>`PReportViewAllWidget`<br/>`CReportCreationWidget` | **C**: Files roadside overflow or missed pickup incident while en route.<br/>**R**: Monitors route reports.<br/>**U**: Can flag incident as `'In Progress'` upon reaching site. |
+| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Waste Reports"<br/>`PReportViewOneWidget`<br/>`PReportViewAllWidget` | **C**: Files official municipal waste audit reports.<br/>**R**: Inspects full report queue.<br/>**U**: Changes status (`Pending` $\to$ `In Progress` $\to$ `Resolved`) with action notes.<br/>**D**: Deletes false or duplicate incident complaints. |
 
 ---
 
@@ -129,8 +129,8 @@ The master table below summarizes permissions across all 8 platform modules at a
 
 ### 3.6 Module 6: Badges & Rewards
 
-* **Target Supabase Tables**: `badge_record`, `badge_award`  
-* **Storage Bucket**: `badges/`  
+* **Target Supabase Tables**: `badge`, `user_subtable`  
+* **Storage Bucket**: `Image_Bucket/Badges/`  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |

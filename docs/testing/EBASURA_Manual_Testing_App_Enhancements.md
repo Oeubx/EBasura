@@ -22,13 +22,13 @@ sequenceDiagram
     participant DB as Supabase Image Table
 
     Resident->>App: Open "My Uploads" / Image History
-    Resident->>App: Select an image with status 'Flagged', 'Rejected', or 'Unsegregated'
+    Resident->>App: Select an image with status 'Non-Verified' or 'Flagged' (not 'Verified')
     App->>Resident: Render Image Details view with red "Dispute Decision" button
     Resident->>App: Click "Dispute Decision" button
     App->>Resident: Open Dispute Bottom Sheet Modal
     Resident->>App: Select dispute category (e.g., "AI Misclassification")
     Resident->>App: Enter detailed rationale (> 5 chars) & Click "Submit Dispute Claim"
-    App->>DB: Update Image row (status = 'Disputed', remark = '[DISPUTE...]')
+    App->>DB: Update Image row (status = 'Flagged', verification_status = 'disputed', remark = '[DISPUTE...]')
     DB-->>App: Confirm DB update success
     App->>Resident: Show green Toast Snackbar & render "Dispute Pending Verifier Review" badge
 ```
@@ -37,7 +37,7 @@ sequenceDiagram
 | :--- | :--- | :--- | :--- | :--- |
 | **1.1** | Launch application & authenticate | Sign-In screen / Session auto-login | Navigate to Resident Homepage Hub. | User is logged in as a resident. |
 | **1.2** | Navigate to user uploads | Tap **"My Uploads"** or **"Upload History"** icon on the bottom nav bar. | History list page displays user's previous waste scans. | Image list loads. |
-| **1.3** | Open rejected/flagged image | Tap any image item card with a status tag of `Flagged`, `Rejected`, or `Unsegregated`. | Image detail modal/view ([c_img_view_user_widget.dart](file:///c:/BiboyStuffs/EBasura/lib/image/image_views/c_img_view_user/c_img_view_user_widget.dart)) opens. | Full image preview and details are shown. |
+| **1.3** | Open non-verified/flagged image | Tap any image item card with a status tag of `Non-Verified` or `Flagged`. | Image detail modal/view ([c_img_view_user_widget.dart](file:///c:/BiboyStuffs/EBasura/lib/image/image_views/c_img_view_user/c_img_view_user_widget.dart)) opens. | Full image preview and details are shown. |
 | **1.4** | Locate dispute button | Scroll to the bottom of the image details panel. | A red button labeled **"Dispute Decision"** with a gavel icon (`Icons.gavel_rounded`) is displayed. | Button is visible on rejected/flagged items. |
 | **1.5** | Trigger dispute modal | Tap **"Dispute Decision"** button. | A bottom sheet modal titled **"Dispute Decision"** ([c_dispute_decision_widget.dart](file:///c:/BiboyStuffs/EBasura/lib/image/c_dispute_decision/c_dispute_decision_widget.dart)) slides up smoothly. | Modal displays image ID and warning banner. |
 | **1.6** | Select dispute reason | Tap the **"Select Dispute Reason"** dropdown menu and pick a category (e.g., *"AI Misclassification"* or *"Properly Segregated Waste"*). | Selected reason category populates the dropdown field. | Category selection updates. |
@@ -91,8 +91,8 @@ Verify that LGU administrators can export complete street compliance, cleanlines
 
 | Test Case ID | Test Scenario | Target Feature | Expected Result | Result (P/F) | Notes |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| `TC-DISP-01` | Resident triggers dispute modal on rejected image | `[EBASURA-M4-F7]` | Bottom sheet opens with reason dropdown and rationale text input. | **PASS** | Styled with red gavel header icon. |
-| `TC-DISP-02` | Resident submits valid dispute rationale | `[EBASURA-M4-F7]` | DB record updated to `status='Disputed'`, green toast shown, pending badge rendered. | **PASS** | Prevents empty rationale < 5 chars. |
+| `TC-DISP-01` | Resident triggers dispute modal on Non-Verified or Flagged scan | `[EBASURA-M4-F7]` | Bottom sheet opens with reason dropdown and rationale text input. | **PASS** | Styled with red gavel header icon. |
+| `TC-DISP-02` | Resident submits valid dispute rationale | `[EBASURA-M4-F7]` | DB record updated to `verification_status='disputed'`, green toast shown, pending badge rendered. | **PASS** | Prevents empty rationale < 5 chars. |
 | `TC-OVER-01` | Visual camera framing overlay renders on photo scan | `[EBASURA-M3-F6]` | Corner reticles, grid lines, top banner, and tip badges overlay preview frame. | **PASS** | Rendered via CustomPainter. |
 | `TC-OVER-02` | Resident toggles grid overlay on/off | `[EBASURA-M3-F6]` | Grid lines toggle instantly on tap of grid icon. | **PASS** | State retained during scan. |
 | `TC-EXPT-01` | Admin generates 1-click CSV compliance export | `[EBASURA-M8-F5]` | RFC 4180 CSV compiled with segregation %, incident counts, and grades. | **PASS** | Downloads / previews file. |

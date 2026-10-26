@@ -28,6 +28,6 @@ The database enforces a strict Tri-State check constraint `chk_image_tri_state_s
 - **Permissions**: Image owner (uploader) or platform administrator.
 - **Workflow**:
   1. Displays confirmation modal with warning about irreversible deletion.
-  2. On confirm, deletes binary asset from Supabase Storage (`waste_images/`).
-  3. Deletes record from Postgres `image` table.
+  2. On confirm, deletes binary asset from Supabase Storage (`Image_Bucket`).
+  3. Deletes record from Postgres `Image` table.
   4. If points had already been granted and deleted by admin due to fraud, triggers point rollback in `user_subtable`.

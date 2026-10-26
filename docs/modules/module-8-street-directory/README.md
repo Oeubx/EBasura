@@ -14,6 +14,7 @@ Module 8 manages the geographic street and community sector directory of EBasura
 | `EBASURA-M8-F2` | Admin Street Registration Flow | Active | `lib/admin/street/c_street_creation/` | [`street_management.md`](street_management.md) |
 | `EBASURA-M8-F3` | Street Deletion & Cascade Safety | Active | `lib/admin/street/c_street_deletion/` | [`street_management.md`](street_management.md) |
 | `EBASURA-M8-F4` | Street Table Schema & Relations | Active | `lib/backend/supabase/database/tables/street.dart` | [`street_management.md`](street_management.md) |
+| `EBASURA-M8-F5` | Admin 1-Click PDF/CSV Street Compliance Exporter | Active | `lib/admin/street/street_compliance_exporter.dart` | [`street_registry.md`](street_registry.md) |
 
 ---
 

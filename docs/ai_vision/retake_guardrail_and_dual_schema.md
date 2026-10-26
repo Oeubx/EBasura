@@ -38,7 +38,7 @@ flowchart TD
         C -->|"Yes (Attempts 1-2)"| D["Show Guidance Card\n'Attempt X of 3: Unclear Waste'\n[Retake Photo with Camera]"]
         D -->|User Taps Retake| A
         C -->|"No (Attempt 3 Reached)"| E["Retake Guardrail Modal\n(Hard Cap Fallback)"]
-        E -->|"Option A: Submit Manual Review"| F["Queue with status='Categorized by Ai'\nremark='Manual Inspection Required'\nai_classification='Unclassified'"]
+        E -->|"Option A: Submit Manual Review"| F["Queue with status='Non-Verified'\nremark='Manual Inspection Required'\nai_classification='Unclassified'"]
         E -->|"Option B: Reset"| G["Reset Session & Dismiss"]
         B -->|"Scan Succeeded & valid_waste == true"| H["Extract 5 Attributes\nFormat Resident Feedback"]
         H --> I["Upload Image to Supabase Storage\n(Bucket: Image_Bucket/{street})"]
@@ -93,7 +93,7 @@ When residents photograph waste in poor lighting, at extreme angles, or behind c
     - `ai_classification`: `'Unclassified'`
     - `ai_waste_type`: `'Unidentified Waste'`
     - `ai_confidence_score`: `0.00`
-    - `status`: `'Categorized by Ai'`
+    - `status`: `'Non-Verified'`
     - `verification_status`: `'pending'`
     - `remark`: `'Manual Inspection Required (3 AI retakes exceeded)'`
   - Informs the resident: *"Your photo has been queued for manual inspection by your Barangay waste verifier. Points will be awarded once verified."*
@@ -146,7 +146,7 @@ Storing both results independently enables the academic evaluation required for 
 
 ### 4.3 Backward Compatibility Guarantee
 All legacy columns are strictly preserved:
-- `status`: Continues to drive existing UI lists (`'Categorized by Ai'`, `'Verified'`, `'Flagged'`).
+- `status`: Canonical Tri-State moderation lifecycle (`'Non-Verified'`, `'Verified'`, `'Flagged'`).
 - `isSegregated`: Reflects the latest verified segregation state for legacy widgets.
 - `category_recycling`, `category_biode`, `category_nonbiode`: Preserved for existing filter hubs.
 - `remark`, `updated_by`, `updated_at`: Preserved for standard audit logging.
@@ -287,7 +287,7 @@ In `_executeResidentAutoPipeline`:
      'img_streetNameRef': street,
      'img_reference_link': publicUrl,
      'created_at': supaSerialize<DateTime>(functions.getCurrentTime(getCurrentTimestamp)),
-     'status': 'Categorized by Ai',
+     'status': 'Non-Verified',
      'created_atDate': supaSerialize<DateTime>(functions.getCurrentTime(getCurrentTimestamp)),
      'isSegregated': isSegregated,
      'category_recycling': isRecyclable,

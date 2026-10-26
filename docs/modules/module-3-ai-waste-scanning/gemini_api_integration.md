@@ -49,7 +49,7 @@ Images are selected via `ImagePicker` (camera or gallery), compressed, and encod
    - Primary scanner for authenticated community members.
    - Saves classified image record to Supabase `image` table upon valid completion.
 2. **`GuestScanCall`**:
-   - Scans images for unauthenticated visitors without persisting image records to the database.
+   - Scans images for unauthenticated visitors, uploads photo to `Image_Bucket/Guest/`, and persists image record to Supabase `Image` table with `img_uploader: null` (awards 0 points to safeguard leaderboard integrity).
 3. **`AuthScanCall`**:
    - Secondary authenticated scan route utilizing `gemini-2.5-flash`.
 4. **`RevalidationScanCall`**:

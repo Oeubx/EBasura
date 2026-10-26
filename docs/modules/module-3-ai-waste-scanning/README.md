@@ -15,6 +15,7 @@ Module 3 implements automated waste characterization, computer vision scanning, 
 | `EBASURA-M3-F3` | Multimodal Prompt Injection Mitigation | Active | `lib/image/image_uploads/p_img_upload_a_auth/` | [`classification_and_injection_guard.md`](classification_and_injection_guard.md) |
 | `EBASURA-M3-F4` | Multi-Attribute Heuristic Evaluation Parser | Active | `lib/custom_code/actions/` | [`classification_and_injection_guard.md`](classification_and_injection_guard.md) |
 | `EBASURA-M3-F5` | Live Scanning Results Bottom Sheet & Breakdown | Active | `lib/image/image_uploads/p_img_upload_a_auth/` | [`classification_and_injection_guard.md`](classification_and_injection_guard.md) |
+| `EBASURA-M3-F6` | Photo Quality Camera Framing Overlay & Retake Guardrail | Active | `lib/image/c_camera_framing_overlay/` | [`../../ai_vision/retake_guardrail_and_dual_schema.md`](../../ai_vision/retake_guardrail_and_dual_schema.md) |
 
 ---
 

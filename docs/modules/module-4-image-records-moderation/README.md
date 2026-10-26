@@ -16,6 +16,7 @@ Module 4 manages the persistence, browsing, filtering, and moderation of scanned
 | `EBASURA-M4-F4` | Flagged & Suspicious Waste Moderation | Active | `p_images_view_all_flagged/` | [`image_filtering_and_moderation.md`](image_filtering_and_moderation.md) |
 | `EBASURA-M4-F5` | Image Record Deletion & Cleanup | Active | `lib/image/c_image_deletion/` | [`image_filtering_and_moderation.md`](image_filtering_and_moderation.md) |
 | `EBASURA-M4-F6` | Image Informational Dialogs | Active | `lib/image/c_image_informational_dialog/` | [`image_views_and_history.md`](image_views_and_history.md) |
+| `EBASURA-M4-F7` | Resident Dispute Decision UI & Appeal Modal | Active | `lib/image/c_dispute_decision/` | [`image_views_and_history.md`](image_views_and_history.md) |
 
 ---
 

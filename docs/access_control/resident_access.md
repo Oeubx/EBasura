@@ -30,6 +30,7 @@ The **Resident** tier (`UserRole.resident`) represents verified community member
 | **RES-18** | `PageProfileAboutADETWidget` | `/pageProfileAboutADET` | Institutional project background and development credits. |
 | **RES-19** | `PageProfileAboutResearchWidget` | `/pageProfileAboutResearch` | Technical and ethical research context on computer vision waste characterization. |
 | **RES-20** | `TermsAndConditionsWidget` | `/termsAndConditions` | Application terms of use and data privacy agreement. |
+| **RES-21** | `Report Waste Incident Section` | Embedded in `PageProfileWidget` | In-app form for residents to file municipal waste complaints with photo proof, street tag, subject, and description. |
 
 ---
 
@@ -63,6 +64,14 @@ Upon tapping Tab 5 (**Profile**):
   - **Daily Streak** (e.g., `5 Days 🔥`)
   - **Total Scans** (e.g., `42 Scans`)
 - **Badges Showcase**: Grid of earned badges (with vibrant colors and gold borders) vs. locked badges.
+- **Civic Incident Reporting Card ("Report Waste Incident")**:
+  - Direct resident incident creation form integrated into the profile view.
+  - **Subject Field**: Title input for the infraction or hazard.
+  - **Street Dropdown**: Populated dynamically from `StreetTable` with auto-matching resident street.
+  - **Description Field**: Detailed textual breakdown of the dumping or uncollected refuse.
+  - **Photo Proof Container**: Upload box allowing camera or gallery image capture to `Image_Bucket/Reports/`.
+  - **Submit Button**: Inserts record into `Report` table with `report_status = 'Pending'`.
+  - **"View All" Action Link**: Opens `PReportViewAllWidget` for community monitoring.
 - **Action Buttons**:
   - Button 1 (Pill): **"My Uploads"** $\to$ opens your personal scan archive.
   - Button 2 (Pill): **"Settings"** $\to$ opens account management options.
@@ -71,18 +80,20 @@ Upon tapping Tab 5 (**Profile**):
 ### 3.4 Personal Uploads Archive (`PImagesViewAllUserWidget`)
 Upon tapping **"My Uploads"**:
 - Reverse-chronological photo grid of all your uploaded waste items.
-- Status badges overlaid on each card:
-  - `Verified` (Green badge with checkmark)
-  - `Unsegregated` (Orange/Amber badge)
-  - `Flagged` (Red badge with flag icon)
-  - `Disputed` (Amber hourglass badge)
+- Canonical Tri-State status badges overlaid on each card:
+  - `Verified` (Eco Green badge `#2E7D32` with checkmark)
+  - `Non-Verified` (Amber badge `#E65100` with hourglass icon)
+  - `Flagged` (Red badge `#D32F2F` with flag icon)
+- If a dispute is pending review, the card displays an amber badge: *"Dispute Pending"*.
 
 ### 3.5 Personal Image Detail & Dispute Modal (`c_img_view_user_widget`)
 Upon tapping any photo in My Uploads:
 - High-resolution photograph with zoom capability.
 - AI classification breakdown (material type, recyclability, confidence score).
 - **Flag Decision Button**: Quick red flag toggle if the scan was miscategorized.
-- **"Dispute Verification Decision" Button** (gavel icon): Visible when an item was flagged, rejected, or unsegregated.
+- **"Dispute Verification Decision" Button** (gavel icon): Broadened to appear on any non-verified scan (`status != 'Verified' && !isDisputed`), allowing residents to formally appeal AI triage before or after moderation.
+- **Dispute Pending Banner**: Visible when an appeal has been submitted, informing the resident that verifiers are reviewing the claim.
+- **Delete Button** (trash icon): Opens deletion confirmation dialog.
 - **Delete Button** (trash icon): Opens deletion confirmation dialog.
 
 ### 3.6 Explore Directory (`PageViewSubFeaturesWidget`)
@@ -167,14 +178,15 @@ Resident actions trigger automated database updates across Supabase tables:
 
 | Resident Action | Supabase Target Table | Operations Performed |
 | :--- | :--- | :--- |
-| **AI Waste Scan** | `image_record`, `waste_item`, `user` | Uploads image to Supabase Storage (`waste-images/`), inserts metadata, appends points to `user.user_pts`, increments `user.user_streak`. |
-| **Badge Qualification** | `badge_record`, `badge_award` | Evaluates eligibility conditions (e.g., 50 scans, 7-day streak) and links new badge. |
-| **Dispute / Flag Submission** | `image_record` | Updates row: `status = 'Flagged'`, `verification_status = 'disputed'`, sets `remark = '[DISPUTE - Category]: Reason'`. |
-| **Scan Deletion** | `image_record`, `waste_item` | Deletes image record from database and removes asset from Supabase Storage. |
-| **Profile Edits** | `user` | Updates `display_name`, `avatar_url`, or `phone_number`. |
+| **AI Waste Scan** | `Image`, `user`, `user_subtable` | Uploads image to Supabase Storage (`Image_Bucket/{street}/`), inserts metadata with `status = 'Non-Verified'`, appends points to `user_subtable.points`, increments `user.user_streak`. |
+| **Badge Qualification** | `badge`, `user_subtable` | Evaluates eligibility conditions (e.g., 50 scans, 7-day streak) and links new badge. |
+| **Dispute / Flag Submission** | `Image` | Updates row: `status = 'Flagged'`, `verification_status = 'disputed'`, sets `remark = '[DISPUTE - Category]: Reason'`. |
+| **Incident Reporting** | `Report` | Uploads photographic proof to `Image_Bucket/Reports/`, inserts row with `report_subject`, `report_description`, `report_streetNameRef`, `reporter_userRef`, and `report_status = 'Pending'`. |
+| **Scan Deletion** | `Image` | Deletes image record from database and removes asset from Supabase Storage (`Image_Bucket`). |
+| **Profile Edits** | `user` | Updates `display_name`, `avatar_url` (in `Image_Bucket/Avatars/`), or `phone_number`. |
 
 ---
 
 > [!NOTE]
-> **Community Incident Reporting Status**
-> In the current application release, the creation form for waste incident reports (`CReportCreationWidget`) is embedded inside `PReportViewAllWidget`, which is accessed via the **Collection Crew** bottom bar and the **Administrator** dashboard. On the Resident side, the Explore tab (`PageViewSubFeaturesWidget`) provides read-only visibility into conducted waste audits.
+> **Civic Incident Reporting Integration**
+> Residents can submit community waste incidents directly from their profile screen ([`PageProfileWidget`](file:///c:/BiboyStuffs/EBasura/lib/profile/page_profile/page_profile_widget.dart)). Submitted reports are queued with status `'Pending'` in the Supabase `Report` table and can be monitored by residents via the "View All" link leading to [`PReportViewAllWidget`](file:///c:/BiboyStuffs/EBasura/lib/admin/report/p_report_view_all/p_report_view_all_widget.dart).

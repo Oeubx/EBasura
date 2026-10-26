@@ -37,3 +37,14 @@ Documents the presentation layers through which users inspect past uploads, expl
 ### 2.4 Informational Dialog (`CImageInformationalDialogWidget`)
 - **Location**: `lib/image/c_image_informational_dialog/`
 - Displays explanation of classification badges (e.g. why an item is deemed non-segregated or non-biodegradable) to educate users.
+
+### 2.5 Resident Dispute Decision Modal (`CDisputeDecisionWidget`)
+- **Location**: `lib/image/c_dispute_decision/`
+- **Component**: `CDisputeDecisionWidget`
+- **Eligibility**: Broadened to any scan where `status != 'Verified' && !isDisputed` inside `CImgViewUserWidget`.
+- **Workflow**:
+  - Resident taps red gavel icon ("Dispute Verification Decision").
+  - Selects dispute reason category from dropdown (e.g., *"AI Misclassification"*, *"Properly Segregated Waste"*).
+  - Enters detailed rationale ($\ge 5$ characters).
+  - On submit: updates `Image` row with `status = 'Flagged'`, `verification_status = 'disputed'`, and `remark = '[DISPUTE - <category>]: <reason>'`.
+  - Re-renders `CImgViewUserWidget` with an amber *"Dispute Pending Verifier Review"* banner.

@@ -103,10 +103,11 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | :--- | :--- | :--- | :--- |
 | `EBASURA-M3-F0` | Gemini REST Client & Payload Serializer | Base64 image payload construction and REST HTTP client | [`gemini_api_integration.md`](../modules/module-3-ai-waste-scanning/gemini_api_integration.md) |
 | `EBASURA-M3-F1` | Authenticated User Waste Scanner | Camera/gallery image capture and classification for users | [`gemini_api_integration.md`](../modules/module-3-ai-waste-scanning/gemini_api_integration.md) |
-| `EBASURA-M3-F2` | Guest Waste Scanner Flow | Lightweight guest scanner without persistent DB records | [`gemini_api_integration.md`](../modules/module-3-ai-waste-scanning/gemini_api_integration.md) |
+| `EBASURA-M3-F2` | Guest Waste Scanner Flow | Guest scanner with anonymous cloud persistence in `Image_Bucket/Guest/` | [`gemini_api_integration.md`](../modules/module-3-ai-waste-scanning/gemini_api_integration.md) |
 | `EBASURA-M3-F3` | 5-Attribute Classification Evaluator | Parsing valid_waste, recyclable, segregated, biodegradable | [`classification_and_injection_guard.md`](../modules/module-3-ai-waste-scanning/classification_and_injection_guard.md) |
 | `EBASURA-M3-F4` | Visual Prompt Injection Guard | Adversarial text prompt injection detection and override | [`classification_and_injection_guard.md`](../modules/module-3-ai-waste-scanning/classification_and_injection_guard.md) |
 | `EBASURA-M3-F5` | Scan Revalidation & Dev Pipeline | Secondary verification endpoint and development prompt sandbox | [`gemini_api_integration.md`](../modules/module-3-ai-waste-scanning/gemini_api_integration.md) |
+| `EBASURA-M3-F6` | Photo Quality Camera Framing Overlay & Retake Guardrail | Real-time CustomPainter viewfinder overlay and 3-attempt retake guardrail | [`scanning_process_workflow.md`](../ai_vision/scanning_process_workflow.md), [`retake_guardrail_and_dual_schema.md`](../ai_vision/retake_guardrail_and_dual_schema.md) |
 
 ---
 
@@ -122,6 +123,7 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | `EBASURA-M4-F4` | Flagged & Suspicious Waste Moderation | Review queue for quarantined prompt injection or invalid uploads | [`image_filtering_and_moderation.md`](../modules/module-4-image-records-moderation/image_filtering_and_moderation.md) |
 | `EBASURA-M4-F5` | Image Record Deletion & Cleanup | Image asset and database record deletion with point rollback | [`image_filtering_and_moderation.md`](../modules/module-4-image-records-moderation/image_filtering_and_moderation.md) |
 | `EBASURA-M4-F6` | Image Informational Dialogs | Educational modal explaining waste attribute classifications | [`image_views_and_history.md`](../modules/module-4-image-records-moderation/image_views_and_history.md) |
+| `EBASURA-M4-F7` | Resident Dispute Decision UI & Appeal Modal | Interactive modal allowing residents to contest wrong AI or verifier classifications | [`image_views_and_history.md`](../modules/module-4-image-records-moderation/image_views_and_history.md) |
 
 ---
 
@@ -143,7 +145,7 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 
 | Commit Code | Feature Name | Description | Specification Link |
 | :--- | :--- | :--- | :--- |
-| `EBASURA-M6-F0` | Community Waste Incident Submission | Reporting form with date, description, and street selection | [`incident_reporting.md`](../modules/module-6-waste-reporting/incident_reporting.md) |
+| `EBASURA-M6-F0` | Community Waste Incident Submission | Resident profile form & admin modal with subject, street, and photo proof | [`incident_reporting.md`](../modules/module-6-waste-reporting/incident_reporting.md) |
 | `EBASURA-M6-F1` | Reports Directory & Dual-Page Hub | System street reports hub with macro tallies & collection incident feed | [`system_reports_hub.md`](../modules/module-6-waste-reporting/system_reports_hub.md), [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
 | `EBASURA-M6-F2` | Single Report Details & Location Inspection | Detailed incident view with street information and timestamp | [`report_management.md`](../modules/module-6-waste-reporting/report_management.md) |
 | `EBASURA-M6-F3` | Incident Attached Photos Viewer | Full-screen photo evidence viewer with zoom and swipe carousel | [`incident_reporting.md`](../modules/module-6-waste-reporting/incident_reporting.md) |
@@ -174,6 +176,7 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | `EBASURA-M8-F2` | Admin Street Registration Flow | Modal form to register new community streets | [`street_management.md`](../modules/module-8-street-directory/street_management.md) |
 | `EBASURA-M8-F3` | Street Deletion & Cascade Safety | Safeguarded street removal with dependency warnings | [`street_management.md`](../modules/module-8-street-directory/street_management.md) |
 | `EBASURA-M8-F4` | Street Table Schema & Relations | Postgres `street` table definition and foreign key relations | [`street_management.md`](../modules/module-8-street-directory/street_management.md) |
+| `EBASURA-M8-F5` | Admin 1-Click PDF/CSV Street Compliance Exporter | 1-click exporter generating RFC 4180 CSV tables and ASCII PDF summary reports | [`street_registry.md`](../modules/module-8-street-directory/street_registry.md) |
 
 ---
 

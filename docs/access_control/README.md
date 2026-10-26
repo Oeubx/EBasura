@@ -5,7 +5,7 @@
 EBasura enforces a client-side and backend-verified **Role-Based Access Control (RBAC)** architecture designed to balance open public accessibility for waste awareness with strict data isolation and elevated administrative governance.
 
 The platform distinguishes four distinct operational tiers:
-1. **Guest (`UserRole.guest`)**: Unauthenticated visitors or first-time community users exploring recycling guides, checking collection schedules, and testing AI waste classification without an account.
+1. **Guest (`UserRole.guest`)**: Unauthenticated visitors or first-time community users exploring recycling guides, checking collection schedules, and testing AI waste classification without an account (scans are persisted anonymously to `Image_Bucket/Guest/` for municipal waste telemetry without points accrual).
 2. **Resident (`UserRole.resident`)**: Verified community members with confirmed email credentials participating in daily waste classification, earning gamification points, unlocking badges, filing waste disputes, and tracking personal scan histories.
 3. **Collection Crew (`UserRole.crew`)**: Municipal or barangay waste collection personnel operating specialized route tracking, live street collection checklists, shift status management, and route-level incident reporting.
 4. **Administrator (`UserRole.admin`)**: Barangay officials and system administrators managing platform moderation, reviewing flagged uploads, adjusting user roles, updating street collection schedules, and authoring achievement badges.
@@ -55,7 +55,7 @@ The following matrix cross-references application features with permitted user t
 | **Gamification Points & Streaks** | `lib/custom_code/actions/` | Read-only | Earn & Level-up | View | Manage/Audit |
 | **Personal Uploads Archive** | `PImagesViewAllUserWidget` (`/pImagesViewAllUser`) | Gated | Full Access | Full Access | Full Access |
 | **Community Leaderboard** | `PageLeaderboardWidget` (`/pageLeaderboard`) | Read-only Feed | Ranked Participant | Participant | Moderator View |
-| **Waste Incident Reporting** | `PReportViewAllWidget` / `CReportCreationWidget` | Gated | Read completed audits | Submit Reports | Submit & Resolve |
+| **Waste Incident Reporting** | `PageProfileWidget` (Resident) / `PReportViewAllWidget` | Gated | Submit Reports & Read Audits | Submit Reports | Submit & Resolve |
 | **Public Schedules & Streets** | `PDatesViewAllWidget`, `PStreetViewOneWidget` | Read-only | Read & Filter | Assigned Routes | Full CRUD |
 | **Sub-Features Directory** | `PageViewSubFeaturesWidget` (`/pageViewSubFeatures`) | Read-only | Full Access | Full Access | Full Access |
 | **Profile & Settings** | `PageProfileWidget` (`/pageProfile`) | Gated (Sign In CTA) | Full Access | Full Access | Full Access |

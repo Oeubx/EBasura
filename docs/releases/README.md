@@ -20,7 +20,7 @@ The lifecycle of the application is defined across the evolutionary milestones:
 | Milestone | Semantic Version | Focus / Description | Detailed Specification |
 | :--- | :--- | :--- | :--- |
 | **Version 1** | `1.0.0+1` | **Initial Core Application (Pre-Emerging Technology)**: Core FlutterFlow UI, Supabase tables, authentication, manual reporting, schedules, and street directory without AI models. | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
-| **Version 2** | `2.0.0+1` | **Emerging Technology Integration (Current Version)**: Multimodal Google Gemini AI vision classification (`gemini-2.5-flash`, `gemini-flash-latest`), 5-attribute evaluation, gamified points, and visual prompt injection defense. | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
+| **Version 2** | `2.0.0+1` to `2.0.0+4` | **Emerging Technology Integration (Current Version)**: Multimodal Google Gemini AI vision classification (`gemini-2.5-flash`, `gemini-flash-latest`), 5-attribute evaluation, gamified points, and visual prompt injection defense. | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
 
 ---
 
@@ -30,7 +30,9 @@ The lifecycle of the application is defined across the evolutionary milestones:
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `v1.0.0+1` | Initial App (Pre-AI) | 2026-07-01 | `releases/v1.0.0+1/` | Baseline Initial Build | [`versions/v1.0.0+1.md`](versions/v1.0.0+1.md) |
 | `v2.0.0+1` | Emerging Tech (Gemini AI) | 2026-09-21 | `releases/v2.0.0+1/EBasura-v2.0.0+1-release.apk` | `92eb2ed4dccc...` | [`versions/v2.0.0+1.md`](versions/v2.0.0+1.md) |
-
+| `v2.0.0+2` | Emerging Tech (Gemini AI) | 2026-10-17 | `releases/v2.0.0+2/EBasura-v2.0.0+2-release.apk` | `7c00beb4df1e...` | [`versions/v2.0.0+2.md`](versions/v2.0.0+2.md) |
+| `v2.0.0+3` | Emerging Tech (Gemini AI) | 2026-10-22 | `releases/v2.0.0+3/EBasura-v2.0.0+3-release.apk` | `ee1628a033cd...` | [`versions/v2.0.0+3.md`](versions/v2.0.0+3.md) |
+| `v2.0.0+4` | Emerging Tech (Gemini AI) | 2026-10-25 | `releases/v2.0.0+4/EBasura-v2.0.0+4-release.apk` | `055fee2be995...` | [`versions/v2.0.0+4.md`](versions/v2.0.0+4.md) |
 
 ---
 
@@ -49,9 +51,3 @@ To install an EBasura release APK on an Android device:
 4. **Permissions**:
    - Grant **Camera** permission when prompted (required for waste scanning).
    - Grant **Internet** access (required for Gemini AI analysis and Supabase sync).
-
-| `v2.0.0+2` | Emerging Tech (Gemini AI) | 2026-10-17 | `releases/v2.0.0+2/EBasura-v2.0.0+2-release.apk` | `7c00beb4df1e...` | [`versions/v2.0.0+2.md`](versions/v2.0.0+2.md) |
-
-| `v2.0.0+3` | Emerging Tech (Gemini AI) | 2026-10-22 | `releases/v2.0.0+3/EBasura-v2.0.0+3-release.apk` | `ee1628a033cd...` | [`versions/v2.0.0+3.md`](versions/v2.0.0+3.md) |
-
-| `v2.0.0+4` | Emerging Tech (Gemini AI) | 2026-10-25 | `releases/v2.0.0+4/EBasura-v2.0.0+4-release.apk` | `055fee2be995...` | [`versions/v2.0.0+4.md`](versions/v2.0.0+4.md) |

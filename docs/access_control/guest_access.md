@@ -17,7 +17,7 @@ The **Guest** tier (`UserRole.guest`) is designed for community residents, visit
 | **GST-05** | `TermsAndConditionsWidget` | `/termsAndConditions` | Public terms of service and data privacy notices. |
 | **GST-06** | `PageVerifyEmailWidget` | `/pageVerifyEmail` | OTP verification screen to activate newly created accounts. |
 | **GST-07** | `PageHomepageWidget` | `/` or `/pageHomepage` | Guest dashboard with "Eco Explorer" identity, schedule alerts, and quick actions. |
-| **GST-08** | `PImgUploadAGuestWidget` | `/pImgUploadAGuest` | Guest AI Waste Scanner (Gemini vision classification with zero data persistence). |
+| **GST-08** | `PImgUploadAGuestWidget` | `/pImgUploadAGuest` | Guest AI Waste Scanner with anonymous cloud persistence in `Image_Bucket/Guest/` and municipal telemetry logging. |
 | **GST-09** | `PDatesViewAllWidget` | `/pDatesViewAll` | Public calendar of municipal and barangay garbage collection schedules. |
 | **GST-10** | `PDatesViewOneWidget` | `/pDatesViewOne` | Detailed schedule view including pickup hours and assigned waste types. |
 | **GST-11** | `PStreetViewOneWidget` | `/pStreetViewOne` | Street directory entry detailing route coverage and schedules. |
@@ -69,6 +69,12 @@ Upon tapping Tab 4 (**Explore**):
 - **Collections Sub-Tab**: List of all barangay streets and their pickup schedules.
 - **Reports Sub-Tab**: Read-only cards of completed municipal waste audits (`_buildReportCard`), displaying street name, conducted date, and audit summary notes.
 
+### 3.6 Guest Participation & Conversion Card (`PImgUploadAGuestWidget`)
+After completing an AI scan:
+- **Participation Warning Banner**: Informs the guest: *"Guest Participation Mode: Your scan was recorded for municipal waste metrics, but points cannot be awarded without an account."*
+- **Sign In / Register Button**: Ocean Blue Pill Button redirecting to authentication.
+- **"How It Works" Dialog**: Explains that community members earn verified eco-points, streaks, and badge rewards when signed in.
+
 ---
 
 ## 4. Interactive Controls Inventory ("What You Use")
@@ -109,8 +115,9 @@ flowchart TD
     
     GuestScanScreen --> Shutter["Capture Photo / Pick Gallery Image"]
     Shutter --> AIInference["Gemini Vision Multi-Class Inference"]
-    AIInference --> ViewResult["Display Breakdown & Segregation Advice<br/>(ZERO database/storage persistence)"]
-    ViewResult --> RegisterPrompt["CTA: 'Sign Up to Save Points'"]
+    AIInference --> CloudPersist["Persist Asset to Image_Bucket/Guest/<br/>Insert Image Row (img_uploader: null, status: 'Non-Verified')"]
+    CloudPersist --> ViewResult["Display Breakdown, Segregation Advice &<br/>Guest Participation Mode Card"]
+    ViewResult --> RegisterPrompt["CTA: 'Sign In / Register to Earn Points'"]
     RegisterPrompt --> SignUp
 
     GuestBar --> Tab2["Tab 2: Rankings (PageLeaderboardWidget)"]
@@ -134,8 +141,8 @@ To safeguard data integrity, prevent spam, and maintain accurate leaderboard sta
 
 | Action Attempted | Guest Result | Triggered Gateway / Behavior |
 | :--- | :--- | :--- |
-| **Saving Scan History** | Blocked | A modal sheet offers *"Create an account to track your scans"*. |
-| **Earning Points & Streaks** | Blocked | Points calculation is skipped in `PImgUploadAGuestWidget`. |
+| **Saving Scan History** | Anonymous Cloud Persistence | Image is uploaded to `Image_Bucket/Guest/` and row is inserted into `Image` with `img_uploader: null` for municipal waste metrics. Viewing personal history remains gated behind sign in. |
+| **Earning Points & Streaks** | Blocked (0 Pts) | Points calculation is strictly skipped in `PImgUploadAGuestWidget` to protect leaderboard integrity. |
 | **Submitting Waste Reports** | Blocked | User is redirected to `LandingPageWidget` / `PageSignInWidget`. |
 | **Accessing Profile & Settings** | Blocked | Fourth bottom tab displays **Sign In** instead of **Profile**. |
 | **Accessing Admin Dashboard** | Forbidden | Route is gated; unauthorized attempts redirect to `/landingPage`. |
