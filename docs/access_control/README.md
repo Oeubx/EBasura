@@ -6,9 +6,9 @@ EBasura enforces a client-side and backend-verified **Role-Based Access Control 
 
 The platform distinguishes four distinct operational tiers:
 1. **Guest (`UserRole.guest`)**: Unauthenticated visitors or first-time community users exploring recycling guides, checking collection schedules, and testing AI waste classification without an account.
-2. **Resident (`UserRole.resident`)**: Verified community members with confirmed email credentials participating in daily waste classification, earning gamification points, unlocking badges, filing waste reports, and tracking personal scan histories.
-3. **Administrator (`UserRole.admin`)**: Barangay officials and system administrators managing platform moderation, reviewing flagged uploads, adjusting user roles, updating street collection schedules, and authoring achievement badges.
-4. **Collection Crew (`UserRole.crew`)**: Municipal or barangay waste collection personnel operating specialized route tracking, pickup checklist verification, and route-level incident reporting.
+2. **Resident (`UserRole.resident`)**: Verified community members with confirmed email credentials participating in daily waste classification, earning gamification points, unlocking badges, filing waste disputes, and tracking personal scan histories.
+3. **Collection Crew (`UserRole.crew`)**: Municipal or barangay waste collection personnel operating specialized route tracking, live street collection checklists, shift status management, and route-level incident reporting.
+4. **Administrator (`UserRole.admin`)**: Barangay officials and system administrators managing platform moderation, reviewing flagged uploads, adjusting user roles, updating street collection schedules, and authoring achievement badges.
 
 ```mermaid
 flowchart TD
@@ -26,18 +26,19 @@ flowchart TD
     RoleBranch -- "resident / user / null" --> ResidentSession["Role: UserRole.resident"]
     ResidentSession --> ResidentUI["Resident Bottom Bar<br/>(Home | Rankings | Camera | Explore | Profile)"]
     ResidentUI --> ResidentScan["Auth AI Scanner + Points<br/>(PImgUploadAAuthWidget)"]
-    ResidentUI --> ResidentReports["File Incident Reports & My Uploads"]
+    ResidentUI --> ResidentReports["My Uploads & Dispute Decisions"]
     ResidentUI --> ResidentProfile["Profile & Account Settings"]
+
+    RoleBranch -- "crew" --> CrewSession["Role: UserRole.crew"]
+    CrewSession --> CrewUI["Crew Bottom Bar<br/>(Routes | Pickups | Camera | Reports | Profile)"]
+    CrewUI --> CrewDash["Crew Route Dashboard<br/>(PageCrewDashboardWidget)"]
+    CrewUI --> CrewReports["File Incident Reports (PReportViewAllWidget)"]
 
     RoleBranch -- "admin" --> AdminSession["Role: UserRole.admin"]
     AdminSession --> AdminUI["Admin Bottom Bar<br/>(Dashboard | Review | Camera | Users | Profile)"]
     AdminUI --> AdminDash["Admin Operations Hub<br/>(PageAdminDashboardWidget)"]
     AdminUI --> ModerationQueue["Image Review & Flagged Queue"]
     AdminUI --> UserManage["User Management & Role Elevation"]
-
-    RoleBranch -- "crew" --> CrewSession["Role: UserRole.crew"]
-    CrewSession --> CrewUI["Crew Bottom Bar<br/>(Routes | Pickups | Camera | Reports | Profile)"]
-    CrewUI --> CrewDash["Crew Route Dashboard<br/>(PageCrewDashboardWidget)"]
 ```
 
 ---
@@ -46,25 +47,25 @@ flowchart TD
 
 The following matrix cross-references application features with permitted user tiers:
 
-| Functional Area | Route / Primary Component | Guest (`guest`) | Resident (`resident`) | Admin (`admin`) | Crew (`crew`) |
+| Functional Area | Route / Primary Component | Guest (`guest`) | Resident (`resident`) | Crew (`crew`) | Admin (`admin`) |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Auth Gateway & Registration** | `LandingPageWidget` (`/landingPage`) | Full Access | Auto-redirect | Auto-redirect | Auto-redirect |
 | **Guest AI Waste Scanner** | `PImgUploadAGuestWidget` (`/pImgUploadAGuest`) | Full Access | Optional | Optional | Optional |
-| **Authenticated AI Scanner** | `PImgUploadAAuthWidget` (`/pImgUploadAAuth`) | Gated (Prompt Sign In) | Full Access (Awards Points) | Full Access (No Points) | Full Access |
-| **Gamification Points & Streaks** | `lib/custom_code/actions/` | Read-only | Earn & Level-up | Manage/Audit | View |
+| **Authenticated AI Scanner** | `PImgUploadAAuthWidget` (`/pImgUploadAAuth`) | Gated (Prompt Sign In) | Full Access (Awards Points) | Full Access | Full Access |
+| **Gamification Points & Streaks** | `lib/custom_code/actions/` | Read-only | Earn & Level-up | View | Manage/Audit |
 | **Personal Uploads Archive** | `PImagesViewAllUserWidget` (`/pImagesViewAllUser`) | Gated | Full Access | Full Access | Full Access |
-| **Community Leaderboard** | `PageLeaderboardWidget` (`/pageLeaderboard`) | Read-only Feed | Ranked Participant | Moderator View | Participant |
-| **Waste Incident Reporting** | `PReportSystemWidget` (`/pReportSystem`) | Gated | Submit Reports | Submit & Resolve | Submit & Resolve |
-| **Public Schedules & Streets** | `PDatesViewAllWidget`, `PStreetViewOneWidget` | Read-only | Read & Filter | Read & Author | Assigned Routes |
+| **Community Leaderboard** | `PageLeaderboardWidget` (`/pageLeaderboard`) | Read-only Feed | Ranked Participant | Participant | Moderator View |
+| **Waste Incident Reporting** | `PReportViewAllWidget` / `CReportCreationWidget` | Gated | Read completed audits | Submit Reports | Submit & Resolve |
+| **Public Schedules & Streets** | `PDatesViewAllWidget`, `PStreetViewOneWidget` | Read-only | Read & Filter | Assigned Routes | Full CRUD |
 | **Sub-Features Directory** | `PageViewSubFeaturesWidget` (`/pageViewSubFeatures`) | Read-only | Full Access | Full Access | Full Access |
 | **Profile & Settings** | `PageProfileWidget` (`/pageProfile`) | Gated (Sign In CTA) | Full Access | Full Access | Full Access |
-| **Admin Operations Dashboard** | `PageAdminDashboardWidget` (`/pageAdminDashboard`) | Blocked | Blocked | Full Access | Blocked |
-| **User Role & Points Management** | `PageUserManagementWidget` (`/pageUserManagement`) | Blocked | Blocked | Full Access | Blocked |
-| **Image Moderation & Verifier** | `PImagesViewAllWidget`, `PImgViewVerifierWidget` | Blocked | Blocked | Full Access | Blocked |
-| **Flagged Images & AI Quarantine** | `PageFilteredImagesWidget` (`/pageFilteredImages`) | Blocked | Blocked | Full Access | Blocked |
-| **Schedule & Street Authoring** | `lib/admin/dates/`, `lib/admin/street/` | Blocked | Blocked | Full CRUD | Blocked |
-| **Badge Creation & Revocation** | `PBadgeViewAllWidget`, `lib/admin/badges/` | Blocked | Blocked | Full CRUD | Blocked |
-| **Crew Dispatch Dashboard** | `PageCrewDashboardWidget` (`/pageCrewDashboard`) | Blocked | Blocked | Viewable | Full Access |
+| **Crew Dispatch Dashboard** | `PageCrewDashboardWidget` (`/pageCrewDashboard`) | Blocked | Blocked | Full Access | Viewable |
+| **Admin Operations Dashboard** | `PageAdminDashboardWidget` (`/pageAdminDashboard`) | Blocked | Blocked | Blocked | Full Access |
+| **User Role & Points Management** | `PageUserManagementWidget` (`/pageUserManagement`) | Blocked | Blocked | Blocked | Full Access |
+| **Image Moderation & Verifier** | `PImagesViewAllWidget`, `PImgViewVerifierWidget` | Blocked | Blocked | Blocked | Full Access |
+| **Flagged Images & AI Quarantine** | `PageFilteredImagesWidget` (`/pageFilteredImages`) | Blocked | Blocked | Blocked | Full Access |
+| **Schedule & Street Authoring** | `lib/admin/dates/`, `lib/admin/street/` | Blocked | Blocked | Blocked | Full CRUD |
+| **Badge Creation & Revocation** | `PBadgeViewAllWidget`, `lib/admin/badges/` | Blocked | Blocked | Blocked | Full CRUD |
 
 ---
 
@@ -84,17 +85,19 @@ if (_currentRole == UserRole.crew) {
 ```
 
 The center Floating Action Button (FAB) dynamically redirects based on role:
-- **Guests (`currentUserUid.isEmpty`)**: Redirects to `PImgUploadAGuestWidget`.
-- **Residents (`_currentRole != UserRole.admin`)**: Redirects to `PImgUploadAAuthWidget` with `autoTriggerCamera: true`.
-- **Admins**: Redirects to `PImgUploadAAuthWidget` in manual upload/moderation mode.
+- **Guests (`currentUserUid.isEmpty`)**: Redirects to `PImgUploadAGuestWidget` with `autoTriggerCamera: true`.
+- **Residents (`_currentRole == UserRole.resident`)**: Redirects to `PImgUploadAAuthWidget` with `autoTriggerCamera: true`.
+- **Crew / Admins**: Redirects to `PImgUploadAAuthWidget` in manual review/inspection mode.
 
 ---
 
-## 4. Role Documentation Guides
+## 4. Role Documentation & Testing Directory
 
-For complete lists of accessible features, route identifiers, and step-by-step navigation instructions for each role, consult the dedicated guides below:
+For complete lists of accessible features, route identifiers, screen inventories, interactive controls, and step-by-step navigation instructions for each role, consult the dedicated guides below:
 
 1. 📊 **[`crud_matrix.md`](crud_matrix.md)** — Master CRUD & USE Action Matrix across all 8 platform modules with operation-level checkmarks and Supabase table mappings.
-2. 📖 **[`guest_access.md`](guest_access.md)** — Comprehensive guide for Guest users, unauthenticated exploration, guest scanning, and auth conversion gates.
-3. 📖 **[`resident_access.md`](resident_access.md)** — Comprehensive guide for Community Residents, camera flows, points & badges, waste reporting, and account management.
-4. 📖 **[`admin_access.md`](admin_access.md)** — Comprehensive guide for Barangay Administrators, KPI dashboards, moderation galleries, user role editing, schedule authoring, and security audits.
+2. 📖 **[`guest_access.md`](guest_access.md)** — Comprehensive guide for Guest users: unauthenticated exploration, guest scanning, and auth conversion gates.
+3. 📖 **[`resident_access.md`](resident_access.md)** — Comprehensive guide for Community Residents: camera flows, points & badges, uploads archive, dispute appeals, and account management.
+4. 📖 **[`crew_access.md`](crew_access.md)** — Comprehensive guide for Collection Crew: shift status management, live street collection checklists, field camera scanning, and incident reporting.
+5. 📖 **[`admin_access.md`](admin_access.md)** — Comprehensive guide for Barangay Administrators: KPI dashboards, moderation galleries, verifier overrides, user role editing, schedule authoring, and security audits.
+6. ✅ **[`qa_verification_checklist.md`](qa_verification_checklist.md)** — Master hands-on QA testing runbook containing 45 self-verification test cases across all 4 roles, including a database role-switching guide.

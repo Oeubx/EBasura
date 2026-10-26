@@ -165,3 +165,16 @@ The master table below summarizes permissions across all 8 platform modules at a
 | **Resident** | ❌ | ❌ | ❌ | ❌ | ❌ | Not Available | Restricted to collection crew and administrators. |
 | **Crew** | ✅ | ❌ | ✅ | ✅ | ❌ | Tab 1: Routes $\to$ `PageCrewDashboardWidget` | **USE/U**: Switches active shift status (*Idle*, *En Route*, *In Progress*, *Completed*); marks collection checklist.<br/>**R**: Queries daily assigned route schedule. |
 | **Admin** | ❌ | ❌ | ✅ | ❌ | ❌ | Admin Dashboard $\to$ Operational Metrics | **R**: Inspects real-time street collection completion progress. |
+
+---
+
+## 4. Verification & Testing Runbook
+
+For hands-on step-by-step verification of these permissions and features in the running mobile application, refer to the following companion guides:
+
+- 📋 **[`qa_verification_checklist.md`](qa_verification_checklist.md)**: 45 interactive self-verification check items covering all four roles, UI screen inventories, interactive controls, and Supabase SQL queries for role switching.
+- 📖 **[`guest_access.md`](guest_access.md)**: Deep dive into Guest visual screens, controls, and unauthenticated flows.
+- 📖 **[`resident_access.md`](resident_access.md)**: Deep dive into Resident features, points, uploads archive, and dispute flows.
+- 📖 **[`crew_access.md`](crew_access.md)**: Deep dive into Crew dispatch dashboards, shift status, and route checklists.
+- 📖 **[`admin_access.md`](admin_access.md)**: Deep dive into Admin command hub, verifier overrides, user management, and schedule authoring.
+

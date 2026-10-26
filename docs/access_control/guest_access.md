@@ -30,81 +30,105 @@ The **Guest** tier (`UserRole.guest`) is designed for community residents, visit
 
 ---
 
-## 3. How to Access All Guest Features (Step-by-Step)
+## 3. Visual Screen Inventory ("What You See")
 
-### 3.1 Entering Guest Mode from App Launch
-1. Launch EBasura on a mobile device or emulator.
-2. If unauthenticated, the application displays the **Landing Page** (`LandingPageWidget`).
-3. Tap **"Continue as Guest"** (or explore directly if routed to the root page).
-4. The application transitions to the **Homepage** (`PageHomepageWidget`) with the guest header title *"Hello, Eco Explorer"*.
+### 3.1 Landing Page (`LandingPageWidget`)
+Upon fresh app launch or sign out:
+- **Hero Brand Header**: EBasura logo and leaf emblem in Comfortaa font (`#2E78A6`).
+- **Mission Statement**: *"Smart Community Waste Management & Reporting"*.
+- **Gateway Buttons**:
+  - Button 2 (Ocean Blue Pill): *"Get Started"* $\to$ navigates to `PageSignUpWidget`.
+  - Button 1 (Neutral Canvas Pill): *"Sign In"* $\to$ navigates to `PageSignInWidget`.
+  - Text Link: *"Continue as Guest"* $\to$ enters `PageHomepageWidget` in guest mode.
 
----
-
-### 3.2 Navigating via the Guest Bottom Navigation Bar
-Guests are presented with a 4-tab bar and a center camera action button:
-
+### 3.2 Guest Bottom Navigation Bar
+Guests see a 4-tab bar with an elevated center camera FAB:
 ```
 [ 🏠 Home ]   [ 🏆 Rankings ]   [ 📷 Camera ]   [ 🧭 Explore ]   [ 🔑 Sign In ]
 ```
+> [!NOTE]
+> Notice the 5th item displays **"Sign In"** (`Icons.login_rounded`) instead of "Profile".
 
-1. **Tab 1: Home (`PageHomepageWidget`)**:
-   - **Click Path**: Tap the first icon labelled **Home**.
-   - **Features Available**:
-     - View personalized Eco Explorer greeting and promotional banner encouraging account creation.
-     - View upcoming collection schedule preview card.
-     - Quick action buttons to launch Scanner, Schedules, or Explore.
-2. **Tab 2: Rankings (`PageLeaderboardWidget`)**:
-   - **Click Path**: Tap the second icon labelled **Rankings**.
-   - **Features Available**:
-     - View the Top 3 podium recyclers in the barangay.
-     - Scroll through ranked community members, their recycling points, and tiers.
-     - Bottom persistent prompt: *"Join the Leaderboard — Sign In or Register to earn points"*.
-3. **Center FAB: Camera (`PImgUploadAGuestWidget`)**:
-   - **Click Path**: Tap the elevated circular green/blue camera button in the center.
-   - **Features Available**:
-     - Direct launch of the **Guest AI Waste Scanner**.
-     - Take a photo with the device camera or pick an image from the gallery.
-     - Gemini AI classifies the item into *Biodegradable, Recyclable, Non-Recyclable, or Hazardous*.
-     - Instant segregation advice and recycling instructions displayed on-screen.
-     - *Note*: Results are not saved to any database record; points are not awarded until an account is registered.
-4. **Tab 3: Explore (`PageViewSubFeaturesWidget`)**:
-   - **Click Path**: Tap the fourth icon labelled **Explore**.
-   - **Features Available**:
-     - Browse the three core public sub-features:
-       1. **Collection Schedules**: Interactive cards of all barangay streets and scheduled pickup times.
-       2. **Conducted Waste Audits**: Audit reports filed across barangay collection zones.
-       3. **Community Metrics**: Aggregate counts of verified, flagged, and segregated waste scans.
-5. **Tab 4: Sign In (`LandingPageWidget`)**:
-   - **Click Path**: Tap the fifth icon labelled **Sign In**.
-   - **Features Available**:
-     - Instant return to the authentication gateway to register a new account or log in with existing credentials.
+### 3.3 Guest Homepage (`PageHomepageWidget`)
+Upon entering the home screen as a guest:
+1. **Header**: Avatar with placeholder icon and text *"Hello, Eco Explorer"*.
+2. **Promotional Banner**: Card encouraging the visitor: *"Join EBasura — Create an account to earn points, unlock badges, and track your recycling streak!"*.
+3. **Primary Action**: Pill Button *"Scan Waste with AI"* (`Icons.photo_camera_rounded`).
+4. **Countdown Card**: *"NEXT COLLECTION PICKUP"* displaying next scheduled barangay truck arrival time.
+5. **Recent Collections Feed**: Scrollable list of upcoming street collection dates with *"View All"* link.
+
+### 3.4 Community Leaderboard (`PageLeaderboardWidget`)
+Upon tapping Tab 2 (**Rankings**):
+- **Top 3 Podium**: Visual 1st, 2nd, and 3rd place podium graphics with recycling point tallies.
+- **Community Feed**: Ranked table of community participants.
+- **Bottom CTA Banner**: Card reading *"Sign in to earn points from verified waste scanning and climb the community board"* with an Ocean Blue **"Sign In"** button.
+
+### 3.5 Explore Directory (`PageViewSubFeaturesWidget`)
+Upon tapping Tab 4 (**Explore**):
+- **Segmented Control**: Two sub-tabs: **Collections** and **Reports**.
+- **Collections Sub-Tab**: List of all barangay streets and their pickup schedules.
+- **Reports Sub-Tab**: Read-only cards of completed municipal waste audits (`_buildReportCard`), displaying street name, conducted date, and audit summary notes.
 
 ---
 
-### 3.3 Accessing Collection Schedules & Street Directories
-1. **From Homepage**:
-   - Scroll down to the **"Upcoming Collection"** section.
-   - Tap the **"View All"** text link or tap directly on the next scheduled pickup card.
-   - This opens `PDatesViewAllWidget`, listing all dates in ascending chronological order.
-   - Tap any date card to view pickup time windows, assigned collectors, and street names (`PDatesViewOneWidget`).
-2. **From Explore Tab**:
-   - Tap **Explore** on the bottom bar.
-   - Tap the collection schedule list item to open the full schedule table.
-   - Tap on the street name badge to open `PStreetViewOneWidget`.
+## 4. Interactive Controls Inventory ("What You Use")
+
+| Component / Button | Location | Action Triggered |
+| :--- | :--- | :--- |
+| **"Continue as Guest"** | `LandingPageWidget` | Bypasses auth credentials and enters `PageHomepageWidget`. |
+| **"Scan Waste with AI" Button** | `PageHomepageWidget` | Opens `PImgUploadAGuestWidget` to test Gemini vision scanning. |
+| **Center Camera FAB** | Bottom Bar | Opens `PImgUploadAGuestWidget` to capture or select a waste photo. |
+| **"Upcoming Collection" Card** | `PageHomepageWidget` | Opens `PDatesViewAllWidget` to browse all scheduled pickups. |
+| **"View All" Schedule Link** | `PageHomepageWidget` | Navigates to `PDatesViewAllWidget`. |
+| **Schedule Card Tap** | `PDatesViewAllWidget` | Opens `PDatesViewOneWidget` for detailed timing and crew notes. |
+| **Rankings Tab** | Bottom Bar | Opens read-only `PageLeaderboardWidget`. |
+| **Explore Tab** | Bottom Bar | Opens `PageViewSubFeaturesWidget` (Collections & Conducted Audits). |
+| **"Sign In" Tab (5th Item)** | Bottom Bar | Opens `LandingPageWidget` / `PageSignInWidget` to authenticate. |
+| **"Sign In" Leaderboard CTA** | `PageLeaderboardWidget` | Launches authentication gateway. |
 
 ---
 
-### 3.4 Accessing Educational & Research Documentation
-1. Navigate to the **Explore** tab (`PageViewSubFeaturesWidget`).
-2. Scroll to the **"About EBasura"** section or tap on informational dialogs.
-3. Select from:
-   - **App Overview**: Opens `PageProfileAboutWidget`.
-   - **ADET Project Details**: Opens `PageProfileAboutADETWidget`.
-   - **Waste Research & AI Ethics**: Opens `PageProfileAboutResearchWidget`.
+## 5. End-to-End User Flow & Navigation Journey
+
+```mermaid
+flowchart TD
+    Launch(["App Launch"]) --> Landing["LandingPageWidget (/landingPage)"]
+    
+    Landing -->|"Tap 'Continue as Guest'"| Home["Guest Home (PageHomepageWidget)"]
+    Landing -->|"Tap 'Sign In'"| SignIn["PageSignInWidget (/pageSignIn)"]
+    Landing -->|"Tap 'Get Started'"| SignUp["PageSignUpWidget (/pageSignUp)"]
+
+    Home --> GuestBar["Guest Bottom Bar"]
+    
+    GuestBar --> Tab1["Tab 1: Home"]
+    Tab1 --> HeroScan["Tap 'Scan Waste with AI'"]
+    HeroScan --> GuestScanScreen["PImgUploadAGuestWidget (/pImgUploadAGuest)<br/>(Stateless Gemini AI Scan)"]
+
+    GuestBar --> CenterFAB["Center FAB: Camera"]
+    CenterFAB --> GuestScanScreen
+    
+    GuestScanScreen --> Shutter["Capture Photo / Pick Gallery Image"]
+    Shutter --> AIInference["Gemini Vision Multi-Class Inference"]
+    AIInference --> ViewResult["Display Breakdown & Segregation Advice<br/>(ZERO database/storage persistence)"]
+    ViewResult --> RegisterPrompt["CTA: 'Sign Up to Save Points'"]
+    RegisterPrompt --> SignUp
+
+    GuestBar --> Tab2["Tab 2: Rankings (PageLeaderboardWidget)"]
+    Tab2 --> ViewPodium["Inspect Top 3 Podium & Community Points"]
+    Tab2 --> BottomCTA["Tap 'Sign In' Button on Banner"]
+    BottomCTA --> SignIn
+
+    GuestBar --> Tab3["Tab 3: Explore (PageViewSubFeaturesWidget)"]
+    Tab3 --> SubTab1["Collections: View Barangay Timetables"]
+    Tab3 --> SubTab2["Reports: Read Conducted Waste Audits"]
+
+    GuestBar --> Tab4["Tab 4: Sign In"]
+    Tab4 --> Landing
+```
 
 ---
 
-## 4. Guest Boundaries & Gated Actions
+## 6. Guest Boundaries & Gated Actions
 
 To safeguard data integrity, prevent spam, and maintain accurate leaderboard statistics, the following capabilities are strictly gated behind account authentication:
 

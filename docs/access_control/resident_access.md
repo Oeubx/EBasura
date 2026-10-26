@@ -2,7 +2,7 @@
 
 ## 1. User Persona & Scope
 
-The **Resident** tier (`UserRole.resident`) represents verified community members who have registered and confirmed their email addresses. Residents have full access to EBasura's gamified recycling platform: they scan waste using the Gemini-powered AI classifier, earn recycling points and streaks, unlock badges, report illegal dumping incidents, view their personal upload archives, and monitor barangay garbage collection schedules.
+The **Resident** tier (`UserRole.resident`) represents verified community members who have registered and confirmed their email addresses. Residents have full access to EBasura's gamified recycling platform: they scan waste using the Gemini-powered AI classifier, earn recycling points and streaks, unlock badges, dispute misclassified or wrongly verified images, view their personal upload archives, and monitor barangay garbage collection schedules.
 
 ---
 
@@ -10,17 +10,17 @@ The **Resident** tier (`UserRole.resident`) represents verified community member
 
 | Feature ID | Screen / Component Name | Route Path | Primary Purpose |
 | :--- | :--- | :--- | :--- |
-| **RES-01** | `PageHomepageWidget` | `/` or `/pageHomepage` | Authenticated community dashboard with personal stats, next pickup alert, and quick action cards. |
+| **RES-01** | `PageHomepageWidget` | `/` or `/pageHomepage` | Authenticated community dashboard with personal greeting, points/rank badge, and next pickup alert. |
 | **RES-02** | `PImgUploadAAuthWidget` | `/pImgUploadAAuth` | Authenticated AI Waste Scanner with automatic camera trigger, Gemini analysis, and points rewards. |
 | **RES-03** | `PImagesViewAllUserWidget` | `/pImagesViewAllUser` | Personal timeline and gallery of all waste scans uploaded by the user with moderation badges. |
-| **RES-04** | `PReportSystemWidget` | `/pReportSystem` | Waste incident reporting form (illegal dumping, overflow, missed collection) with photo capture. |
-| **RES-05** | `PReportViewAllWidget` | `/pReportViewAll` | Community feed of all filed waste reports and resolution statuses. |
-| **RES-06** | `PReportViewOneWidget` | `/pReportViewOne` | Detailed report view showing photos, barangay resolution status, and inspection notes. |
+| **RES-04** | `c_img_view_user_widget` | Modal Sheet / Detail | Full-screen inspection of personal scan: AI breakdown, flag toggle, and dispute appeal trigger. |
+| **RES-05** | `CDisputeDecisionWidget` | Bottom Sheet Dialog | Formal dispute appeal modal allowing residents to contest wrong AI or verifier classifications. |
+| **RES-06** | `c_image_deletion` | Confirmation Dialog | Secure deletion dialog to permanently delete a personal scan. |
 | **RES-07** | `PageLeaderboardWidget` | `/pageLeaderboard` | Full interactive community leaderboard displaying top recyclers, rank podium, and user's standing. |
 | **RES-08** | `PDatesViewAllWidget` | `/pDatesViewAll` | Barangay collection calendar and list of upcoming pickup dates per street. |
 | **RES-09** | `PDatesViewOneWidget` | `/pDatesViewOne` | Specific collection date details, pickup hours, and assigned truck crew. |
 | **RES-10** | `PStreetViewOneWidget` | `/pStreetViewOne` | Street directory profile displaying designated pickup windows and guidelines. |
-| **RES-11** | `PageViewSubFeaturesWidget` | `/pageViewSubFeatures` | Sub-features discovery directory covering audits, collection guidelines, and metrics. |
+| **RES-11** | `PageViewSubFeaturesWidget` | `/pageViewSubFeatures` | Sub-features discovery directory covering collection schedules and conducted waste audit reports. |
 | **RES-12** | `PageProfileWidget` | `/pageProfile` | User profile overview with point totals, unlocked badges, scan counts, and streak tracking. |
 | **RES-13** | `PageProfileSettingsWidget` | `/pageProfileSettings` | Account settings hub containing profile modification, credentials, and about links. |
 | **RES-14** | `PageChangeProfileWidget` | `/pageChangeProfile` | Form to edit display name, profile avatar, and contact details. |
@@ -33,118 +33,148 @@ The **Resident** tier (`UserRole.resident`) represents verified community member
 
 ---
 
-## 3. How to Access All Resident Features (Step-by-Step)
+## 3. Visual Screen Inventory ("What You See")
 
-### 3.1 Navigating via the Resident Bottom Navigation Bar
+### 3.1 Resident Bottom Navigation Bar
 When authenticated as a resident, `CBottomBarWidget` displays a 4-tab bar tailored for community participation with an elevated center camera button:
-
 ```
 [ 🏠 Home ]   [ 🏆 Rankings ]   [ 📷 Camera ]   [ 🧭 Explore ]   [ 👤 Profile ]
 ```
 
-1. **Tab 1: Home (`PageHomepageWidget`)**:
-   - **Click Path**: Tap the first icon labelled **Home**.
-   - **Features Available**:
-     - View greeting *"Hello, [Your Name]"*.
-     - Tap the **Points & Rank** badge pill to jump directly to the **Leaderboard**.
-     - View the **Upcoming Collection Alert** banner for your registered street.
-     - Quick Action Launcher:
-       - **Scan Waste** -> Launches `PImgUploadAAuthWidget`.
-       - **Collection Schedules** -> Launches `PDatesViewAllWidget`.
-       - **Waste Reporting** -> Launches `PReportSystemWidget`.
-       - **Leaderboard** -> Launches `PageLeaderboardWidget`.
-2. **Tab 2: Rankings (`PageLeaderboardWidget`)**:
-   - **Click Path**: Tap the second icon labelled **Rankings**.
-   - **Features Available**:
-     - Inspect top 3 podium recyclers in the barangay.
-     - View your highlighted position, rank number, total eco-points, and current tier.
-     - Scroll through the community rankings table.
-3. **Center FAB: Camera (`PImgUploadAAuthWidget`)**:
-   - **Click Path**: Tap the elevated circular camera button in the center.
-   - **Behavior**: Opens the Authenticated Scanner with `autoTriggerCamera: true`, automatically launching the camera viewfinder.
-4. **Tab 3: Explore (`PageViewSubFeaturesWidget`)**:
-   - **Click Path**: Tap the fourth icon labelled **Explore**.
-   - **Features Available**:
-     - Browse all barangay collection schedules.
-     - Review public waste audit reports filed by collection crews and barangay inspectors.
-     - View community recycling metric cards (total items classified, segregated vs unsegregated).
-5. **Tab 4: Profile (`PageProfileWidget`)**:
-   - **Click Path**: Tap the fifth icon labelled **Profile**.
-   - **Features Available**:
-     - Profile avatar, display name, and registered email.
-     - Metric cards: **Total Points**, **Daily Streak**, and **Total Scans**.
-     - Badges showcase with unlocked vs locked status.
-     - Action buttons: **"My Uploads"** and **"Settings"**.
-     - **Sign Out** button.
+### 3.2 Resident Homepage (`PageHomepageWidget`)
+Upon opening the application as an authenticated resident:
+1. **Header Section**:
+   - User profile avatar.
+   - Personalized greeting: *"Hello, [Your Display Name]"*.
+   - **Interactive Points & Rank Badge Pill** in the top-right corner displaying your current community rank and total points (tap to jump to Leaderboard).
+2. **Hero Countdown Card ("NEXT COLLECTION PICKUP")**:
+   - Circular mint icon with truck symbol (`Icons.local_shipping_rounded`).
+   - Street name and upcoming pickup countdown.
+3. **Primary Action**:
+   - Ocean Blue Pill Button 2: **"Scan Waste with AI"** (`Icons.photo_camera_rounded`).
+4. **Recent Collections Feed**:
+   - List of upcoming barangay pickup schedules with a *"View All"* link.
+
+### 3.3 Profile Screen (`PageProfileWidget`)
+Upon tapping Tab 5 (**Profile**):
+- **User Identity Card**: Avatar image, display name, registered email address.
+- **Metrics Row**: Three distinct statistical cards:
+  - **Total Points** (e.g., `1,250 Pts`)
+  - **Daily Streak** (e.g., `5 Days 🔥`)
+  - **Total Scans** (e.g., `42 Scans`)
+- **Badges Showcase**: Grid of earned badges (with vibrant colors and gold borders) vs. locked badges.
+- **Action Buttons**:
+  - Button 1 (Pill): **"My Uploads"** $\to$ opens your personal scan archive.
+  - Button 2 (Pill): **"Settings"** $\to$ opens account management options.
+  - Red Sign-Out Tile at the bottom.
+
+### 3.4 Personal Uploads Archive (`PImagesViewAllUserWidget`)
+Upon tapping **"My Uploads"**:
+- Reverse-chronological photo grid of all your uploaded waste items.
+- Status badges overlaid on each card:
+  - `Verified` (Green badge with checkmark)
+  - `Unsegregated` (Orange/Amber badge)
+  - `Flagged` (Red badge with flag icon)
+  - `Disputed` (Amber hourglass badge)
+
+### 3.5 Personal Image Detail & Dispute Modal (`c_img_view_user_widget`)
+Upon tapping any photo in My Uploads:
+- High-resolution photograph with zoom capability.
+- AI classification breakdown (material type, recyclability, confidence score).
+- **Flag Decision Button**: Quick red flag toggle if the scan was miscategorized.
+- **"Dispute Verification Decision" Button** (gavel icon): Visible when an item was flagged, rejected, or unsegregated.
+- **Delete Button** (trash icon): Opens deletion confirmation dialog.
+
+### 3.6 Explore Directory (`PageViewSubFeaturesWidget`)
+Upon tapping Tab 4 (**Explore**):
+- Two segmented tabs: **Collections** (all street schedules) and **Reports** (read-only completed community waste audits).
 
 ---
 
-### 3.2 Accessing & Performing an AI Waste Scan
-1. **Launch Scanner**:
-   - **Option A**: Tap the **Center Camera FAB** on the bottom navigation bar.
-   - **Option B**: Tap the **"Scan Waste"** action card on the Homepage.
-2. **Capture or Upload Image**:
-   - Point camera at the waste item (e.g., plastic bottle, food scraps, cardboard box).
-   - Tap the shutter button or select an existing photo from the gallery.
-3. **AI Inference & Result Presentation**:
-   - EBasura sends the image to Google Gemini REST API.
-   - Gemini classifies the material type (*Plastic, Paper, Organic, Metal, Glass, Hazardous*) and segregation accuracy (*Segregated vs Unsegregated*).
-4. **Points & Rewards Persistence**:
-   - Eco-points are automatically calculated and added to the user's Supabase profile.
-   - The scan is stored in the `image_record` and `waste_item` tables.
-   - If consecutive daily scanning is maintained, the daily streak count increments.
-5. **Post-Scan Navigation**:
-   - Tap **"Done"** to return to Homepage, or **"Scan Another"** to capture another item.
+## 4. Interactive Controls Inventory ("What You Use")
+
+| Component / Button | Location | Action Triggered |
+| :--- | :--- | :--- |
+| **Points & Rank Badge Pill** | Homepage (Top Right) | Deep-links directly to `PageLeaderboardWidget` with your position highlighted. |
+| **"Scan Waste with AI" Button** | Homepage | Opens `PImgUploadAAuthWidget` with automatic camera shutter launch. |
+| **Center Camera FAB** | Bottom Bar | Opens `PImgUploadAAuthWidget` with automatic camera shutter launch. |
+| **"Upcoming Collection" Card** | Homepage | Opens `PDatesViewAllWidget` to inspect all collection schedules. |
+| **Rankings Tab** | Bottom Bar | Opens interactive community leaderboard (`PageLeaderboardWidget`). |
+| **Explore Tab** | Bottom Bar | Opens `PageViewSubFeaturesWidget` (Collections & Completed Audits). |
+| **Profile Tab** | Bottom Bar | Opens `PageProfileWidget` (Stats, Badges, Uploads, Settings). |
+| **"My Uploads" Button** | `PageProfileWidget` | Opens `PImagesViewAllUserWidget` photo archive. |
+| **Image Card Tap** | `PImagesViewAllUserWidget` | Opens `c_img_view_user_widget` inspection modal. |
+| **"Flag Decision" Icon** | `c_img_view_user_widget` | Toggles status to `'Flagged'` to contest automated decision. |
+| **"Dispute Verification Decision"** | `c_img_view_user_widget` | Opens `CDisputeDecisionWidget` appeal modal bottom sheet. |
+| **"Submit Dispute" Button** | `CDisputeDecisionWidget` | Submits formal dispute appeal; sets status to `'Disputed'` for verifier review. |
+| **Delete Icon (Trash)** | `c_img_view_user_widget` | Opens `c_image_deletion` to permanently delete your scan. |
+| **"Settings" Button** | `PageProfileWidget` | Opens `PageProfileSettingsWidget`. |
+| **Edit Profile Tile** | `PageProfileSettingsWidget` | Opens `PageChangeProfileWidget` to update display name or avatar. |
+| **Change Password Tile** | `PageProfileSettingsWidget` | Opens `PageChangePasswordWidget` to securely update credentials. |
+| **Sign Out Tile** | `PageProfileSettingsWidget` | Clears local session tokens and returns to `LandingPageWidget`. |
 
 ---
 
-### 3.3 Accessing Personal Upload History ("My Uploads")
-1. Tap the **Profile** tab (Tab 4) on the bottom navigation bar.
-2. Scroll to the action section below your badges.
-3. Tap the **"My Uploads"** pill button (`ebasuraSecondaryButton`).
-4. This navigates to `PImagesViewAllUserWidget`:
-   - View a complete reverse-chronological photo grid of all your uploaded waste items.
-   - Each photo displays its AI classification label, timestamp, and verification badge (`AI Verified`, `Pending Moderation`, `Flagged`).
-   - Tap any card to open the detail dialog with full AI confidence scores and recycling tips.
+## 5. End-to-End User Flow & Navigation Journey
+
+```mermaid
+flowchart TD
+    Login["Resident Sign In"] --> ResidentBar["Resident Bottom Bar"]
+    
+    ResidentBar --> Tab1["Tab 1: Home (PageHomepageWidget)"]
+    Tab1 --> RankPill["Tap Points/Rank Pill"]
+    RankPill --> Leaderboard["PageLeaderboardWidget (Your Rank Highlighted)"]
+    Tab1 --> HeroScan["Tap 'Scan Waste with AI'"]
+    
+    ResidentBar --> CenterFAB["Center FAB: Camera"]
+    CenterFAB --> AuthScan["PImgUploadAAuthWidget (Auto Camera Trigger)"]
+    HeroScan --> AuthScan
+
+    AuthScan --> Shutter["Capture Photo / Gallery Select"]
+    Shutter --> GeminiInference["Gemini Multi-Modal Vision Inference"]
+    GeminiInference --> Persistence["Save to Supabase Storage + Insert image_record"]
+    Persistence --> AwardPoints["Credit +25 Eco-Points + Increment Daily Streak"]
+    AwardPoints --> PostScan["Display Categorization & Segregation Advice"]
+
+    ResidentBar --> Tab2["Tab 2: Rankings (PageLeaderboardWidget)"]
+    
+    ResidentBar --> Tab3["Tab 3: Explore (PageViewSubFeaturesWidget)"]
+    Tab3 --> SubTab1["Collections: View Barangay Timetables"]
+    Tab3 --> SubTab2["Reports: Read Conducted Waste Audits"]
+
+    ResidentBar --> Tab4["Tab 4: Profile (PageProfileWidget)"]
+    Tab4 --> MyUploads["Tap 'My Uploads' -> PImagesViewAllUserWidget"]
+    MyUploads --> ImageDetail["Tap Scan Card -> c_img_view_user_widget"]
+    
+    ImageDetail --> QuickFlag["Tap 'Flag Decision' Red Flag Icon"]
+    ImageDetail --> DisputeAppeal["Tap 'Dispute Verification Decision' Gavel"]
+    DisputeAppeal --> DisputeModal["CDisputeDecisionWidget<br/>(Select Reason, Type Explanation >= 5 chars)"]
+    DisputeModal --> SubmitDispute["Submit Dispute -> Status transitions to 'Disputed'"]
+
+    ImageDetail --> DeleteScan["Tap Trash Icon -> c_image_deletion (Confirm Delete)"]
+
+    Tab4 --> Settings["Tap 'Settings' -> PageProfileSettingsWidget"]
+    Settings --> EditProfile["PageChangeProfileWidget (Edit Name / Avatar)"]
+    Settings --> ChangePassword["PageChangePasswordWidget (Update Password)"]
+    Settings --> SignOut["Sign Out -> Return to Landing Page"]
+```
 
 ---
 
-### 3.4 Submitting a Waste Incident Report
-1. **Initiate Report**:
-   - **Option A**: On the Homepage, tap the **"Waste Reporting"** quick action card.
-   - **Option B**: In the Explore directory (`PageViewSubFeaturesWidget`), tap **"File Report"**.
-2. **Complete the Report Form (`PReportSystemWidget`)**:
-   - Tap the camera placeholder to attach a photo of the waste issue (e.g., illegal roadside dump, overflowing bin).
-   - Select the affected street from the dropdown list.
-   - Enter a brief description of the issue.
-   - Tap **"Submit Report"**.
-3. **Track Report Status**:
-   - Tap **"View All Reports"** to navigate to `PReportViewAllWidget`.
-   - Locate your submitted report; tap to view the detail page (`PReportViewOneWidget`).
-   - Monitor the resolution status as Barangay Officials inspect and resolve the issue (`Pending` -> `In Progress` -> `Resolved`).
-
----
-
-### 3.5 Managing Profile & Account Settings
-1. Tap the **Profile** tab on the bottom navigation bar.
-2. Tap the **"Settings"** pill button (`ebasuraSecondaryButton`) to open `PageProfileSettingsWidget`.
-3. Select any setting category:
-   - **Edit Profile**: Tap to open `PageChangeProfileWidget` to edit your display name or avatar.
-   - **Change Email**: Tap to open `PageChangeEmailWidget` to enter a new email and verify via OTP.
-   - **Change Password**: Tap to open `PageChangePasswordWidget` to securely update your password.
-   - **About EBasura**: Tap to open `PageProfileAboutWidget`.
-   - **Terms & Conditions**: Tap to open `TermsAndConditionsWidget`.
-   - **Sign Out**: Tap the red sign-out tile to clear session tokens and return to `LandingPageWidget`.
-
----
-
-## 4. Resident Data Persistence & Supabase Integration
+## 6. Resident Data Persistence & Supabase Integration
 
 Resident actions trigger automated database updates across Supabase tables:
 
 | Resident Action | Supabase Target Table | Operations Performed |
 | :--- | :--- | :--- |
-| **AI Waste Scan** | `image_record`, `waste_item`, `user` | Uploads image to Supabase Storage, inserts metadata, appends points to `user.user_pts`, increments `user.user_streak`. |
+| **AI Waste Scan** | `image_record`, `waste_item`, `user` | Uploads image to Supabase Storage (`waste-images/`), inserts metadata, appends points to `user.user_pts`, increments `user.user_streak`. |
 | **Badge Qualification** | `badge_record`, `badge_award` | Evaluates eligibility conditions (e.g., 50 scans, 7-day streak) and links new badge. |
-| **Waste Incident Filing** | `report` | Inserts report row with photo URL, `user_idRef`, `street_idRef`, and status `'Pending'`. |
+| **Dispute / Flag Submission** | `image_record` | Updates row: `status = 'Flagged'`, `verification_status = 'disputed'`, sets `remark = '[DISPUTE - Category]: Reason'`. |
+| **Scan Deletion** | `image_record`, `waste_item` | Deletes image record from database and removes asset from Supabase Storage. |
 | **Profile Edits** | `user` | Updates `display_name`, `avatar_url`, or `phone_number`. |
+
+---
+
+> [!NOTE]
+> **Community Incident Reporting Status**
+> In the current application release, the creation form for waste incident reports (`CReportCreationWidget`) is embedded inside `PReportViewAllWidget`, which is accessed via the **Collection Crew** bottom bar and the **Administrator** dashboard. On the Resident side, the Explore tab (`PageViewSubFeaturesWidget`) provides read-only visibility into conducted waste audits.
