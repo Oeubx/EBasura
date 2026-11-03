@@ -2235,47 +2235,9 @@ class _PImgViewVerifierWidgetState extends State<PImgViewVerifierWidget> {
                                                                       ),
                                                                     );
 
-                                                                    // 2. Gamification points handling
-                                                                    if (finalSegregated && rowUserSubtableRow != null) {
-                                                                      int activeCount = 0;
-                                                                      if (finalRecycling) activeCount++;
-                                                                      if (finalBiode) activeCount++;
-                                                                      if (finalNonBiode) activeCount++;
-
-                                                                      int pts = 25;
-                                                                      if (activeCount >= 3) {
-                                                                        pts = 100;
-                                                                      } else if (activeCount == 2) {
-                                                                        pts = 50;
-                                                                      }
-
-                                                                      await UserSubtableTable().update(
-                                                                        data: {
-                                                                          'user_points': functions.plusPoints(
-                                                                            rowUserSubtableRow.userPoints ?? 0,
-                                                                            pts,
-                                                                          ),
-                                                                          'notification': false,
-                                                                          'updated_at': DateTime.now().toIso8601String(),
-                                                                        },
-                                                                        matchingRows: (rows) => rows.eqOrNull(
-                                                                          'user_idRef',
-                                                                          containerImageRow.imgUploader,
-                                                                        ),
-                                                                      );
-                                                                    } else if (!finalSegregated && rowUserSubtableRow != null) {
-                                                                      await UserSubtableTable().update(
-                                                                        data: {
-                                                                          'notification': true,
-                                                                          'updated_at': DateTime.now().toIso8601String(),
-                                                                        },
-                                                                        matchingRows: (rows) => rows.eqOrNull(
-                                                                          'user_idRef',
-                                                                          containerImageRow.imgUploader,
-                                                                        ),
-                                                                      );
-                                                                    }
-
+                                                                    // 2. Server-side gamification points handling:
+                                                                    // Points, anti-gaming caps, and reversals are now computed and awarded
+                                                                    // automatically via the Postgres trg_image_points trigger on the Image table.
                                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                                       const SnackBar(
                                                                         content: Text('Waste verified successfully! Moved to Verified list.'),

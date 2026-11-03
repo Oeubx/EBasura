@@ -8,6 +8,7 @@ export 'table.dart';
 export 'tables/badge.dart';
 export 'tables/collection.dart';
 export 'tables/image.dart';
+export 'tables/points_ledger.dart';
 export 'tables/report.dart';
 export 'tables/street.dart';
 export 'tables/user.dart';
