@@ -3,6 +3,7 @@ import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_notification/c_notification_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
+import '/components/c_badge_celebration/c_badge_celebration_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -20,12 +21,14 @@ class _ProfileBundle {
     required this.subtable,
     required this.badge,
     required this.streets,
+    required this.unlockedBadges,
   });
 
   final UserRow? user;
   final UserSubtableRow? subtable;
   final BadgeRow? badge;
   final List<StreetRow> streets;
+  final List<Map<String, dynamic>> unlockedBadges;
 }
 
 class PageProfileWidget extends StatefulWidget {
@@ -86,11 +89,47 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
       queryFn: (q) => q.order('street_name', ascending: true),
     );
 
+    List<Map<String, dynamic>> unlockedBadges = [];
+    if (currentUserUid.isNotEmpty) {
+      try {
+        final badgesRes = await SupaFlow.client.rpc('get_my_unlocked_badges');
+        if (badgesRes is List) {
+          unlockedBadges = badgesRes
+              .map((b) => Map<String, dynamic>.from(b as Map))
+              .toList();
+        }
+      } catch (e) {
+        debugPrint('Error loading unlocked badges: $e');
+      }
+
+      final unseen = unlockedBadges
+          .where((b) => b['seen_at'] == null)
+          .firstOrNull;
+      if (unseen != null && mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            CBadgeCelebrationWidget.show(
+              context: context,
+              badgeId: unseen['badge_id']?.toString() ?? '',
+              badgeName: unseen['badge_name']?.toString() ?? 'Eco Badge',
+              badgeDescription:
+                  unseen['badge_description']?.toString() ?? '',
+              badgeLevel: (unseen['badge_level'] as num?)?.toInt() ?? 1,
+              ruleType: unseen['rule_type']?.toString() ?? 'points',
+              ruleThreshold:
+                  (unseen['rule_threshold'] as num?)?.toInt() ?? 100,
+            );
+          }
+        });
+      }
+    }
+
     return _ProfileBundle(
       user: user,
       subtable: subtable,
       badge: badge,
       streets: streetsRes,
+      unlockedBadges: unlockedBadges,
     );
   }
 
@@ -201,6 +240,8 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                                 theme: theme,
                                 points: points,
                                 badgeText: badgeText,
+                                subtable: subtable,
+                                unlockedBadges: data.unlockedBadges,
                               ),
                               const SizedBox(height: 16.0),
                               _buildIncidentReportingSection(
@@ -420,7 +461,13 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
     required FlutterFlowTheme theme,
     required int points,
     required String badgeText,
+    required UserSubtableRow? subtable,
+    required List<Map<String, dynamic>> unlockedBadges,
   }) {
+    final currentStreak = subtable?.currentStreak ?? 0;
+    final bestStreak = subtable?.bestStreak ?? 0;
+    final freezeAvailable = subtable?.freezeAvailable ?? true;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
@@ -446,7 +493,7 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Gamification Stats',
+                'Gamification & Streaks',
                 style: GoogleFonts.comfortaa(
                   fontSize: 14.0,
                   fontWeight: FontWeight.w700,
@@ -476,6 +523,8 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
             ],
           ),
           const SizedBox(height: 14.0),
+
+          // Row 1: Earned Points & Weekly Streak
           Row(
             children: [
               Expanded(
@@ -532,7 +581,7 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F1F8),
+                    color: const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Row(
@@ -540,11 +589,11 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                       Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF2E78A6),
+                          color: Color(0xFFF59E0B),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.military_tech_rounded,
+                          Icons.local_fire_department_rounded,
                           color: Colors.white,
                           size: 18.0,
                         ),
@@ -555,19 +604,19 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              badgeText,
+                              '$currentStreak ${currentStreak == 1 ? 'Wk' : 'Wks'}',
                               style: GoogleFonts.inter(
-                                fontSize: 14.0,
+                                fontSize: 16.0,
                                 fontWeight: FontWeight.w800,
-                                color: const Color(0xFF2E78A6),
+                                color: const Color(0xFF92400E),
                               ),
                             ),
                             Text(
-                              'Current Badge',
+                              'Streak (Best: $bestStreak)',
                               style: GoogleFonts.inter(
                                 fontSize: 10.0,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF2E78A6),
+                                color: const Color(0xFF92400E),
                               ),
                             ),
                           ],
@@ -579,6 +628,146 @@ class _PageProfileWidgetState extends State<PageProfileWidget> {
               ),
             ],
           ),
+
+          const SizedBox(height: 10.0),
+
+          // Streak Freeze Banner
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F1F8),
+              borderRadius: BorderRadius.circular(10.0),
+              border: Border.all(
+                color: const Color(0xFFA3C9D9),
+                width: 0.8,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  freezeAvailable ? Icons.ac_unit_rounded : Icons.shield_rounded,
+                  size: 16.0,
+                  color: const Color(0xFF2E78A6),
+                ),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    freezeAvailable
+                        ? 'Monthly Grace Freeze available (protects 1 missed week)'
+                        : 'Monthly grace freeze used for this month',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF013448),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14.0),
+
+          // Unlocked Badges Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Milestone Badges',
+                style: GoogleFonts.comfortaa(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF013448),
+                ),
+              ),
+              Text(
+                '${unlockedBadges.length} Unlocked',
+                style: GoogleFonts.inter(
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF31A11F),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+
+          if (unlockedBadges.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Text(
+                'Keep scanning verified waste to unlock streak & segregation badges!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 48.0,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: unlockedBadges.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8.0),
+                itemBuilder: (context, index) {
+                  final b = unlockedBadges[index];
+                  final bName = b['badge_name']?.toString() ?? 'Badge';
+                  final bLevel = b['badge_level']?.toString() ?? '1';
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: const Color(0xFF70BF5A).withValues(alpha: 0.6),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.military_tech_rounded,
+                          size: 16.0,
+                          color: Color(0xFF31A11F),
+                        ),
+                        const SizedBox(width: 6.0),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              bName,
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF065F46),
+                              ),
+                            ),
+                            Text(
+                              'Lvl $bLevel',
+                              style: GoogleFonts.inter(
+                                fontSize: 9.5,
+                                color: const Color(0xFF047857),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
         ],
       ),
     );

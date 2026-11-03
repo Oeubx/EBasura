@@ -9,7 +9,7 @@ class BadgeTable extends SupabaseTable<BadgeRow> {
 }
 
 class BadgeRow extends SupabaseDataRow {
-  BadgeRow(Map<String, dynamic> data) : super(data);
+  BadgeRow(super.data);
 
   @override
   SupabaseTable get table => BadgeTable();
@@ -47,4 +47,10 @@ class BadgeRow extends SupabaseDataRow {
 
   int? get badgeLevel => getField<int>('badge_level');
   set badgeLevel(int? value) => setField<int>('badge_level', value);
+
+  String? get ruleType => getField<String>('rule_type');
+  set ruleType(String? value) => setField<String>('rule_type', value);
+
+  int? get ruleThreshold => getField<int>('rule_threshold');
+  set ruleThreshold(int? value) => setField<int>('rule_threshold', value);
 }

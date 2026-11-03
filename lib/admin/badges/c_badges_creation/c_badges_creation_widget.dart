@@ -21,6 +21,7 @@ class CBadgesCreationWidget extends StatefulWidget {
 class _CBadgesCreationWidgetState extends State<CBadgesCreationWidget> {
   late CBadgesCreationModel _model;
   bool _isSaving = false;
+  String _selectedRuleType = 'points';
 
   @override
   void setState(VoidCallback callback) {
@@ -333,6 +334,74 @@ class _CBadgesCreationWidgetState extends State<CBadgesCreationWidget> {
                   ),
                   const SizedBox(height: 14.0),
 
+                  // Milestone Rule Type Dropdown
+                  Text(
+                    'Milestone Criterion',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.w600,
+                      color: theme.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 6.0),
+                  DropdownButtonFormField<String>(
+                    value: _selectedRuleType,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'points',
+                        child: Text('Lifetime Eco-Points'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'segregated_count',
+                        child: Text('Verified Segregated Scans'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'recyclable_count',
+                        child: Text('Recyclable Waste Items'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'report_count',
+                        child: Text('Resolved Incident Reports'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'streak',
+                        child: Text('Weekly Collection Streak (Wks)'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedRuleType = val);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: theme.primaryBackground,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 12.0,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                        borderSide: BorderSide(
+                          color: theme.accent4.withValues(alpha: 0.35),
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF2E78A6),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      color: theme.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 14.0),
+
                   // Points Range Row
                   Row(
                     children: [
@@ -526,6 +595,8 @@ class _CBadgesCreationWidgetState extends State<CBadgesCreationWidget> {
                                       'updated_by': currentUserUid,
                                       'badge_level':
                                           _model.countControllerValue ?? 1,
+                                      'rule_type': _selectedRuleType,
+                                      'rule_threshold': minPts,
                                     });
 
                                     if (!context.mounted) return;
