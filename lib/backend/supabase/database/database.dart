@@ -11,6 +11,8 @@ export 'tables/image.dart';
 export 'tables/points_ledger.dart';
 export 'tables/report.dart';
 export 'tables/street.dart';
+export 'tables/street_compliance_snapshot.dart';
+export 'tables/street_flag.dart';
 export 'tables/user.dart';
 export 'tables/user_badge_junction.dart';
 export 'tables/user_subtable.dart';

@@ -89,6 +89,72 @@ class StreetComplianceExporter {
     }
   }
 
+  /// Exports Street Compliance Index (SCI) snapshots and active flags
+  static Future<void> exportSnapshotsCSV({
+    required BuildContext context,
+    required List<StreetComplianceSnapshotRow> snapshots,
+    List<StreetFlagRow>? flags,
+  }) async {
+    try {
+      final flagMap = <String, StreetFlagRow>{};
+      if (flags != null) {
+        for (final f in flags) {
+          if (!flagMap.containsKey(f.streetRef) || f.status != 'resolved') {
+            flagMap[f.streetRef] = f;
+          }
+        }
+      }
+
+      final List<List<dynamic>> csvData = [
+        [
+          'Street Name',
+          'Week Starting',
+          'Verified Scans',
+          'Segregated Scans',
+          'Valid Reports',
+          'Weekly SCI (%)',
+          '4-Week Rolling SCI (%)',
+          'Assigned Grade',
+          'Flag Status',
+          'Flag Action Note',
+          'Computed At',
+        ],
+        ...snapshots.map((s) {
+          final flag = flagMap[s.streetRef];
+          return [
+            s.streetRef,
+            s.weekStart.toIso8601String().split('T').first,
+            s.verifiedScans,
+            s.segregatedScans,
+            s.validReports,
+            s.sciWeek != null ? s.sciWeek!.toStringAsFixed(1) : 'Insufficient Data',
+            s.sciRolling4 != null ? s.sciRolling4!.toStringAsFixed(1) : 'Insufficient Data',
+            s.grade ?? 'N/A (<5 scans)',
+            flag?.status ?? 'None',
+            flag?.actionNote ?? 'N/A',
+            s.computedAt.toIso8601String(),
+          ];
+        }),
+      ];
+
+      final String csvString = const ListToCsvConverter().convert(csvData);
+      final List<int> bytes = utf8.encode(csvString);
+      final String fileName =
+          'EBasura_Street_Compliance_Snapshots_' + DateTime.now().millisecondsSinceEpoch.toString() + '.csv';
+
+      await _downloadOrSaveFile(
+        context: context,
+        bytes: bytes,
+        fileName: fileName,
+        mimeType: 'text/csv',
+        fileTitle: 'Street Compliance Snapshots Exported',
+      );
+    } catch (e) {
+      _showErrorSnackBar(context, 'Failed to generate snapshots CSV: ' + e.toString());
+    }
+  }
+
+
   /// Exports complete ground-truth dual-evaluation dataset for Chapter 5 empirical research
   /// (Confusion Matrix, Cohen's Kappa, and Audit Latency).
   static Future<void> exportEvaluationDatasetCSV({

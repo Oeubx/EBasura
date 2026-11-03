@@ -165,21 +165,29 @@ class _PageCrewDashboardWidgetState extends State<PageCrewDashboardWidget> {
   }
 
   Widget _buildChecklistSection(BuildContext context) {
-    return FutureBuilder<List<CollectionRow>>(
-      future: CollectionTable().queryRows(queryFn: (q) => q),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        final collections = snapshot.data!;
-        final completedCount = _collectedStreetIds.length;
-        final totalCount = collections.length;
-        final progress = totalCount > 0 ? (completedCount / totalCount).clamp(0.0, 1.0) : 0.0;
+    return FutureBuilder<List<StreetFlagRow>>(
+      future: StreetFlagTable().queryRows(
+        queryFn: (q) => q.neqOrNull('status', 'resolved'),
+      ),
+      builder: (context, flagSnapshot) {
+        final activeFlaggedStreets =
+            flagSnapshot.data?.map((f) => f.streetRef).toSet() ?? <String>{};
+
+        return FutureBuilder<List<CollectionRow>>(
+          future: CollectionTable().queryRows(queryFn: (q) => q),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            final collections = snapshot.data!;
+            final completedCount = _collectedStreetIds.length;
+            final totalCount = collections.length;
+            final progress = totalCount > 0 ? (completedCount / totalCount).clamp(0.0, 1.0) : 0.0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,6 +366,8 @@ class _PageCrewDashboardWidgetState extends State<PageCrewDashboardWidget> {
             ),
           ],
         );
+      },
+    );
       },
     );
   }

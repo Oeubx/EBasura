@@ -357,6 +357,43 @@ class _PageAdminDashboardWidgetState extends State<PageAdminDashboardWidget> {
           },
         ),
         const SizedBox(height: 10.0),
+        // Street Compliance Desk
+        FutureBuilder<List<StreetFlagRow>>(
+          future: StreetFlagTable().queryRows(
+            queryFn: (q) => q.neqOrNull('status', 'resolved'),
+          ),
+          builder: (context, flagSnap) {
+            final activeFlags = flagSnap.data?.length ?? 0;
+            return _buildAdminActionTile(
+              context: context,
+              title: 'Street Compliance Desk (SCI)',
+              subtitle: 'Monitor rolling cleanliness, SCI grades & intervention flags',
+              icon: Icons.analytics_rounded,
+              iconColor: const Color(0xFF2E78A6),
+              trailingBadge: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                decoration: BoxDecoration(
+                  color: activeFlags > 0
+                      ? const Color(0xFFDC2626)
+                      : FlutterFlowTheme.of(context).ecoPrimary,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Text(
+                  activeFlags > 0 ? '$activeFlags Flags' : 'Clear',
+                  style: GoogleFonts.inter(
+                    fontSize: 10.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              onTap: () async {
+                context.pushNamed(PStreetComplianceDeskWidget.routeName);
+              },
+            );
+          },
+        ),
+        const SizedBox(height: 10.0),
         // Gamification Badges
         _buildAdminActionTile(
           context: context,

@@ -281,6 +281,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => PStreetViewAllWidget(),
         ),
         FFRoute(
+          name: PStreetComplianceDeskWidget.routeName,
+          path: PStreetComplianceDeskWidget.routePath,
+          builder: (context, params) => const PStreetComplianceDeskWidget(),
+        ),
+        FFRoute(
           name: PBadgeViewAllWidget.routeName,
           path: PBadgeViewAllWidget.routePath,
           builder: (context, params) => PBadgeViewAllWidget(),

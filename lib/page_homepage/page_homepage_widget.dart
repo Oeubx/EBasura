@@ -305,6 +305,160 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
     );
   }
 
+  Widget _buildResidentStreetComplianceCard(
+    BuildContext context,
+    String? streetName,
+  ) {
+    if (streetName == null || streetName.isEmpty) return const SizedBox.shrink();
+
+    return FutureBuilder<List<StreetComplianceSnapshotRow>>(
+      future: StreetComplianceSnapshotTable().queryRows(
+        queryFn: (q) => q
+            .eqOrNull('street_ref', streetName)
+            .order('week_start', ascending: false)
+            .limit(1),
+      ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        final snap = snapshot.data!.first;
+        final grade = snap.grade;
+        final rolling = snap.sciRolling4;
+        final isLowGrade = grade == 'C' || grade == 'D';
+
+        Color gradeColor;
+        switch (grade) {
+          case 'A':
+            gradeColor = const Color(0xFF31A11F);
+            break;
+          case 'B':
+            gradeColor = const Color(0xFF70BF5A);
+            break;
+          case 'C':
+            gradeColor = const Color(0xFFD97706);
+            break;
+          case 'D':
+            gradeColor = const Color(0xFFDC2626);
+            break;
+          default:
+            gradeColor = const Color(0xFF6B7280);
+        }
+
+        final rollingText = rolling != null
+            ? '${rolling.toStringAsFixed(1)}%'
+            : 'Pending (<5 scans)';
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: EBasuraCard(
+            padding: const EdgeInsets.all(14.0),
+            backgroundColor: isLowGrade ? const Color(0xFFFFFBEB) : Colors.white,
+            borderColor: isLowGrade
+                ? gradeColor.withValues(alpha: 0.4)
+                : FlutterFlowTheme.of(context).mintTint,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.insights_rounded,
+                            size: 18.0,
+                            color: gradeColor,
+                          ),
+                          const SizedBox(width: 8.0),
+                          Expanded(
+                            child: Text(
+                              '$streetName Cleanliness',
+                              style: GoogleFonts.interTight(
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.bold,
+                                color: FlutterFlowTheme.of(context).primaryText,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                        vertical: 3.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: gradeColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(color: gradeColor, width: 1.0),
+                      ),
+                      child: Text(
+                        grade != null ? 'Grade $grade' : 'Evaluating',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.bold,
+                          color: gradeColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6.0),
+                Text(
+                  '4-Week Cleanliness Index: $rollingText',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.0,
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                  ),
+                ),
+                if (isLowGrade) ...[
+                  const SizedBox(height: 10.0),
+                  Container(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                      border: Border.all(
+                        color: gradeColor.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.lightbulb_outline_rounded,
+                          size: 16.0,
+                          color: gradeColor,
+                        ),
+                        const SizedBox(width: 8.0),
+                        Expanded(
+                          child: Text(
+                            grade == 'D'
+                                ? 'Intervention Alert: Your street is under intensive follow-up. Please ensure plastics and biodegradables are strictly separated before morning pickup to boost our neighborhood grade!'
+                                : 'Neighborhood Tip: Separate recyclable containers and paper from food waste to help our street achieve Grade A!',
+                            style: GoogleFonts.inter(
+                              fontSize: 11.0,
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPointsAndScanCard(BuildContext context) {
     final isGuest = currentUserUid.isEmpty;
 
@@ -822,7 +976,16 @@ class _PageHomepageWidgetState extends State<PageHomepageWidget> {
                           final user = snapshot.hasData && snapshot.data!.isNotEmpty
                               ? snapshot.data!.first
                               : null;
-                          return _buildHeroGreeting(context, user);
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHeroGreeting(context, user),
+                              _buildResidentStreetComplianceCard(
+                                context,
+                                user?.userStreetNameRef,
+                              ),
+                            ],
+                          );
                         },
                       )
                     else

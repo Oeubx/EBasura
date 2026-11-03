@@ -53,6 +53,8 @@ export '/admin/dates/p_dates_view_all/p_dates_view_all_widget.dart'
     show PDatesViewAllWidget;
 export '/admin/street/p_street_view_all/p_street_view_all_widget.dart'
     show PStreetViewAllWidget;
+export '/admin/street/p_street_compliance_desk/p_street_compliance_desk_widget.dart'
+    show PStreetComplianceDeskWidget;
 export '/admin/badges/p_badge_view_all/p_badge_view_all_widget.dart'
     show PBadgeViewAllWidget;
 export '/admin/badges/p_badge_view_one/p_badge_view_one_widget.dart'
