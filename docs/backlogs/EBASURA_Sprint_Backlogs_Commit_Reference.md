@@ -137,6 +137,10 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | `EBASURA-M5-F2` | Badge Milestone Evaluation & Unlock | Milestone point evaluation unlocking achievement badges | [`badges_and_achievements.md`](../modules/module-5-gamification-leaderboard/badges_and_achievements.md) |
 | `EBASURA-M5-F3` | User Badge Showcase & Details | Showcase card displaying badge criteria and date unlocked | [`badges_and_achievements.md`](../modules/module-5-gamification-leaderboard/badges_and_achievements.md) |
 | `EBASURA-M5-F4` | Public Badge Directory View | Catalog view of all available badges with locked/unlocked state | [`badges_and_achievements.md`](../modules/module-5-gamification-leaderboard/badges_and_achievements.md) |
+| `EBASURA-M5-F5` | Server-Side Points Ledger & Award Trigger | Immutable `points_ledger` table, database trigger `trg_image_points`, daily scan caps, and negative reversals | [`points_and_leaderboard.md`](../modules/module-5-gamification-leaderboard/points_and_leaderboard.md) |
+| `EBASURA-M5-F6` | Leaderboard v2 (Periodic, Streets & Privacy) | Periodic filters (Weekly, Monthly, All-Time), Collaborative Streets leaderboard, and resident name masking | [`points_and_leaderboard.md`](../modules/module-5-gamification-leaderboard/points_and_leaderboard.md) |
+| `EBASURA-M5-F7` | Behavioral Streaks, Freezes & Badge Engine | Rule-based badge evaluation (`fn_evaluate_badges`), weekly segregation streak with monthly freeze grace, and celebration modal | [`badges_and_achievements.md`](../modules/module-5-gamification-leaderboard/badges_and_achievements.md) |
+| `EBASURA-M5-F8` | Admin Badge Rule Criteria & Authoring Form | Multi-criterion badge creation (points, segregation count, recycling count, reports, streaks) | [`badges_and_achievements.md`](../modules/module-5-gamification-leaderboard/badges_and_achievements.md) |
 
 ---
 
@@ -177,6 +181,8 @@ All commits in the EBasura repository must adhere to Conventional Commits gramma
 | `EBASURA-M8-F3` | Street Deletion & Cascade Safety | Safeguarded street removal with dependency warnings | [`street_management.md`](../modules/module-8-street-directory/street_management.md) |
 | `EBASURA-M8-F4` | Street Table Schema & Relations | Postgres `street` table definition and foreign key relations | [`street_management.md`](../modules/module-8-street-directory/street_management.md) |
 | `EBASURA-M8-F5` | Admin 1-Click PDF/CSV Street Compliance Exporter | 1-click exporter generating RFC 4180 CSV tables and ASCII PDF summary reports | [`street_registry.md`](../modules/module-8-street-directory/street_registry.md) |
+| `EBASURA-M8-F6` | Street Compliance Index (SCI) & Rolling Grade Engine | Weekly snapshot engine computing SCI scores, 4-week rolling averages, sample size guards, and letter grades (A–D) | [`street_registry.md`](../modules/module-8-street-directory/street_registry.md) |
+| `EBASURA-M8-F7` | Admin Flag Intervention Desk & Crew Warning Markers | Automated Grade D intervention queue (`street_flag`), multi-stage resolution desk, and collection route spot-check markers | [`street_registry.md`](../modules/module-8-street-directory/street_registry.md) |
 
 ---
 

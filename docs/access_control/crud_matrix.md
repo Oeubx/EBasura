@@ -36,17 +36,17 @@ The master table below summarizes permissions across all 8 platform modules at a
 | | **Crew** | ✅ | ❌ | ✅ | ✅ | ❌ | Read pickup dates; toggle street collection checklist. |
 | | **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Full CRUD: author, update hours, delete schedules. |
 | **4. Community Leaderboard & Points** | **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Read-only rankings podium; cannot earn points. |
-| | **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Ranked participant; auto-accumulate scan points. |
-| | **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | View rankings and participant positions. |
-| | **Admin** | ❌ | ❌ | ✅ | ✅ | ❌ | View rankings; manual point adjustment & audits. |
-| **5. Street Directory** | **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Read registered streets and collection zones. |
-| | **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Read street guidelines and pickup time windows. |
-| | **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Read street collection routes. |
-| | **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Full CRUD: add new streets, update, retire/delete. |
+| | **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Ranked participant; auto-accumulate points in `points_ledger` via server triggers; configure name privacy (`full_name`, `initials`, `anonymous`). |
+| | **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | View periodic and collaborative street rankings. |
+| | **Admin** | ❌ | ❌ | ✅ | ✅ | ❌ | View master rankings; audit ledger awards and reversals. |
+| **5. Street Directory & Compliance Desk** | **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Read registered streets and public compliance snapshots. |
+| | **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Read street schedules, street compliance grade, and anonymous tips. |
+| | **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Read routes; inspect spot-check markers on flagged streets. |
+| | **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Full CRUD: manage streets, recompute SCI snapshots, execute flag interventions (`open` $\to$ `notified` $\to$ `in_followup` $\to$ `resolved`). |
 | **6. Badges & Rewards** | **Guest** | ❌ | ❌ | ❌ | ❌ | ❌ | Gated; badges require authenticated profile. |
-| | **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | View earned vs locked badges; auto-unlock on goals. |
+| | **Resident** | ❌ | ❌ | ✅ | ✅ | ❌ | View earned vs locked badges; dismiss celebration modal (`UPDATE seen_at`); track weekly streaks and monthly freeze. |
 | | **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | View earned badges on profile. |
-| | **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Full CRUD: author badges, upload icons, revoke/delete. |
+| | **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Full CRUD: author rule-based badges (points, segregation, recycling, reports, streaks), revoke/delete. |
 | **7. User Management & Profiles** | **Guest** | ❌ | ✅ | ❌ | ❌ | ❌ | Create new account via registration (`PageSignUp`). |
 | | **Resident** | ❌ | ❌ | ✅ | ✅ | ✅ | View/edit own profile, password; delete account. |
 | | **Crew** | ❌ | ❌ | ✅ | ✅ | ❌ | View/edit own credentials and phone number. |
@@ -103,41 +103,44 @@ The master table below summarizes permissions across all 8 platform modules at a
 
 ### 3.4 Module 4: Community Leaderboard & Points
 
-* **Target Supabase Tables**: `user` (`user_pts`, `user_streak`), `leaderboard_view`  
+* **Target Supabase Tables**: `points_ledger`, `"User Subtable"`, `"User"`  
+* **Stored Procedures / RPCs**: `get_leaderboard(p_period, p_limit)`, `get_street_leaderboard(p_period)`, `get_my_rank(p_period)`  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Tab 2: Rankings $\to$ `PageLeaderboardWidget` | **R**: Queries Top 3 podium and ranked community list. Guest has no profile so no ranking is stored. |
-| **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Tab 2: Rankings $\to$ `PageLeaderboardWidget`<br/>Profile points pill | **R**: Inspects personal ranking, current tier, and community scores.<br/>*(Points are auto-incremented by scanning engine via RPC)*. |
-| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Explore $\to$ `PageLeaderboardWidget` | **R**: Inspects community leaderboard standings. |
-| **Admin** | ❌ | ❌ | ✅ | ✅ | ❌ | Admin Dashboard $\to$ "User Management"<br/>`PageUserManagementWidget` | **R**: Audits community scores.<br/>**U**: Manually adjusts, credits, or deducts user points with an audit explanation note. |
+| **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Tab 2: Rankings $\to$ `PageLeaderboardWidget` | **R**: Queries Top 3 podium and ranked community list via RPC. Guest has no points profile. |
+| **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Tab 2: Rankings $\to$ `PageLeaderboardWidget`<br/>Profile points pill<br/>Settings $\to$ Privacy Sheet | **R**: Queries personal ranking, deficit standing, and periodic boards.<br/>*RLS*: Resident can `SELECT` own `points_ledger` records (`user_id = auth.uid()`). All point credits/debits are server-enforced by database triggers (`trg_image_points`, `trg_sync_user_points`). Can update own `leaderboard_privacy_mode` (`full_name`, `initials`, `anonymous`). |
+| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Explore $\to$ `PageLeaderboardWidget` | **R**: Inspects periodic and collaborative streets leaderboards. |
+| **Admin** | ❌ | ❌ | ✅ | ✅ | ❌ | Admin Dashboard $\to$ "User Management"<br/>`PageUserManagementWidget` | **R**: Full audit of `points_ledger` entries and daily award caps.<br/>**U**: Administrative point adjustments with audit justification notes. |
 
 ---
 
-### 3.5 Module 5: Street Directory
+### 3.5 Module 5: Street Directory & Compliance Desk
 
-* **Target Supabase Table**: `street`  
+* **Target Supabase Tables**: `Street`, `street_compliance_snapshot`, `street_flag`  
+* **Stored Procedures / RPCs**: `fn_compute_street_compliance(p_target_week)`  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Explore $\to$ `PStreetViewOneWidget` | **R**: Lookup street names, zones, and collection frequency. |
-| **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Home/Explore $\to$ `PStreetViewOneWidget` | **R**: Lookup street collection parameters and recycling rules. |
-| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Crew Dashboard $\to$ Street lookup | **R**: Verifies street boundaries and zone coverage. |
-| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Streets Directory"<br/>`c_street_creation`, `c_street_update`, `c_street_deletion` | **C**: Registers new street/zone into directory.<br/>**R**: Full street directory.<br/>**U**: Modifies street name, zone, or collection notes.<br/>**D**: Deletes retired streets from system. |
+| **Guest** | ❌ | ❌ | ✅ | ❌ | ❌ | Explore $\to$ `PStreetViewOneWidget` | **R**: Lookup street names, zones, collection schedules, and public SCI snapshots. |
+| **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Home $\to$ Street Cleanliness Card<br/>`PageHomepageWidget` | **R**: Views registered street 4-week rolling cleanliness grade (A–D). For Grade C/D streets, reads anonymous educational advisory tips. |
+| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Crew Checklist $\to$ `PageCrewDashboardWidget` | **R**: Reads route collection checklist with automated red spot-check warning markers on flagged streets (`status != 'resolved'`). |
+| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Street Compliance Desk"<br/>`PStreetComplianceDeskWidget`<br/>`c_street_creation`, `c_street_deletion` | **C**: Registers streets; manual recomputation trigger.<br/>**R**: Full street directory, historical SCI snapshots, and flag queue.<br/>**U**: Advances flag lifecycle (`open` $\to$ `notified` $\to$ `in_followup` $\to$ `resolved`) and writes intervention audit notes.<br/>**D**: Deletes retired streets from directory. |
 
 ---
 
 ### 3.6 Module 6: Badges & Rewards
 
-* **Target Supabase Tables**: `badge`, `user_subtable`  
+* **Target Supabase Tables**: `Badge`, `user_badge_junction`, `"User Subtable"`  
+* **Stored Procedures / RPCs**: `fn_evaluate_badges(p_user_id)`, `get_my_unlocked_badges()`, `mark_badge_seen(p_badge_id)`  
 * **Storage Bucket**: `Image_Bucket/Badges/`  
 
 | User Tier | USE | C | R | U | D | UI Trigger / Component | Technical Operation Details |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
 | **Guest** | ❌ | ❌ | ❌ | ❌ | ❌ | Not Available | Badges are tied to authenticated profile achievements. |
-| **Resident** | ❌ | ❌ | ✅ | ❌ | ❌ | Tab 4: Profile $\to$ Badge Showcase | **R**: Views unlocked badges with gold borders and locked progress.<br/>*(Badge awards are created automatically by database trigger/RPC upon hitting criteria)*. |
-| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Profile $\to$ Badge Showcase | **R**: Views unlocked achievement badges. |
-| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Badges"<br/>`PBadgeViewAllWidget`<br/>`c_badges_creation`, `c_badges_deletion` | **C**: Authors new badge with custom criteria and uploads PNG icon to `badges/` bucket.<br/>**R**: Master badge catalog.<br/>**U**: Modifies badge unlock requirements.<br/>**D**: Deletes or revokes obsolete badges. |
+| **Resident** | ❌ | ❌ | ✅ | ✅ | ❌ | Tab 4: Profile $\to$ Badge Shelf & Streak<br/>`CBadgeCelebrationWidget` | **R**: Queries unlocked badges from `user_badge_junction` joined with `Badge`. Reads weekly streak (`🔥 X Weeks`) and monthly freeze status.<br/>**U**: Dismisses celebratory unlock dialog, updating `seen_at = now()` on owned junction record. |
+| **Crew** | ❌ | ❌ | ✅ | ❌ | ❌ | Profile $\to$ Badge Showcase | **R**: Views earned badges on personal profile. |
+| **Admin** | ❌ | ✅ | ✅ | ✅ | ✅ | Admin Dashboard $\to$ "Badges"<br/>`PBadgeViewAllWidget`<br/>`CBadgesCreationWidget` | **C**: Authors new badge with rule type (`points`, `segregated_count`, `recyclable_count`, `report_count`, `streak`), threshold, and PNG icon.<br/>**R**: Master badge directory.<br/>**U**: Modifies unlock rules and thresholds.<br/>**D**: Deletes or revokes achievement badges. |
 
 ---
 
