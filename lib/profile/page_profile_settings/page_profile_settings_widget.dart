@@ -1,4 +1,5 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -36,6 +37,224 @@ class _PageProfileSettingsWidgetState extends State<PageProfileSettingsWidget> {
   void dispose() {
     _model.dispose();
     super.dispose();
+  }
+
+  Future<void> _showLeaderboardPrivacySheet(BuildContext context) async {
+    if (currentUserUid.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please sign in to update privacy settings.',
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF2E78A6),
+        ),
+      );
+      return;
+    }
+
+    String currentSetting = 'full_name';
+    try {
+      final rows = await UserSubtableTable().querySingleRow(
+        queryFn: (q) => q.eqOrNull('user_idRef', currentUserUid),
+      );
+      if (rows.isNotEmpty) {
+        currentSetting = rows.first.leaderboardDisplay ?? 'full_name';
+      }
+    } catch (e) {
+      debugPrint('Error fetching privacy setting: $e');
+    }
+
+    if (!context.mounted) return;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bottomSheetContext) {
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.0,
+                  height: 4.0,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(2.0),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F1F8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.visibility_outlined,
+                      color: Color(0xFF2E78A6),
+                      size: 20.0,
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Leaderboard Display Privacy',
+                          style: GoogleFonts.comfortaa(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF013448),
+                          ),
+                        ),
+                        Text(
+                          'Choose how you appear on community rankings',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.0,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20.0),
+              _buildPrivacyOptionTile(
+                bottomSheetContext,
+                title: 'Full Name',
+                subtitle: 'Display your complete registered name',
+                value: 'full_name',
+                isSelected: currentSetting == 'full_name',
+              ),
+              const SizedBox(height: 10.0),
+              _buildPrivacyOptionTile(
+                bottomSheetContext,
+                title: 'Initials Only',
+                subtitle: 'Display only your first initial (e.g., J.)',
+                value: 'initials',
+                isSelected: currentSetting == 'initials',
+              ),
+              const SizedBox(height: 10.0),
+              _buildPrivacyOptionTile(
+                bottomSheetContext,
+                title: 'Anonymous Resident',
+                subtitle: 'Hide identity completely on public rankings',
+                value: 'hidden',
+                isSelected: currentSetting == 'hidden',
+              ),
+              const SizedBox(height: 24.0),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPrivacyOptionTile(
+    BuildContext bottomSheetContext, {
+    required String title,
+    required String subtitle,
+    required String value,
+    required bool isSelected,
+  }) {
+    return InkWell(
+      onTap: () async {
+        Navigator.pop(bottomSheetContext);
+        try {
+          await UserSubtableTable().update(
+            data: {'leaderboard_display': value},
+            matchingRows: (q) => q.eqOrNull('user_idRef', currentUserUid),
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Privacy preference updated to $title.',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                backgroundColor: const Color(0xFF31A11F),
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Failed to update privacy preference: $e',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                backgroundColor: const Color(0xFFDC2626),
+              ),
+            );
+          }
+        }
+      },
+      borderRadius: BorderRadius.circular(16.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F1F8) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16.0),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF2E78A6) : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.0,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF013448)
+                          : const Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: isSelected
+                  ? const Color(0xFF2E78A6)
+                  : const Color(0xFFCBD5E1),
+              size: 22.0,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -105,6 +324,12 @@ class _PageProfileSettingsWidgetState extends State<PageProfileSettingsWidget> {
                           onTap: () => context.pushNamed(
                             PageChangeProfileWidget.routeName,
                           ),
+                        ),
+                        _SettingsItem(
+                          icon: Icons.visibility_outlined,
+                          title: 'Leaderboard Privacy',
+                          subtitle: 'Full name, initials, or anonymous',
+                          onTap: () => _showLeaderboardPrivacySheet(context),
                         ),
                         _SettingsItem(
                           icon: Icons.mail_outline_rounded,
@@ -255,14 +480,15 @@ class _PageProfileSettingsWidgetState extends State<PageProfileSettingsWidget> {
                                 items[i].title,
                                 style: GoogleFonts.inter(
                                   fontSize: 14.0,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: const Color(0xFF1E293B),
                                 ),
                               ),
+                              const SizedBox(height: 2.0),
                               Text(
                                 items[i].subtitle,
                                 style: GoogleFonts.inter(
-                                  fontSize: 11.0,
+                                  fontSize: 11.5,
                                   color: const Color(0xFF64748B),
                                 ),
                               ),
@@ -270,8 +496,8 @@ class _PageProfileSettingsWidgetState extends State<PageProfileSettingsWidget> {
                           ),
                         ),
                         const Icon(
-                          Icons.chevron_right_rounded,
-                          size: 20.0,
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14.0,
                           color: Color(0xFF94A3B8),
                         ),
                       ],
@@ -289,76 +515,87 @@ class _PageProfileSettingsWidgetState extends State<PageProfileSettingsWidget> {
   Widget _buildSignOutTile(BuildContext context, FlutterFlowTheme theme) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16.0),
         border: Border.all(
           color: const Color(0xFFFCA5A5),
           width: 1.0,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8.0,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: () async {
-          FFAppState().deleteUsersStreetName();
-          FFAppState().usersStreetName = '';
-
-          final router = GoRouter.of(context);
-          router.prepareAuthEvent();
-          await authManager.signOut();
-          router.clearRedirectLocation();
-
-          if (context.mounted) {
-            context.goNamedAuth(
-              LandingPageWidget.routeName,
-              context.mounted,
-            );
-          }
-        },
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(16.0),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFEE2E2),
-                  shape: BoxShape.circle,
+        child: InkWell(
+          onTap: () async {
+            FFAppState().deleteUsersStreetName();
+            FFAppState().usersStreetName = '';
+
+            final router = GoRouter.of(context);
+            router.prepareAuthEvent();
+            await authManager.signOut();
+            router.clearRedirectLocation();
+
+            if (context.mounted) {
+              context.goNamedAuth(
+                LandingPageWidget.routeName,
+                context.mounted,
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(16.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFEE2E2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    size: 18.0,
+                    color: Color(0xFFDC2626),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.logout_rounded,
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sign Out',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFDC2626),
+                        ),
+                      ),
+                      Text(
+                        'Log out of this device and session',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.0,
+                          color: const Color(0xFF991B1B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_rounded,
                   size: 18.0,
                   color: Color(0xFFDC2626),
                 ),
-              ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sign Out',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFFDC2626),
-                      ),
-                    ),
-                    Text(
-                      'Log out of this device and session',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.0,
-                        color: const Color(0xFF991B1B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_rounded,
-                size: 18.0,
-                color: Color(0xFFDC2626),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

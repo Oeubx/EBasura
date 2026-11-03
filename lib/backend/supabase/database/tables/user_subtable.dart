@@ -31,4 +31,29 @@ class UserSubtableRow extends SupabaseDataRow {
 
   bool? get notification => getField<bool>('notification');
   set notification(bool? value) => setField<bool>('notification', value);
+
+  int? get currentStreak => getField<int>('current_streak');
+  set currentStreak(int? value) => setField<int>('current_streak', value);
+
+  int? get bestStreak => getField<int>('best_streak');
+  set bestStreak(int? value) => setField<int>('best_streak', value);
+
+  DateTime? get streakUpdatedWeek => getField<DateTime>('streak_updated_week');
+  set streakUpdatedWeek(DateTime? value) =>
+      setField<DateTime>('streak_updated_week', value);
+
+  bool? get freezeAvailable => getField<bool>('freeze_available');
+  set freezeAvailable(bool? value) =>
+      setField<bool>('freeze_available', value);
+
+  String? get freezeUsedMonth => getField<String>('freeze_used_month');
+  set freezeUsedMonth(String? value) =>
+      setField<String>('freeze_used_month', value);
+
+  int? get spendablePoints => getField<int>('spendable_points');
+  set spendablePoints(int? value) => setField<int>('spendable_points', value);
+
+  String? get leaderboardDisplay => getField<String>('leaderboard_display');
+  set leaderboardDisplay(String? value) =>
+      setField<String>('leaderboard_display', value);
 }

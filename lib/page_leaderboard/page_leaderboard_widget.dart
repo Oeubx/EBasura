@@ -12,49 +12,93 @@ import 'package:google_fonts/google_fonts.dart';
 import 'page_leaderboard_model.dart';
 export 'page_leaderboard_model.dart';
 
-class LeaderboardEntry {
+class ResidentLeaderboardEntry {
   final int rank;
-  final UserSubtableRow subtable;
-  final UserRow? user;
+  final String userId;
+  final String displayName;
+  final String? avatarUrl;
+  final int points;
+  final String streetRef;
   final bool isCurrentUser;
 
-  const LeaderboardEntry({
+  const ResidentLeaderboardEntry({
     required this.rank,
-    required this.subtable,
-    this.user,
+    required this.userId,
+    required this.displayName,
+    this.avatarUrl,
+    required this.points,
+    required this.streetRef,
     required this.isCurrentUser,
   });
 
-  String get displayName {
-    final rawName = user?.userName;
-    if (rawName == null || rawName.trim().isEmpty || rawName == 'EBasura User') {
-      final email = user?.userEmail;
-      if (email != null && email.isNotEmpty) {
-        return email.split('@').first;
-      }
-      return 'Eco Resident #$rank';
-    }
-    return rawName;
+  factory ResidentLeaderboardEntry.fromMap(Map<String, dynamic> map) {
+    return ResidentLeaderboardEntry(
+      rank: (map['rank'] as num?)?.toInt() ?? 0,
+      userId: map['user_id']?.toString() ?? '',
+      displayName: map['display_name']?.toString() ?? 'Eco Resident',
+      avatarUrl: map['avatar_url']?.toString(),
+      points: (map['points'] as num?)?.toInt() ?? 0,
+      streetRef: map['street_ref']?.toString() ?? 'Batasan Hills',
+      isCurrentUser: map['is_current_user'] as bool? ?? false,
+    );
   }
-
-  String get streetName {
-    final rawStreet = user?.userStreetNameRef;
-    if (rawStreet == null || rawStreet.trim().isEmpty) {
-      return 'Batasan Hills Resident';
-    }
-    return rawStreet;
-  }
-
-  int get points => subtable.userPoints ?? 0;
 }
 
-class LeaderboardBundle {
-  final List<LeaderboardEntry> entries;
-  final LeaderboardEntry? currentUserEntry;
+class StreetLeaderboardEntry {
+  final int rank;
+  final String streetRef;
+  final int totalPoints;
+  final int activeResidents;
+  final double pointsPerResident;
 
-  const LeaderboardBundle({
-    required this.entries,
-    this.currentUserEntry,
+  const StreetLeaderboardEntry({
+    required this.rank,
+    required this.streetRef,
+    required this.totalPoints,
+    required this.activeResidents,
+    required this.pointsPerResident,
+  });
+
+  factory StreetLeaderboardEntry.fromMap(Map<String, dynamic> map) {
+    return StreetLeaderboardEntry(
+      rank: (map['rank'] as num?)?.toInt() ?? 0,
+      streetRef: map['street_ref']?.toString() ?? 'Batasan Hills Street',
+      totalPoints: (map['total_points'] as num?)?.toInt() ?? 0,
+      activeResidents: (map['active_residents'] as num?)?.toInt() ?? 0,
+      pointsPerResident: (map['points_per_resident'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+class UserRankSummary {
+  final int rank;
+  final int points;
+  final int pointsToNext;
+
+  const UserRankSummary({
+    required this.rank,
+    required this.points,
+    required this.pointsToNext,
+  });
+
+  factory UserRankSummary.fromMap(Map<String, dynamic> map) {
+    return UserRankSummary(
+      rank: (map['my_rank'] as num?)?.toInt() ?? 0,
+      points: (map['my_points'] as num?)?.toInt() ?? 0,
+      pointsToNext: (map['points_to_next'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class LeaderboardV2Bundle {
+  final List<ResidentLeaderboardEntry> residentEntries;
+  final List<StreetLeaderboardEntry> streetEntries;
+  final UserRankSummary? userRank;
+
+  const LeaderboardV2Bundle({
+    required this.residentEntries,
+    required this.streetEntries,
+    this.userRank,
   });
 }
 
@@ -70,8 +114,11 @@ class PageLeaderboardWidget extends StatefulWidget {
 
 class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
   late PageLeaderboardModel _model;
-  late Future<LeaderboardBundle> _leaderboardFuture;
+  late Future<LeaderboardV2Bundle> _leaderboardFuture;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  String _selectedPeriod = 'this_week'; // 'this_week', 'this_month', 'all_time'
+  String _selectedBoard = 'residents'; // 'residents', 'streets'
 
   @override
   void initState() {
@@ -94,98 +141,100 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
     await _leaderboardFuture;
   }
 
-  Future<LeaderboardBundle> _loadLeaderboardData() async {
-    // 1. Fetch top subtables ordered by points descending
-    final subtables = await UserSubtableTable().queryRows(
-      queryFn: (q) => q
-          .neqOrNull('user_points', 0)
-          .order('user_points', ascending: false)
-          .limit(50),
-    );
+  Future<LeaderboardV2Bundle> _loadLeaderboardData() async {
+    List<ResidentLeaderboardEntry> residentEntries = [];
+    List<StreetLeaderboardEntry> streetEntries = [];
+    UserRankSummary? userRank;
 
-    if (subtables.isEmpty) {
-      LeaderboardEntry? currentEntry;
+    if (_selectedBoard == 'residents') {
+      try {
+        final res = await SupaFlow.client.rpc(
+          'get_leaderboard',
+          params: {
+            'p_period': _selectedPeriod,
+            'p_limit': 50,
+          },
+        );
+        if (res is List) {
+          residentEntries = res
+              .map((e) => ResidentLeaderboardEntry.fromMap(
+                    Map<String, dynamic>.from(e as Map),
+                  ))
+              .toList();
+        }
+      } catch (e) {
+        debugPrint('Error fetching get_leaderboard: $e');
+      }
+
       if (currentUserUid.isNotEmpty) {
-        final currentSub = await UserSubtableTable().querySingleRow(
-          queryFn: (q) => q.eqOrNull('user_idRef', currentUserUid),
-        );
-        if (currentSub.isNotEmpty) {
-          final currentUserRows = await UserTable().querySingleRow(
-            queryFn: (q) => q.eqOrNull('user_id', currentUserUid),
+        try {
+          final rankRes = await SupaFlow.client.rpc(
+            'get_my_rank',
+            params: {'p_period': _selectedPeriod},
           );
-          currentEntry = LeaderboardEntry(
-            rank: 0,
-            subtable: currentSub.first,
-            user: currentUserRows.firstOrNull,
-            isCurrentUser: true,
-          );
+          if (rankRes is List && rankRes.isNotEmpty) {
+            userRank = UserRankSummary.fromMap(
+              Map<String, dynamic>.from(rankRes.first as Map),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error fetching get_my_rank: $e');
         }
       }
-      return LeaderboardBundle(entries: [], currentUserEntry: currentEntry);
-    }
-
-    // 2. Collect unique user_idRef values for batch fetching
-    final userIds = subtables
-        .map((s) => s.userIdRef)
-        .where((id) => id.isNotEmpty)
-        .toSet()
-        .toList();
-
-    // 3. Batch fetch all users in a single query
-    final Map<String, UserRow> userMap = {};
-    if (userIds.isNotEmpty) {
-      final users = await UserTable().queryRows(
-        queryFn: (q) => q.inFilter('user_id', userIds),
-      );
-      for (final u in users) {
-        if (u.userId != null) {
-          userMap[u.userId!] = u;
+    } else {
+      try {
+        final res = await SupaFlow.client.rpc(
+          'get_street_leaderboard',
+          params: {'p_period': _selectedPeriod},
+        );
+        if (res is List) {
+          streetEntries = res
+              .map((e) => StreetLeaderboardEntry.fromMap(
+                    Map<String, dynamic>.from(e as Map),
+                  ))
+              .toList();
         }
+      } catch (e) {
+        debugPrint('Error fetching get_street_leaderboard: $e');
       }
     }
 
-    // 4. Assemble entries
-    LeaderboardEntry? currentEntry;
-    final List<LeaderboardEntry> entries = [];
-    for (int i = 0; i < subtables.length; i++) {
-      final s = subtables[i];
-      final u = userMap[s.userIdRef];
-      final isCurrent =
-          s.userIdRef == currentUserUid && currentUserUid.isNotEmpty;
-      final entry = LeaderboardEntry(
-        rank: i + 1,
-        subtable: s,
-        user: u,
-        isCurrentUser: isCurrent,
-      );
-      entries.add(entry);
-      if (isCurrent) {
-        currentEntry = entry;
-      }
-    }
-
-    // 5. If current user is logged in but not in top 50, fetch their individual score
-    if (currentEntry == null && currentUserUid.isNotEmpty) {
-      final currentSub = await UserSubtableTable().querySingleRow(
-        queryFn: (q) => q.eqOrNull('user_idRef', currentUserUid),
-      );
-      if (currentSub.isNotEmpty) {
-        final currentUserRows = await UserTable().querySingleRow(
-          queryFn: (q) => q.eqOrNull('user_id', currentUserUid),
-        );
-        currentEntry = LeaderboardEntry(
-          rank: 0,
-          subtable: currentSub.first,
-          user: currentUserRows.firstOrNull,
-          isCurrentUser: true,
-        );
-      }
-    }
-
-    return LeaderboardBundle(
-      entries: entries,
-      currentUserEntry: currentEntry,
+    return LeaderboardV2Bundle(
+      residentEntries: residentEntries,
+      streetEntries: streetEntries,
+      userRank: userRank,
     );
+  }
+
+  Future<void> _navigateToStreet(String streetName) async {
+    try {
+      final rows = await StreetTable().querySingleRow(
+        queryFn: (q) => q.eqOrNull('street_name', streetName),
+      );
+      if (rows.isNotEmpty && mounted) {
+        context.pushNamed(
+          PStreetViewOneWidget.routeName,
+          queryParameters: {
+            'streetsRef': serializeParam(
+              rows.first,
+              ParamType.SupabaseRow,
+            ),
+          }.withoutNulls,
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Street details for "$streetName" not found in directory.',
+              style: GoogleFonts.inter(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF2E78A6),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error navigating to street: $e');
+    }
   }
 
   @override
@@ -251,7 +300,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
                       const CPageHeaderWidget(
                         title: 'Community Leaderboard',
                         subtitle:
-                            'Top eco-citizens ranking by verified waste segregation',
+                            'Top eco-citizens and streets ranked by verified segregation',
                         icon: Icons.leaderboard_rounded,
                       ),
 
@@ -262,7 +311,13 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
 
                       const SizedBox(height: 14.0),
 
-                      FutureBuilder<LeaderboardBundle>(
+                      // Segmented Controls: Board Selector & Period Selector
+                      _buildBoardSelector(),
+                      const SizedBox(height: 10.0),
+                      _buildPeriodSelector(),
+                      const SizedBox(height: 14.0),
+
+                      FutureBuilder<LeaderboardV2Bundle>(
                         future: _leaderboardFuture,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
@@ -284,63 +339,112 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
                           }
 
                           final bundle = snapshot.data;
-                          final entries = bundle?.entries ?? [];
-                          final currentEntry = bundle?.currentUserEntry;
+                          final residents = bundle?.residentEntries ?? [];
+                          final streets = bundle?.streetEntries ?? [];
+                          final userRank = bundle?.userRank;
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // User Standing Summary (if authenticated)
-                              if (!isGuest && currentEntry != null) ...[
-                                _buildUserStandingCard(context, currentEntry),
-                                const SizedBox(height: 16.0),
-                              ],
-
-                              if (entries.isEmpty)
-                                _buildEmptyState(context)
-                              else ...[
-                                // Top 3 Podium (if at least 3 entries)
-                                if (entries.length >= 3) ...[
-                                  _buildTop3Podium(context, entries.take(3).toList()),
-                                  const SizedBox(height: 20.0),
+                          if (_selectedBoard == 'residents') {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (!isGuest && userRank != null) ...[
+                                  _buildUserStandingCard(context, userRank),
+                                  const SizedBox(height: 16.0),
                                 ],
 
-                                // Section Heading for list
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      entries.length >= 3
-                                          ? 'Rankings 4+'
-                                          : 'Rankings',
-                                      style: GoogleFonts.comfortaa(
-                                        fontSize: 15.0,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF013448),
-                                      ),
+                                if (residents.isEmpty)
+                                  _buildEmptyState(
+                                    context,
+                                    title: 'No Resident Points Recorded',
+                                    description:
+                                        'Be the first eco-citizen in Barangay Batasan Hills to scan, segregate, and earn verified points for $_periodDisplayName!',
+                                  )
+                                else ...[
+                                  if (residents.length >= 3) ...[
+                                    _buildTop3Podium(
+                                      context,
+                                      residents.take(3).toList(),
                                     ),
-                                    Text(
-                                      '${entries.length} residents',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12.0,
-                                        color: const Color(0xFF64748B),
-                                      ),
-                                    ),
+                                    const SizedBox(height: 20.0),
                                   ],
-                                ),
-                                const SizedBox(height: 10.0),
 
-                                // List of entries (entries 4+ if podium shown, or all if <3)
-                                ..._buildListItems(
-                                  context,
-                                  entries.length >= 3
-                                      ? entries.skip(3).toList()
-                                      : entries,
-                                ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        residents.length >= 3
+                                            ? 'Rankings 4+'
+                                            : 'Rankings',
+                                        style: GoogleFonts.comfortaa(
+                                          fontSize: 15.0,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF013448),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${residents.length} residents active',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12.0,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10.0),
+
+                                  ..._buildResidentListItems(
+                                    context,
+                                    residents.length >= 3
+                                        ? residents.skip(3).toList()
+                                        : residents,
+                                  ),
+                                ],
                               ],
-                            ],
-                          );
+                            );
+                          } else {
+                            // Streets Board
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildStreetHeaderCard(),
+                                const SizedBox(height: 14.0),
+
+                                if (streets.isEmpty)
+                                  _buildEmptyState(
+                                    context,
+                                    title: 'No Street Activity Yet',
+                                    description:
+                                        'No verified segregation points have been logged for streets in $_periodDisplayName. Scan your waste and set the bar for your neighborhood!',
+                                  )
+                                else ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Street Rankings',
+                                        style: GoogleFonts.comfortaa(
+                                          fontSize: 15.0,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF013448),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${streets.length} participating streets',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12.0,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10.0),
+                                  ..._buildStreetListItems(context, streets),
+                                ],
+                              ],
+                            );
+                          }
                         },
                       ),
                     ],
@@ -362,6 +466,198 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  String get _periodDisplayName {
+    switch (_selectedPeriod) {
+      case 'this_week':
+        return 'This Week';
+      case 'this_month':
+        return 'This Month';
+      default:
+        return 'All-Time';
+    }
+  }
+
+  Widget _buildBoardSelector() {
+    final boards = [
+      {'key': 'residents', 'label': 'Residents', 'icon': Icons.person_rounded},
+      {'key': 'streets', 'label': 'Streets', 'icon': Icons.location_city_rounded},
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(4.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(22.0),
+      ),
+      child: Row(
+        children: boards.map((b) {
+          final isSelected = _selectedBoard == b['key'];
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_selectedBoard != b['key']) {
+                  setState(() {
+                    _selectedBoard = b['key'] as String;
+                    _leaderboardFuture = _loadLeaderboardData();
+                  });
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF31A11F) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(18.0),
+                  boxShadow: isSelected
+                      ? [
+                          const BoxShadow(
+                            color: Color(0x2031A11F),
+                            blurRadius: 4.0,
+                            offset: Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      b['icon'] as IconData,
+                      size: 16.0,
+                      color: isSelected ? Colors.white : const Color(0xFF475569),
+                    ),
+                    const SizedBox(width: 6.0),
+                    Text(
+                      b['label'] as String,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.0,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color: isSelected ? Colors.white : const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildPeriodSelector() {
+    final periods = [
+      {'key': 'this_week', 'label': 'This Week'},
+      {'key': 'this_month', 'label': 'This Month'},
+      {'key': 'all_time', 'label': 'All-Time'},
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(3.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: const Color(0xFFCBD5E1),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        children: periods.map((p) {
+          final isSelected = _selectedPeriod == p['key'];
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_selectedPeriod != p['key']) {
+                  setState(() {
+                    _selectedPeriod = p['key'] as String;
+                    _leaderboardFuture = _loadLeaderboardData();
+                  });
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 7.0),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF2E78A6) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(13.0),
+                ),
+                child: Center(
+                  child: Text(
+                    p['label'] as String,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.0,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isSelected ? Colors.white : const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildStreetHeaderCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD5F2E2),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(
+          color: const Color(0xFF70BF5A).withValues(alpha: 0.5),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.balance_rounded,
+              color: Color(0xFF31A11F),
+              size: 22.0,
+            ),
+          ),
+          const SizedBox(width: 12.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Points Per Active Resident',
+                  style: GoogleFonts.comfortaa(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF013448),
+                  ),
+                ),
+                const SizedBox(height: 2.0),
+                Text(
+                  'Streets are scored by total points divided by active participants so all street sizes compete fairly.',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: const Color(0xFF334155),
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -440,9 +736,9 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
 
   Widget _buildUserStandingCard(
     BuildContext context,
-    LeaderboardEntry entry,
+    UserRankSummary userRank,
   ) {
-    final rankText = entry.rank > 0 ? '#${entry.rank}' : 'Unranked';
+    final rankText = userRank.rank > 0 ? '#${userRank.rank}' : 'Unranked';
 
     return Container(
       width: double.infinity,
@@ -514,12 +810,14 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  entry.rank > 0
-                      ? 'You are currently in the top rankings! Keep segregating.'
-                      : 'Scan and segregate verified waste to earn your official rank.',
+                  userRank.rank > 1 && userRank.pointsToNext > 0
+                      ? '${userRank.pointsToNext} pts needed to pass rank #${userRank.rank - 1}!'
+                      : (userRank.rank == 1
+                          ? '🌟 You are leading the community in $_periodDisplayName!'
+                          : 'Scan and segregate verified waste to earn your official rank.'),
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: Colors.white.withValues(alpha: 0.90),
                     height: 1.3,
                   ),
                 ),
@@ -531,7 +829,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${entry.points}',
+                '${userRank.points}',
                 style: GoogleFonts.inter(
                   fontSize: 22.0,
                   fontWeight: FontWeight.w800,
@@ -555,7 +853,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
 
   Widget _buildTop3Podium(
     BuildContext context,
-    List<LeaderboardEntry> top3,
+    List<ResidentLeaderboardEntry> top3,
   ) {
     final first = top3[0];
     final second = top3.length > 1 ? top3[1] : null;
@@ -651,7 +949,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
   }
 
   Widget _buildPodiumStep({
-    required LeaderboardEntry entry,
+    required ResidentLeaderboardEntry entry,
     required int rank,
     required Color badgeColor,
     required double pedestalHeight,
@@ -664,7 +962,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Avatar with rank indicator
         Stack(
           alignment: Alignment.bottomRight,
           children: [
@@ -726,7 +1023,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
           ),
         ),
         const SizedBox(height: 8.0),
-        // Pedestal base block
         Container(
           width: double.infinity,
           height: pedestalHeight,
@@ -757,9 +1053,9 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
     );
   }
 
-  List<Widget> _buildListItems(
+  List<Widget> _buildResidentListItems(
     BuildContext context,
-    List<LeaderboardEntry> items,
+    List<ResidentLeaderboardEntry> items,
   ) {
     if (items.isEmpty) {
       return [
@@ -806,7 +1102,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
         ),
         child: Row(
           children: [
-            // Rank Number Badge
             Container(
               width: 32.0,
               height: 32.0,
@@ -830,8 +1125,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
               ),
             ),
             const SizedBox(width: 12.0),
-
-            // Avatar
             CircleAvatar(
               radius: 16.0,
               backgroundColor: const Color(0xFFE8F1F8),
@@ -845,8 +1138,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
               ),
             ),
             const SizedBox(width: 10.0),
-
-            // Name & Street
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -891,7 +1182,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
                   ),
                   const SizedBox(height: 2.0),
                   Text(
-                    entry.streetName,
+                    entry.streetRef,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
@@ -903,8 +1194,6 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
               ),
             ),
             const SizedBox(width: 8.0),
-
-            // Points
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -932,7 +1221,136 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
     }).toList();
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  List<Widget> _buildStreetListItems(
+    BuildContext context,
+    List<StreetLeaderboardEntry> streets,
+  ) {
+    return streets.map((street) {
+      final isTop3 = street.rank <= 3;
+      final badgeColor = street.rank == 1
+          ? const Color(0xFFF59E0B)
+          : (street.rank == 2
+              ? const Color(0xFF94A3B8)
+              : (street.rank == 3
+                  ? const Color(0xFFD97706)
+                  : const Color(0xFF2E78A6)));
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8.0),
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          child: InkWell(
+            onTap: () => _navigateToStreet(street.streetRef),
+            borderRadius: BorderRadius.circular(16.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.all(
+                  color: isTop3
+                      ? badgeColor.withValues(alpha: 0.45)
+                      : const Color(0xFFE2E8F0),
+                  width: isTop3 ? 1.5 : 1.0,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x06000000),
+                    blurRadius: 6.0,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34.0,
+                    height: 34.0,
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '#${street.rank}',
+                        style: GoogleFonts.comfortaa(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: badgeColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          street.streetRef,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.comfortaa(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF013448),
+                          ),
+                        ),
+                        const SizedBox(height: 2.0),
+                        Text(
+                          '${street.totalPoints} total pts • ${street.activeResidents} active resident${street.activeResidents == 1 ? '' : 's'}',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.0,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 3.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD5F2E2),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Text(
+                          '${street.pointsPerResident.toStringAsFixed(1)} pts/res',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF31A11F),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 6.0),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 13.0,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildEmptyState(
+    BuildContext context, {
+    required String title,
+    required String description,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28.0),
@@ -960,7 +1378,8 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
           ),
           const SizedBox(height: 14.0),
           Text(
-            'No Points Recorded Yet',
+            title,
+            textAlign: TextAlign.center,
             style: GoogleFonts.comfortaa(
               fontSize: 16.0,
               fontWeight: FontWeight.w700,
@@ -969,7 +1388,7 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
           ),
           const SizedBox(height: 6.0),
           Text(
-            'Be the first eco-citizen in Barangay Batasan Hills to scan, segregate, and earn verified recycling points!',
+            description,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 12.0,
