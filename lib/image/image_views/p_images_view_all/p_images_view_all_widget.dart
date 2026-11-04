@@ -2,6 +2,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
+import '/components/ebasura_network_image_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -33,6 +34,7 @@ class PImagesViewAllWidget extends StatefulWidget {
 
 class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
   late PImagesViewAllModel _model;
+  bool _autoLoadAllPhotos = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -1214,7 +1216,67 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                               _model.resetStream();
                             });
                           },
-                          child: NotificationListener<ScrollNotification>(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 4.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '${displayedImages.length} Waste Records',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() => _autoLoadAllPhotos = !_autoLoadAllPhotos);
+                                      },
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                                        decoration: BoxDecoration(
+                                          color: _autoLoadAllPhotos
+                                              ? const Color(0xFF2E78A6)
+                                              : const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(16.0),
+                                          border: Border.all(
+                                            color: _autoLoadAllPhotos
+                                                ? const Color(0xFF2E78A6)
+                                                : const Color(0xFFCBD5E1),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              _autoLoadAllPhotos
+                                                  ? Icons.bolt_rounded
+                                                  : Icons.eco_rounded,
+                                              size: 14.0,
+                                              color: _autoLoadAllPhotos ? Colors.white : const Color(0xFF475569),
+                                            ),
+                                            const SizedBox(width: 4.0),
+                                            Text(
+                                              _autoLoadAllPhotos ? 'Auto-load: ON' : 'Data Saver: ON',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.w700,
+                                                color: _autoLoadAllPhotos ? Colors.white : const Color(0xFF475569),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: NotificationListener<ScrollNotification>(
                             onNotification: (scrollInfo) {
                               if (scrollInfo.metrics.pixels >=
                                       scrollInfo.metrics.maxScrollExtent -
@@ -1282,20 +1344,23 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                                         // Image with status badge overlay
                                         Stack(
                                           children: [
-                                            Image.network(
-                                              item.imgReferenceLink,
+                                            EBasuraNetworkImage(
+                                              imageUrl: item.imgReferenceLink,
                                               width: double.infinity,
                                               height: 125.0,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
-                                                  Container(
-                                                height: 125.0,
-                                                color: const Color(0xFFF1F5F9),
-                                                child: const Icon(
-                                                  Icons.broken_image_rounded,
-                                                  color: Color(0xFF94A3B8),
-                                                ),
-                                              ),
+                                              autoLoad: _autoLoadAllPhotos,
+                                              onTapCard: () async {
+                                                context.pushNamed(
+                                                  PImgViewVerifierWidget.routeName,
+                                                  queryParameters: {
+                                                    'imageIDref': serializeParam(
+                                                      item,
+                                                      ParamType.SupabaseRow,
+                                                    ),
+                                                  }.withoutNulls,
+                                                );
+                                              },
                                             ),
                                             Positioned(
                                               top: 6.0,
@@ -1654,6 +1719,9 @@ class _PImagesViewAllWidgetState extends State<PImagesViewAllWidget> {
                               },
                             ),
                           ),
+                                ),
+                              ],
+                            ),
                         );
                       },
                     ),

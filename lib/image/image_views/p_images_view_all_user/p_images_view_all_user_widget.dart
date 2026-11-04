@@ -2,6 +2,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
+import '/components/ebasura_network_image_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/image/image_views/c_img_view_user/c_img_view_user_widget.dart';
 import '/image/image_views/p_img_view_verifier/p_img_view_verifier_widget.dart';
@@ -25,6 +26,7 @@ class PImagesViewAllUserWidget extends StatefulWidget {
 class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
   late PImagesViewAllUserModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _autoLoadAllPhotos = false;
   Future<List<ImageRow>>? _imagesFuture;
 
   @override
@@ -253,7 +255,79 @@ class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
                             );
                           }
 
-                          return MasonryGridView.builder(
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '${imageList.length} Submissions',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() => _autoLoadAllPhotos =
+                                            !_autoLoadAllPhotos);
+                                      },
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0,
+                                          vertical: 4.0,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: _autoLoadAllPhotos
+                                              ? const Color(0xFF2E78A6)
+                                              : const Color(0xFFF1F5F9),
+                                          borderRadius:
+                                              BorderRadius.circular(16.0),
+                                          border: Border.all(
+                                            color: _autoLoadAllPhotos
+                                                ? const Color(0xFF2E78A6)
+                                                : const Color(0xFFCBD5E1),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              _autoLoadAllPhotos
+                                                  ? Icons.bolt_rounded
+                                                  : Icons.eco_rounded,
+                                              size: 14.0,
+                                              color: _autoLoadAllPhotos
+                                                  ? Colors.white
+                                                  : const Color(0xFF475569),
+                                            ),
+                                            const SizedBox(width: 4.0),
+                                            Text(
+                                              _autoLoadAllPhotos
+                                                  ? 'Auto-load: ON'
+                                                  : 'Data Saver: ON',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.w700,
+                                                color: _autoLoadAllPhotos
+                                                    ? Colors.white
+                                                    : const Color(0xFF475569),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              MasonryGridView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             gridDelegate:
@@ -331,19 +405,10 @@ class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
                                         children: [
                                           AspectRatio(
                                             aspectRatio: 1.0,
-                                            child: Image.network(
-                                              item.imgReferenceLink,
+                                            child: EBasuraNetworkImage(
+                                              imageUrl: item.imgReferenceLink,
                                               fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) =>
-                                                      Container(
-                                                color: const Color(0xFFF2F2F2),
-                                                child: const Icon(
-                                                  Icons.broken_image_rounded,
-                                                  color: Colors.black26,
-                                                  size: 32.0,
-                                                ),
-                                              ),
+                                              autoLoad: _autoLoadAllPhotos,
                                             ),
                                           ),
                                           // Status Pill Chip (Top Right)
@@ -434,7 +499,9 @@ class _PImagesViewAllUserWidgetState extends State<PImagesViewAllUserWidget> {
                                 ),
                               );
                             },
-                          );
+                          ),
+                        ],
+                      );
                         },
                       ),
                     ],
