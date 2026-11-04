@@ -34,6 +34,7 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
   bool _isSaving = false;
   bool _hasStorage = false;
   bool _initialized = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -42,7 +43,19 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
     _model.nameFocusNode ??= FocusNode();
     _model.descriptionFocusNode ??= FocusNode();
     _hasStorage = widget.streetsRef?.hasStorage ?? false;
+    _checkRole();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  Future<void> _checkRole() async {
+    try {
+      final role = await RoleService.fetchCurrentUserRole();
+      if (mounted) {
+        safeSetState(() => _isAdmin = role == UserRole.admin);
+      }
+    } catch (_) {
+      if (mounted) safeSetState(() => _isAdmin = false);
+    }
   }
 
   @override
@@ -162,6 +175,41 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            if (!_isAdmin)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 14.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14.0,
+                                  vertical: 10.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: const Color(0xFFCBD5E1),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 18.0,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    const SizedBox(width: 8.0),
+                                    Expanded(
+                                      child: Text(
+                                        'Barangay Street Profile • View Only (Admin Required to Edit)',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF475569),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(18.0),
@@ -206,6 +254,8 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                   TextFormField(
                                     controller: _model.nameTextController,
                                     focusNode: _model.nameFocusNode,
+                                    enabled: _isAdmin,
+                                    readOnly: !_isAdmin,
                                     decoration: InputDecoration(
                                       hintText: 'Enter official street name',
                                       hintStyle: GoogleFonts.inter(
@@ -213,7 +263,9 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                         color: const Color(0xFF94A3B8),
                                       ),
                                       filled: true,
-                                      fillColor: const Color(0xFFF8FAFC),
+                                      fillColor: _isAdmin
+                                          ? const Color(0xFFF8FAFC)
+                                          : const Color(0xFFF1F5F9),
                                       contentPadding: const EdgeInsets.all(14.0),
                                       border: OutlineInputBorder(
                                         borderRadius:
@@ -261,6 +313,8 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                     controller:
                                         _model.descriptionTextController,
                                     focusNode: _model.descriptionFocusNode,
+                                    enabled: _isAdmin,
+                                    readOnly: !_isAdmin,
                                     maxLines: 3,
                                     decoration: InputDecoration(
                                       hintText:
@@ -270,7 +324,9 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                         color: const Color(0xFF94A3B8),
                                       ),
                                       filled: true,
-                                      fillColor: const Color(0xFFF8FAFC),
+                                      fillColor: _isAdmin
+                                          ? const Color(0xFFF8FAFC)
+                                          : const Color(0xFFF1F5F9),
                                       contentPadding: const EdgeInsets.all(14.0),
                                       border: OutlineInputBorder(
                                         borderRadius:
@@ -362,9 +418,12 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                           value: _hasStorage,
                                           activeThumbColor:
                                               const Color(0xFF31A11F),
-                                          onChanged: (val) {
-                                            setState(() => _hasStorage = val);
-                                          },
+                                          onChanged: _isAdmin
+                                              ? (val) {
+                                                  setState(
+                                                      () => _hasStorage = val);
+                                                }
+                                              : null,
                                         ),
                                       ],
                                     ),
@@ -372,148 +431,155 @@ class _PStreetViewOneWidgetState extends State<PStreetViewOneWidget> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 18.0),
+                            if (_isAdmin) ...[
+                              const SizedBox(height: 18.0),
 
-                            // Save Changes Button
-                            FFButtonWidget(
-                              onPressed: _isSaving
-                                  ? null
-                                  : () async {
-                                      final newName = _model
-                                          .nameTextController?.text
-                                          .trim();
-                                      if (newName == null || newName.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Street name cannot be empty.',
-                                            ),
-                                            backgroundColor:
-                                                Color(0xFFDC2626),
-                                          ),
-                                        );
-                                        return;
-                                      }
-
-                                      setState(() => _isSaving = true);
-                                      try {
-                                        await StreetTable().update(
-                                          data: {
-                                            'street_name': newName,
-                                            'street_description': _model
-                                                    .descriptionTextController
-                                                    ?.text
-                                                    .trim() ??
-                                                '',
-                                            'has_storage': _hasStorage,
-                                            'last_updatedBy': currentUserUid,
-                                            'last_updatedTime':
-                                                supaSerialize<DateTime>(
-                                              functions.getCurrentTime(
-                                                getCurrentTimestamp,
-                                              ),
-                                            ),
-                                          },
-                                          matchingRows: (rows) => rows.eqOrNull(
-                                            'street_id',
-                                            street.streetId,
-                                          ),
-                                        );
-
-                                        if (context.mounted) {
+                              // Save Changes Button
+                              FFButtonWidget(
+                                onPressed: _isSaving
+                                    ? null
+                                    : () async {
+                                        if (!_isAdmin) return;
+                                        final newName = _model
+                                            .nameTextController?.text
+                                            .trim();
+                                        if (newName == null ||
+                                            newName.isEmpty) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                'Street updated successfully!',
+                                                'Street name cannot be empty.',
                                               ),
                                               backgroundColor:
-                                                  Color(0xFF31A11F),
+                                                  Color(0xFFDC2626),
                                             ),
                                           );
-                                          context.safePop();
+                                          return;
                                         }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'Failed to update: $e',
-                                              ),
-                                              backgroundColor:
-                                                  const Color(0xFFDC2626),
-                                            ),
-                                          );
-                                        }
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() => _isSaving = false);
-                                        }
-                                      }
-                                    },
-                              text: _isSaving
-                                  ? 'Saving Changes...'
-                                  : 'Save Changes',
-                              icon: _isSaving
-                                  ? null
-                                  : const Icon(
-                                      Icons.check_circle_rounded,
-                                      size: 18.0,
-                                    ),
-                              options: FFButtonOptions(
-                                width: double.infinity,
-                                height: 48.0,
-                                color: const Color(0xFF2E78A6),
-                                textStyle: GoogleFonts.inter(
-                                  fontSize: 14.0,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                                elevation: 0.0,
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                            ),
-                            const SizedBox(height: 10.0),
 
-                            // Delete Button
-                            FFButtonWidget(
-                              onPressed: () async {
-                                await showModalBottomSheet(
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  enableDrag: false,
-                                  context: context,
-                                  builder: (context) {
-                                    return Padding(
-                                      padding: MediaQuery.viewInsetsOf(context),
-                                      child: CStreetDeletionWidget(
-                                        streetRef: street,
+                                        setState(() => _isSaving = true);
+                                        try {
+                                          await StreetTable().update(
+                                            data: {
+                                              'street_name': newName,
+                                              'street_description': _model
+                                                      .descriptionTextController
+                                                      ?.text
+                                                      .trim() ??
+                                                  '',
+                                              'has_storage': _hasStorage,
+                                              'last_updatedBy': currentUserUid,
+                                              'last_updatedTime':
+                                                  supaSerialize<DateTime>(
+                                                functions.getCurrentTime(
+                                                  getCurrentTimestamp,
+                                                ),
+                                              ),
+                                            },
+                                            matchingRows: (rows) =>
+                                                rows.eqOrNull(
+                                              'street_id',
+                                              street.streetId,
+                                            ),
+                                          );
+
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Street updated successfully!',
+                                                ),
+                                                backgroundColor:
+                                                    Color(0xFF31A11F),
+                                              ),
+                                            );
+                                            context.safePop();
+                                          }
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Failed to update: $e',
+                                                ),
+                                                backgroundColor:
+                                                    const Color(0xFFDC2626),
+                                              ),
+                                            );
+                                          }
+                                        } finally {
+                                          if (mounted) {
+                                            setState(() => _isSaving = false);
+                                          }
+                                        }
+                                      },
+                                text: _isSaving
+                                    ? 'Saving Changes...'
+                                    : 'Save Changes',
+                                icon: _isSaving
+                                    ? null
+                                    : const Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 18.0,
                                       ),
-                                    );
-                                  },
-                                );
-                              },
-                              text: 'Delete Street',
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 18.0,
-                                color: Color(0xFFDC2626),
-                              ),
-                              options: FFButtonOptions(
-                                width: double.infinity,
-                                height: 44.0,
-                                color: const Color(0xFFFEE2E2),
-                                textStyle: GoogleFonts.inter(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFFDC2626),
+                                options: FFButtonOptions(
+                                  width: double.infinity,
+                                  height: 48.0,
+                                  color: const Color(0xFF2E78A6),
+                                  textStyle: GoogleFonts.inter(
+                                    fontSize: 14.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                  elevation: 0.0,
+                                  borderRadius: BorderRadius.circular(20.0),
                                 ),
-                                elevation: 0.0,
-                                borderRadius: BorderRadius.circular(20.0),
                               ),
-                            ),
+                              const SizedBox(height: 10.0),
+
+                              // Delete Button
+                              FFButtonWidget(
+                                onPressed: () async {
+                                  if (!_isAdmin) return;
+                                  await showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context) {
+                                      return Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: CStreetDeletionWidget(
+                                          streetRef: street,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                text: 'Delete Street',
+                                icon: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  size: 18.0,
+                                  color: Color(0xFFDC2626),
+                                ),
+                                options: FFButtonOptions(
+                                  width: double.infinity,
+                                  height: 44.0,
+                                  color: const Color(0xFFFEE2E2),
+                                  textStyle: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFDC2626),
+                                  ),
+                                  elevation: 0.0,
+                                  borderRadius: BorderRadius.circular(20.0),
+                                ),
+                              ),
+                            ],
                           ],
                         );
                       },

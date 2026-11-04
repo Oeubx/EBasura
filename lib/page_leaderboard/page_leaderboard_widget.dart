@@ -208,6 +208,24 @@ class _PageLeaderboardWidgetState extends State<PageLeaderboardWidget> {
 
   Future<void> _navigateToStreet(String streetName) async {
     try {
+      final role = await RoleService.fetchCurrentUserRole();
+      if (role != UserRole.admin) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Street directory editing is restricted to Barangay Administrators.',
+                style: GoogleFonts.inter(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFF2E78A6),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
       final rows = await StreetTable().querySingleRow(
         queryFn: (q) => q.eqOrNull('street_name', streetName),
       );

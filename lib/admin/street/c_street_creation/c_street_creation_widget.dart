@@ -316,6 +316,22 @@ class _CStreetCreationWidgetState extends State<CStreetCreationWidget> {
                               _model.nameTextController?.text.trim() ?? '';
                           if (streetName.isEmpty) return;
 
+                          final currentRole =
+                              await RoleService.fetchCurrentUserRole();
+                          if (currentRole != UserRole.admin) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Unauthorized: Only Administrators can create streets.',
+                                  ),
+                                  backgroundColor: Color(0xFFDC2626),
+                                ),
+                              );
+                            }
+                            return;
+                          }
+
                           setState(() => _isCreating = true);
                           try {
                             final duplicates = await StreetTable().queryRows(

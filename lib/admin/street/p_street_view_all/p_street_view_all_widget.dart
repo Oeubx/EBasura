@@ -1,5 +1,6 @@
 import '/admin/street/c_street_creation/c_street_creation_widget.dart';
 import '/custom_code/actions/street_compliance_exporter.dart';
+import '/auth/role_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/c_bottom_bar/c_bottom_bar_widget.dart';
 import '/components/c_page_header/c_page_header_widget.dart';
@@ -27,12 +28,25 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
   late PStreetViewAllModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isExporting = false;
+  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PStreetViewAllModel());
+    _checkRole();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+  }
+
+  Future<void> _checkRole() async {
+    try {
+      final role = await RoleService.fetchCurrentUserRole();
+      if (mounted) {
+        safeSetState(() => _isAdmin = role == UserRole.admin);
+      }
+    } catch (_) {
+      if (mounted) safeSetState(() => _isAdmin = false);
+    }
   }
 
   @override
@@ -280,17 +294,19 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
                             final desc = street.streetDescription;
 
                             return InkWell(
-                              onTap: () async {
-                                context.pushNamed(
-                                  PStreetViewOneWidget.routeName,
-                                  queryParameters: {
-                                    'streetsRef': serializeParam(
-                                      street,
-                                      ParamType.SupabaseRow,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
+                              onTap: _isAdmin
+                                  ? () async {
+                                      context.pushNamed(
+                                        PStreetViewOneWidget.routeName,
+                                        queryParameters: {
+                                          'streetsRef': serializeParam(
+                                            street,
+                                            ParamType.SupabaseRow,
+                                          ),
+                                        }.withoutNulls,
+                                      );
+                                    }
+                                  : null,
                               borderRadius: BorderRadius.circular(16.0),
                               child: Container(
                                 width: double.infinity,
@@ -381,11 +397,12 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
                                         ],
                                       ),
                                     ),
-                                    const Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 22.0,
-                                      color: Color(0xFF94A3B8),
-                                    ),
+                                    if (_isAdmin)
+                                      const Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 22.0,
+                                        color: Color(0xFF94A3B8),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -399,10 +416,11 @@ class _PStreetViewAllWidgetState extends State<PStreetViewAllWidget> {
               ),
 
               // Floating Action Button
-              Positioned(
-                bottom: 86.0,
-                right: 20.0,
-                child: Container(
+              if (_isAdmin)
+                Positioned(
+                  bottom: 86.0,
+                  right: 20.0,
+                  child: Container(
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [

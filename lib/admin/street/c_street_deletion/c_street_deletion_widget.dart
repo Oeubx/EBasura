@@ -1,3 +1,4 @@
+import '/auth/role_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -122,6 +123,22 @@ class _CStreetDeletionWidgetState extends State<CStreetDeletionWidget> {
                     onPressed: _isDeleting
                         ? null
                         : () async {
+                            final currentRole =
+                                await RoleService.fetchCurrentUserRole();
+                            if (currentRole != UserRole.admin) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Unauthorized: Only Administrators can delete streets.',
+                                    ),
+                                    backgroundColor: Color(0xFFDC2626),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+
                             setState(() => _isDeleting = true);
                             try {
                               await StreetTable().delete(
