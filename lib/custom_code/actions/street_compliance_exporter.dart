@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'dart:io' if (dart.library.html) 'dart:html';
 import 'package:csv/csv.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import 'file_saver_util.dart';
 
 class StreetComplianceExporter {
   /// Compiles compliance metrics for given streets and exports as CSV
@@ -291,91 +289,48 @@ class StreetComplianceExporter {
     required String mimeType,
     required String fileTitle,
   }) async {
-    if (kIsWeb) {
-      _showSuccessDialog(
-        context: context,
-        title: fileTitle,
+    try {
+      final savedPath = await saveExportedFile(
+        bytes: bytes,
         fileName: fileName,
-        content: utf8.decode(bytes),
+        mimeType: mimeType,
       );
-    } else {
-      _showSuccessDialog(
-        context: context,
-        title: fileTitle,
-        fileName: fileName,
-        content: utf8.decode(bytes),
-      );
-    }
-  }
 
-  static void _showSuccessDialog({
-    required BuildContext context,
-    required String title,
-    required String fileName,
-    required String content,
-  }) {
-    showDialog(
-      context: context,
-      builder: (alertDialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-          title: Row(
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
             children: [
-              const Icon(Icons.file_download_done, color: Color(0xFF2E7D32), size: 28.0),
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20.0),
               const SizedBox(width: 8.0),
-              Text(
-                title,
-                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18.0),
+              Expanded(
+                child: Text(
+                  savedPath != null
+                      ? 'Export saved: $savedPath'
+                      : 'Export downloaded: $fileName',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Report File: $fileName',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.black87),
-                ),
-                const SizedBox(height: 10.0),
-                Text(
-                  'Report Summary Preview:',
-                  style: GoogleFonts.inter(fontSize: 12.0, color: Colors.black54),
-                ),
-                const SizedBox(height: 6.0),
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 180.0),
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      content,
-                      style: GoogleFonts.robotoMono(fontSize: 11.0, color: Colors.black87),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          backgroundColor: const Color(0xFF1B5E20),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text(
-                'Close',
-                style: GoogleFonts.inter(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Error saving export file: $e');
+      }
+    }
   }
 
   static void _showErrorSnackBar(BuildContext context, String message) {
