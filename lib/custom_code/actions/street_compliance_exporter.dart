@@ -83,7 +83,9 @@ class StreetComplianceExporter {
         fileTitle: 'CSV Export Ready',
       );
     } catch (e) {
-      _showErrorSnackBar(context, 'Failed to generate CSV export: $e');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to generate CSV export: $e');
+      }
     }
   }
 
@@ -138,7 +140,7 @@ class StreetComplianceExporter {
       final String csvString = const ListToCsvConverter().convert(csvData);
       final List<int> bytes = utf8.encode(csvString);
       final String fileName =
-          'EBasura_Street_Compliance_Snapshots_' + DateTime.now().millisecondsSinceEpoch.toString() + '.csv';
+          'EBasura_Street_Compliance_Snapshots_${DateTime.now().millisecondsSinceEpoch}.csv';
 
       await _downloadOrSaveFile(
         context: context,
@@ -148,7 +150,9 @@ class StreetComplianceExporter {
         fileTitle: 'Street Compliance Snapshots Exported',
       );
     } catch (e) {
-      _showErrorSnackBar(context, 'Failed to generate snapshots CSV: ' + e.toString());
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to generate snapshots CSV: $e');
+      }
     }
   }
 
@@ -196,7 +200,7 @@ class StreetComplianceExporter {
       final String csvString = const ListToCsvConverter().convert(csvData);
       final List<int> bytes = utf8.encode(csvString);
       final String fileName =
-          'EBasura_Chapter5_Evaluation_Dataset_' + DateTime.now().millisecondsSinceEpoch.toString() + '.csv';
+          'EBasura_Chapter5_Evaluation_Dataset_${DateTime.now().millisecondsSinceEpoch}.csv';
 
       await _downloadOrSaveFile(
         context: context,
@@ -206,7 +210,9 @@ class StreetComplianceExporter {
         fileTitle: 'Chapter 5 Empirical Dataset Exported',
       );
     } catch (e) {
-      _showErrorSnackBar(context, 'Failed to generate evaluation dataset CSV: ' + e.toString());
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to generate evaluation dataset CSV: $e');
+      }
     }
   }
 
@@ -278,7 +284,9 @@ class StreetComplianceExporter {
         fileTitle: 'Compliance Summary Export Ready',
       );
     } catch (e) {
-      _showErrorSnackBar(context, 'Failed to generate PDF/Text report: $e');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to generate PDF/Text report: $e');
+      }
     }
   }
 
