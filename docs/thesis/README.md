@@ -18,6 +18,7 @@
 | 📄 [`chapter-5-results-and-discussion.md`](chapter-5-results-and-discussion.md) | **Chapter 5: Results & Discussion** | Field trial dataset description template, Confusion matrix, Multi-attribute metrics (Segregated, Recyclable, Biodegradable), Cohen's κ, Desk audit latency, Data export. |
 | 📄 [`chapter-6-conclusions-and-recommendations.md`](chapter-6-conclusions-and-recommendations.md) | **Chapter 6: Conclusions & Recommendations** | Civic dispute and recourse (`CDisputeDecisionWidget`), Street Compliance Index (SCI) grading, Sideloaded APK distribution, Recommendations for LGUs and future researchers. |
 | 📄 [`appendix-a-doc-conflicts-and-gaps.md`](appendix-a-doc-conflicts-and-gaps.md) | **Appendix A: Doc Conflicts & Gaps** | 15 critical gap notes, verification items, and tracking of resolved vs pending items before oral defense. |
+| 📊 [`system-comparison-per-chapter.md`](system-comparison-per-chapter.md) | **System Comparison per Chapter** | Comprehensive comparative benchmark across all 6 chapters against traditional manual inspection, IoT smart bins, civic apps, and autonomous AI. |
 | 📑 [`EBASURA_THESIS_DRAFT_CH1-6.md`](EBASURA_THESIS_DRAFT_CH1-6.md) | **Complete Compiled Draft** | Full monolithic manuscript draft v0.1 in a single unified markdown file. |
 
 ---
